@@ -1,0 +1,236 @@
+@layer tokens, reset, existing, layout, workspace, refresh;
+/* ViewControls.css — estilos de ViewControls.
+   La prioridad de capas conserva la secuencia: existing < layout < workspace < refresh.
+   Para cambiar la apariencia actual, modifica el bloque @layer refresh al final.
+   Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
+
+@layer workspace {
+.viewport-head-controls {position:absolute;z-index:13;right:44px;top:11px;display:flex;align-items:center;gap:4px;padding:4px;background:rgba(247,249,250,.94);border:1px solid #c6ced3;border-radius:7px;box-shadow:0 4px 14px #0002}
+.viewport-head-controls button, .viewport-head-controls select {height:30px;background:#fff;color:#46555e;border:1px solid #c7d0d5;border-radius:5px;padding:4px 7px;font-size:9px}
+.viewport-head-controls button {display:flex;align-items:center;gap:4px}
+.viewport-head-controls svg {width:13px}
+.viewport-head-controls select {max-width:122px}
+.viewport-head-controls button:hover, .viewport-head-controls select:hover {border-color:#9eaab1;background:#fafbfb}
+@media (max-width:1450px) {
+.viewport-head-controls select:nth-of-type(2), .viewport-head-controls select:nth-of-type(3) {max-width:92px}
+}
+@media (max-width:1180px) {
+.viewport-head-controls {right:40px}
+}
+@media (max-width:1180px) {
+.viewport-head-controls select:nth-of-type(2), .viewport-head-controls select:nth-of-type(3) {display:none}
+}
+}
+
+@layer refresh {
+.view-quick-actions {display: flex; gap: 4px; align-items: center;}
+.viewport-head-controls button, .viewport-head-controls select {flex: 0 0 auto; min-height: 34px; height: 34px; max-width: none;
+  padding: 6px 9px; border: 1px solid #d5dfe5;
+  background: #f6f9fa; border-radius: 7px;
+  color: #30475b; font-size: 11px; font-weight: 650;}
+.viewport-head-controls button {gap: 6px;}
+.viewport-head-controls button svg {width: 15px; height: 15px;}
+.viewport-head-controls button:hover, .viewport-head-controls select:hover {background: #edf3f6; border-color: #819dab;}
+.viewport-head-controls .display-mode-select {max-width: 140px;}
+.view-menu, .view-settings-menu {position: relative; flex: 0 0 auto;}
+.view-menu > summary, .view-settings-menu > summary {list-style: none; display: flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 10px; white-space: nowrap;
+  border: 1px solid #d5dfe5; border-radius: 7px;
+  background: #f6f9fa; color: #30475b;
+  font-size: 11px; font-weight: 700; cursor: pointer;}
+.view-menu > summary::-webkit-details-marker, .view-settings-menu > summary::-webkit-details-marker {display: none;}
+.view-menu > summary svg, .view-settings-menu > summary svg {width: 14px; height: 14px;}
+.view-menu[open] > summary, .view-settings-menu[open] > summary {background: #e7eff5; border-color: #7f9caf;}
+.view-menu-popover, .view-settings-popover {position: absolute; z-index: 90; top: calc(100% + 10px); right: 0;
+  width: 220px; max-width: min(310px, calc(100vw - 100px));
+  max-height: min(65vh, 480px); overflow: auto;
+  display: grid; gap: 4px; padding: 8px;
+  border: 1px solid #d0dce4; border-radius: 10px;
+  background: #fff; box-shadow: var(--shadow-lg);}
+.view-menu-popover button {display: block; width: 100%; min-height: 32px;
+  height: auto; text-align: left; white-space: normal;
+  border: 0; background: transparent; color: #293241;
+  font-size: 11px;}
+.view-menu-popover button:hover {background: #eef4f7;}
+.view-menu-popover hr {width: 100%; border: 0; border-top: 1px solid #d9e1e6; margin: 5px 0;}
+.view-settings-popover {width: 240px; gap: 11px; padding: 13px;}
+.view-settings-popover > label {font-size: 11px; font-weight: 700; color: #394f63; gap: 6px;}
+.view-settings-popover > label > select {width: 100%; height: 35px; min-height: 35px; max-width: 100%;
+  background: #f6f9fa; font-size: 11px;}
+.command-search-button {background: #3e5c76 !important; border-color: #3e5c76 !important; color: #fff !important;}
+.command-search-button:hover {background: #293f54 !important;}
+@media (max-width: 1370px) {
+.viewport-head-controls .view-quick-actions button span {display: none;}
+}
+@media (max-width: 1370px) {
+.viewport-head-controls .view-quick-actions button {width: 35px; justify-content: center; padding: 5px;}
+}
+@media (max-width: 1110px) {
+.viewport-head-controls .view-settings-menu > summary span, .viewport-head-controls .command-search-button span {display: none;}
+}
+@media (max-width: 1110px) {
+.viewport-head-controls .view-settings-menu > summary {padding: 0 7px;}
+}
+@media (max-width: 780px) {
+.viewport-head-controls .display-mode-select {max-width: 106px;}
+}
+@media (max-width: 780px) {
+.viewport-head-controls button, .viewport-head-controls select {font-size: 10px;}
+}
+}
+
+
+@layer refresh {
+.viewport-head-controls {
+  border-radius: 16px;
+  padding: 7px;
+  background: rgba(255,255,255,.95);
+}
+.viewport-head-controls button,
+.viewport-head-controls select,
+.view-menu > summary,
+.view-settings-menu > summary {
+  border-radius: 10px;
+  border-color: #ddd4cc;
+  background: #faf8f5;
+  color: #6a5f54;
+}
+.viewport-head-controls button:hover,
+.viewport-head-controls select:hover,
+.view-menu > summary:hover,
+.view-settings-menu > summary:hover {
+  background: #fff5e8;
+  border-color: #efc47d;
+  color: #c4780d;
+}
+.command-search-button {
+  background: linear-gradient(180deg, #f7ae33 0%, #ec9716 100%) !important;
+  border-color: #e39115 !important;
+}
+.command-search-button:hover {
+  background: linear-gradient(180deg, #f6b341 0%, #ee9f24 100%) !important;
+}
+.view-menu[open] > summary,
+.view-settings-menu[open] > summary {
+  background: #fff1de;
+  border-color: #efbf76;
+  color: #bb740e;
+}
+.view-menu-popover,
+.view-settings-popover {
+  border-radius: 14px;
+  border-color: #ddd4cb;
+}
+}
+
+/* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
+@layer pro {
+
+.viewport-head-controls {overflow:visible;white-space:nowrap}
+.viewport-head-controls .view-quick-actions {display:flex;align-items:center;gap:3px;flex:0 0 auto}
+.viewport-head-controls button,.viewport-head-controls select,.viewport-head-controls .view-menu>summary,.viewport-head-controls .view-settings-menu>summary {
+ height:34px;min-height:34px;max-width:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 9px;
+ background:#fffdfb;color:#564535;border:1px solid transparent;border-radius:8px;
+ font-size:11px;font-weight:700;line-height:1.2;
+}
+.viewport-head-controls .view-quick-actions button svg,.viewport-head-controls button svg {width:16px;height:16px;color:#9e6213}
+.viewport-head-controls button:hover,.viewport-head-controls select:hover,.viewport-head-controls .view-menu>summary:hover,.viewport-head-controls .view-settings-menu>summary:hover {background:#fff1dc;border-color:#edd0a7;color:#704503}
+.viewport-head-controls .view-menu,.viewport-head-controls .view-settings-menu {position:relative;flex:0 0 auto}
+.viewport-head-controls .view-menu>summary,.viewport-head-controls .view-settings-menu>summary {cursor:pointer;list-style:none}
+.viewport-head-controls select.display-mode-select {min-width:102px;width:auto;max-width:122px;padding:0 6px;border:1px solid #ebe0d5;background:#f8f4ef}
+.viewport-head-controls .view-menu-popover,.viewport-head-controls .view-settings-popover {top:calc(100% + 12px);left:0;right:auto;max-width:min(290px,calc(100vw - 50px));z-index:94;max-height:min(65vh,480px);overflow:auto;white-space:normal;background:#fffdf9;border:1px solid #e2d1bb;border-radius:12px;box-shadow:var(--shadow-lg);padding:7px}
+.viewport-head-controls .view-menu-popover button {display:flex;justify-content:flex-start;width:100%;height:32px;min-height:32px;border:0;color:#4c3a28;text-align:left;font-size:11px}
+.viewport-head-controls .view-settings-popover {width:245px;padding:14px;display:grid;gap:12px}
+.viewport-head-controls .view-settings-popover label {display:grid;gap:6px;color:#66574b;font-weight:650;font-size:11px}
+.viewport-head-controls .view-settings-popover select {width:100%;height:36px;max-width:100%;border:1px solid #dfd1c2;background:#fff}
+.viewport-head-controls .selection-filter-menu {margin-top:3px;border-top:1px solid #eee3d8;padding-top:11px}
+.viewport-head-controls .selection-filter-menu>summary {color:#6a4d30;font-size:11px;cursor:pointer}
+.viewport-head-controls .selection-filter-menu>div {max-height:190px;overflow-y:auto}
+.viewport-head-controls .selection-filter-menu label {display:flex;flex-direction:row;align-items:center;gap:8px;font-size:11px;font-weight:550}
+.viewport-head-controls .selection-filter-menu input {width:15px;height:15px;accent-color:var(--ui-orange)}
+.viewport-head-controls .command-search-button {background:var(--ui-orange)!important;border-color:var(--ui-orange)!important;color:#37200a!important;min-width:34px}
+.viewport-head-controls .command-search-button svg {color:#38230c}
+.viewport-head-controls .command-search-button:hover {background:#ffb840!important}
+@media(max-width:1390px){
+ .viewport-head-controls .view-quick-actions button span,.viewport-head-controls .view-settings-menu>summary span,.viewport-head-controls .command-search-button span {display:none}
+ .viewport-head-controls .view-quick-actions button,.viewport-head-controls .view-settings-menu>summary,.viewport-head-controls .command-search-button {width:35px;padding:0}
+ .viewport-head-controls select.display-mode-select{width:100px;min-width:0}
+}
+@media(max-width:760px){
+ .viewport-head-controls .view-menu>summary span{display:none}
+ .viewport-head-controls .view-menu>summary{width:31px;padding:0 6px}
+ .viewport-head-controls select.display-mode-select{width:80px;font-size:10px}
+ .viewport-head-controls .view-quick-actions button{width:30px}
+ .viewport-head-controls{gap:2px;padding:4px}
+}
+
+}
+
+@layer pro {
+@media(max-width:560px) {
+ .viewport-head-controls .view-quick-actions button:nth-child(n+2){display:none}
+ .viewport-head-controls .display-mode-select{display:none}
+}
+}
+
+
+/* Barra central: contraste alto frente al fondo claro del visor 3D. */
+@layer pro {
+ .editor-command-dock > .viewport-head-controls {color:#fff4e3;}
+ .viewport-head-controls .view-quick-actions {gap:4px;}
+ .viewport-head-controls .view-quick-actions button,
+ .viewport-head-controls .view-menu > summary,
+ .viewport-head-controls .view-settings-menu > summary,
+ .viewport-head-controls select.display-mode-select {
+   height:36px;
+   min-height:36px;
+   padding:0 10px;
+   background:#523c2d;
+   border:1px solid #765740;
+   border-radius:8px;
+   color:#fff5e8;
+   font-size:11px;
+   font-weight:800;
+   box-shadow:none;
+ }
+ .viewport-head-controls .view-quick-actions button svg,
+ .viewport-head-controls .view-settings-menu > summary svg,
+ .viewport-head-controls .view-menu > summary svg {color:#ffcb7e;stroke-width:2.2;}
+ .viewport-head-controls .view-quick-actions button:hover,
+ .viewport-head-controls .view-menu > summary:hover,
+ .viewport-head-controls .view-settings-menu > summary:hover,
+ .viewport-head-controls select.display-mode-select:hover {
+   background:#72503a;
+   border-color:#dba252;
+   color:#fff;
+ }
+ .viewport-head-controls .view-menu[open] > summary,
+ .viewport-head-controls .view-settings-menu[open] > summary {
+   background:#7a522f;
+   border-color:#edb35e;
+   color:#fff;
+ }
+ .viewport-head-controls select.display-mode-select {
+   background:#fbf2e6;
+   color:#402b1c;
+   border-color:#e6c89e;
+   min-width:110px;
+ }
+ .viewport-head-controls .command-search-button {
+   background:#cf8730 !important;
+   border:1px solid #edb465 !important;
+   color:#2c1a0e !important;
+   font-weight:850;
+   border-radius:8px;
+   height:36px;
+   min-height:36px;
+ }
+ .viewport-head-controls .command-search-button svg {color:#2c1a0e;stroke-width:2.2;}
+ .viewport-head-controls .command-search-button:hover {background:#e5a64f!important;}
+ @media (max-width:1390px) {
+   .viewport-head-controls .view-quick-actions button,
+   .viewport-head-controls .view-settings-menu > summary,
+   .viewport-head-controls .command-search-button {width:38px;min-width:38px;padding:0;}
+   .viewport-head-controls select.display-mode-select {min-width:88px;width:90px;}
+ }
+}

@@ -1,0 +1,110 @@
+@layer tokens, reset, existing, layout, workspace, refresh;
+/* Inspector.css — estilos de Inspector.
+   La prioridad de capas conserva la secuencia: existing < layout < workspace < refresh.
+   Para cambiar la apariencia actual, modifica el bloque @layer refresh al final.
+   Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
+
+@layer layout {
+.edge-grid {display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.edge-grid label {display:flex;flex-direction:row;align-items:center}
+.chip-button {border:0;background:#e8edf0;color:#4b5962;border-radius:999px;padding:4px 7px}
+.selection-note {background:#edf2f4;border:1px dashed #bac6cd;padding:7px;border-radius:5px;font-size:10px;margin:7px 0}
+.chips {margin:6px 0}
+.instances {display:grid;gap:5px}
+}
+
+@layer workspace {
+.inspector {padding:0 0 14px}
+.inspector-header {display:flex;align-items:flex-start;justify-content:space-between;padding:14px 13px 10px;border-bottom:1px solid #dce2e5;background:#fbfcfc}
+.inspector-header h2 {font-size:13px;margin:2px 0 0;line-height:1.2}
+.inspector-section {border-bottom:1px solid #dde3e6}
+.inspector-section>summary {height:34px;display:flex;align-items:center;gap:6px;padding:0 12px;list-style:none;cursor:pointer;color:#46545d;background:#f7f9f9;font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+.inspector-section>summary::-webkit-details-marker {display:none}
+.inspector-section>summary>svg:first-child {width:13px;height:13px;color:#74858f}
+.inspector-section:not([open]) .section-chevron {transform:rotate(-90deg)}
+.inspector-section-body {padding:9px 12px 11px;background:#fff}
+.vector-grid {display:grid;gap:6px;margin-bottom:7px}
+.vector-grid:last-child {margin-bottom:0}
+.vector-grid-3 {grid-template-columns:repeat(3,minmax(0,1fr))}
+.vector-grid-2 {grid-template-columns:repeat(2,minmax(0,1fr))}
+.cad-select-field>span, .color-control label>span {font-size:8px;text-transform:uppercase;letter-spacing:.05em;color:#7b8991;font-weight:700}
+.cad-select-field {margin-bottom:8px}
+.cad-select-field select {height:31px;font-size:10px}
+.color-control {display:grid;grid-template-columns:34px 1fr;gap:7px;align-items:end;margin-bottom:7px}
+.color-swatch {width:34px;height:30px;padding:2px;border-radius:6px}
+.color-control label input {height:30px;font:500 10px ui-monospace,SFMono-Regular,Menlo,monospace}
+.edge-band-grid {display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-top:6px}
+.edge-band-grid label {height:28px;display:flex;flex-direction:row;align-items:center;gap:5px;padding:4px 6px;border:1px solid #d7dfe3;border-radius:5px;background:#fafbfb;font-size:9px}
+.inspector-empty {height:100%}
+.inspector-contextual .muted {margin:0}
+}
+
+@layer refresh {
+.inspector-header {background: #fff; padding: 17px 15px 13px;}
+.inspector-header h2 {color: #293241; font-size: 15px;}
+.inspector-section > summary {background: #f3f6f8; color: #334d62; font-size: 10px; min-height: 37px; height: auto;}
+.inspector-section-body {padding: 12px 15px 14px;}
+.inspector label {color: #475e70; font-size: 11px;}
+.inspector input, .inspector select {border-color: #cbd8e0; border-radius: 7px;}
+.inspector input:focus {border-color: #3e5c76;}
+.inspector button:not(.icon):not(.icon-text):not(.chip-button) {border-radius: 7px;}
+.inspector button:not(.secondary):not(.icon):not(.icon-text):not(.chip-button) {background-color: #3e5c76; border-color: #3e5c76; color: #fff;}
+.inspector button.active {box-shadow: inset 0 -2px 0 #d97d54;}
+.inspector .secondary {background: #fff; color: #293241; border-color: #b9ccd8;}
+}
+
+
+@layer refresh {
+.inspector-header {
+  border-bottom: 1px solid #e1dad3;
+  background: linear-gradient(180deg, #fff 0%, #fbf8f4 100%);
+}
+.inspector-header h2 {
+  letter-spacing: .02em;
+}
+.inspector-section > summary {
+  border: 1px solid #e6ddd4;
+  border-radius: 12px;
+  background: #faf7f3;
+  color: #6f645a;
+}
+.inspector-section[open] > summary {
+  background: #fff1de;
+  color: #b47011;
+  border-color: #efc47d;
+}
+.inspector-section-body {
+  border: 1px solid #ede5dd;
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: #fff;
+}
+.chip {
+  background: #fcf5ea;
+  color: #af741d;
+}
+}
+
+/* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
+@layer pro {
+
+.inspector {padding:0 0 26px;background:#fffdfa}
+.inspector-header {padding:20px 18px 17px;background:#fffdfa;border-bottom:1px solid var(--ui-border);gap:9px}
+.inspector-header h2 {color:#3d2e21;font-size:17px;line-height:1.3}
+.inspector-section {margin:10px 12px;border:1px solid #e6dacc;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 1px 3px #49311808}
+.inspector-section>summary {display:flex;align-items:center;gap:9px;min-height:43px;height:auto;padding:12px 13px;background:#faf7f2;border:0;border-radius:0;color:#5f4734;font-size:10px;font-weight:800;letter-spacing:.075em;cursor:pointer}
+.inspector-section[open]>summary {background:#fff0d9;color:#8a4b00;border-bottom:1px solid #edcfaa}
+.inspector-section>summary>svg:first-child {width:16px;height:16px;color:#bb7411}
+.inspector-section-body {padding:15px 13px 17px;background:#fff;border:0;border-radius:0;display:grid;gap:8px}
+.inspector-section-body .vector-grid {gap:9px;margin-bottom:8px}
+.inspector-section-body .vector-grid-3 {grid-template-columns:repeat(3,minmax(0,1fr))}
+.inspector-section-body .cad-select-field {margin-bottom:9px}
+.inspector-section-body .color-control {gap:9px}
+.inspector-section-body .color-swatch {width:40px;height:38px}
+.inspector-section-body .edge-band-grid {gap:7px}
+.inspector-section-body .edge-band-grid label {height:auto;min-height:35px;background:#faf7f2;border-color:#e7ddd1;border-radius:8px;font-size:10px}
+.inspector label {color:#69584a}
+.inspector input,.inspector select {border-color:#ded1c3}
+.inspector-contextual .muted {margin:4px 0}
+
+}

@@ -1,0 +1,81 @@
+@layer tokens, reset, existing, layout, workspace, refresh;
+/* Viewport.css — estilos de Viewport.
+   La prioridad de capas conserva la secuencia: existing < layout < workspace < refresh.
+   Para cambiar la apariencia actual, modifica el bloque @layer refresh al final.
+   Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
+
+@layer existing {
+.cursor-walk, .cursor-look {cursor: grab}
+.cursor-walk:active, .cursor-look:active {cursor: grabbing}
+.cursor-guide {cursor: crosshair}
+.cursor-protractor {cursor: crosshair}
+.cursor-axes {cursor: crosshair}
+.cursor-mirror {cursor: ew-resize}
+.local-axis-label {background: #26343ddd;
+    color: #fff;
+    border: 1px solid #ffffff25;
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-size: 8px;
+    white-space: nowrap}
+.cursor-section {cursor:crosshair}
+.viewport-canvas-wrap {position:absolute;inset:0;overflow:hidden}
+.viewport-canvas-wrap>div:first-child {position:absolute!important;inset:0}
+.selection-marquee {position:absolute;z-index:22;pointer-events:none;border:1px solid rgba(42,119,141,.95);background:rgba(42,119,141,.11);border-radius:1px}
+.selection-marquee.crossing {border-style:dashed;border-color:rgba(207,138,34,.95);background:rgba(207,138,34,.09)}
+.inference-tooltip, .measure-tooltip {background:rgba(31,41,55,.94);color:#fff;padding:4px 7px;border-radius:4px;font-size:10px;white-space:nowrap;box-shadow:0 2px 8px #0003}
+.inference-tooltip.locked {outline:1px solid #e49a2e}
+.measure-tooltip {display:flex;flex-direction:column;gap:2px;background:rgba(31,65,78,.96)}
+.measure-tooltip span {font-size:9px;color:#dbe8ed}
+}
+
+@layer workspace {
+.viewport-canvas-wrap {cursor:default}
+.viewport-canvas-wrap.cursor-move {cursor:move}
+.viewport-canvas-wrap.cursor-rotate {cursor:alias}
+.viewport-canvas-wrap.cursor-measure {cursor:crosshair}
+.viewport-canvas-wrap.cursor-select {cursor:default}
+.viewport-empty-state {position:absolute;z-index:5;left:50%;top:55%;transform:translate(-50%,-50%);pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border:1px solid #9da9b04d;border-radius:8px;background:rgba(248,249,248,.64);backdrop-filter:blur(3px);color:#53616a}
+.viewport-empty-state b {font-size:11px}
+.viewport-empty-state span {font-size:9px;color:#75828a}
+.selection-marquee {border:1px solid rgba(58,124,151,.95);background:rgba(73,149,179,.12);box-shadow:inset 0 0 0 1px #fff3}
+.selection-marquee.crossing {border-color:rgba(202,131,35,.95);background:repeating-linear-gradient(135deg,rgba(209,139,47,.12),rgba(209,139,47,.12) 6px,rgba(255,255,255,.04) 6px,rgba(255,255,255,.04) 12px)}
+}
+
+@layer refresh {
+.viewport-canvas-wrap {inset: 0;}
+}
+
+
+@layer refresh {
+.viewport-empty-state {
+  border-radius: 18px;
+  border-color: rgba(216, 197, 176, .9);
+  background: rgba(255,255,255,.72);
+  color: #6a6159;
+}
+.viewport-empty-state span {
+  color: #8e8378;
+}
+.local-axis-label,
+.inference-tooltip,
+.measure-tooltip {
+  border-radius: 8px;
+}
+.inference-tooltip.locked {
+  outline-color: #f39a16;
+}
+}
+
+/* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
+@layer pro {
+
+.viewport-empty-state {background:#fffdfbe6;border:1px dashed #cbb69c;border-radius:14px;box-shadow:var(--shadow-sm);padding:18px;max-width:300px;text-align:center;color:#6e5741}
+.viewport-empty-state b {font-size:13px}
+.viewport-empty-state span {color:#8b7866;font-size:11px}
+.inference-tooltip,.measure-tooltip {border-radius:8px;background:#382c24ed;font-size:11px}
+.inference-tooltip.locked {outline-color:#f1aa38}
+.selection-marquee {border-color:#e69513;background:#eaa12426}
+.selection-marquee.crossing {border-color:#c97510;background:#eaa1241c}
+
+}

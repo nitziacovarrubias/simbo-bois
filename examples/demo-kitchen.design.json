@@ -1,0 +1,1606 @@
+{
+  "schemaVersion": 2,
+  "id": "design-demo-kitchen-baseline-v1",
+  "room": {
+    "id": "room-demo",
+    "shape": "RECTANGULAR",
+    "widthMm": 5200,
+    "depthMm": 3800,
+    "heightMm": 2600,
+    "wallThicknessMm": 100,
+    "openings": [
+      {
+        "id": "door-main",
+        "type": "DOOR",
+        "wall": "SOUTH",
+        "offsetMm": 500,
+        "widthMm": 900,
+        "heightMm": 2100,
+        "sillHeightMm": 0,
+        "openingDirection": "IN"
+      },
+      {
+        "id": "window-east",
+        "type": "WINDOW",
+        "wall": "EAST",
+        "offsetMm": 900,
+        "widthMm": 1200,
+        "heightMm": 1000,
+        "sillHeightMm": 950
+      }
+    ],
+    "obstacles": []
+  },
+  "parts": [
+    {
+      "id": "part-base-left",
+      "name": "Lateral izquierdo cocina",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "LEFT_SIDE",
+      "dimensions": {
+        "widthMm": 18,
+        "heightMm": 720,
+        "thicknessMm": 560
+      },
+      "transform": {
+        "position": {
+          "x": -391,
+          "y": 360,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "HORIZONTAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [
+        "machining-screw-pilot"
+      ],
+      "hidden": false,
+      "locked": false,
+      "tags": [],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-base-right",
+      "name": "Lateral derecho cocina",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "RIGHT_SIDE",
+      "dimensions": {
+        "widthMm": 18,
+        "heightMm": 720,
+        "thicknessMm": 560
+      },
+      "transform": {
+        "position": {
+          "x": 391,
+          "y": 360,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "HORIZONTAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "hidden": false,
+      "locked": false,
+      "tags": [],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-base-bottom",
+      "name": "Base gabinete cocina",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "BOTTOM",
+      "dimensions": {
+        "widthMm": 764,
+        "heightMm": 560,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 9,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "HORIZONTAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "hidden": false,
+      "locked": false,
+      "tags": [],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-base-shelf",
+      "name": "Repisa cocina",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "SHELF",
+      "dimensions": {
+        "widthMm": 764,
+        "heightMm": 540,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 360,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "HORIZONTAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "hidden": false,
+      "locked": false,
+      "tags": [],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-base-door",
+      "name": "Puerta cocina",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "DOOR",
+      "dimensions": {
+        "widthMm": 780,
+        "heightMm": 715,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 360,
+          "z": 290
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-oak",
+      "grainDirection": "VERTICAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [
+        "machining-hinge-cup"
+      ],
+      "hidden": false,
+      "locked": false,
+      "tags": [
+        "KITCHEN"
+      ],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-toe-kick",
+      "name": "Zoclo cocina",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "TOE_KICK",
+      "dimensions": {
+        "widthMm": 800,
+        "heightMm": 100,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 50,
+          "z": 285
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "HORIZONTAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "hidden": false,
+      "locked": false,
+      "tags": [],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-closet-shelf",
+      "name": "Repisa closet",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "SHOE_SHELF",
+      "dimensions": {
+        "widthMm": 900,
+        "heightMm": 450,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 1200,
+          "y": 300,
+          "z": -800
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-oak",
+      "grainDirection": "HORIZONTAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "hidden": false,
+      "locked": false,
+      "tags": [
+        "CLOSET"
+      ],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    },
+    {
+      "id": "part-closet-door",
+      "name": "Puerta closet",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "DOOR",
+      "dimensions": {
+        "widthMm": 450,
+        "heightMm": 2200,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 975,
+          "y": 1100,
+          "z": -580
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "VERTICAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "hidden": false,
+      "locked": false,
+      "tags": [
+        "CLOSET"
+      ],
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    }
+  ],
+  "assemblies": [
+    {
+      "id": "assembly-root-demo",
+      "name": "Diseño demo",
+      "children": [
+        {
+          "kind": "ASSEMBLY",
+          "id": "assembly-kitchen-base"
+        },
+        {
+          "kind": "ASSEMBLY",
+          "id": "assembly-closet"
+        }
+      ],
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "locked": false,
+      "tags": [],
+      "metadata": {}
+    },
+    {
+      "id": "assembly-kitchen-base",
+      "name": "Gabinete base cocina",
+      "children": [
+        {
+          "kind": "PART",
+          "id": "part-base-left"
+        },
+        {
+          "kind": "PART",
+          "id": "part-base-right"
+        },
+        {
+          "kind": "PART",
+          "id": "part-base-bottom"
+        },
+        {
+          "kind": "PART",
+          "id": "part-base-shelf"
+        },
+        {
+          "kind": "PART",
+          "id": "part-base-door"
+        },
+        {
+          "kind": "PART",
+          "id": "part-toe-kick"
+        }
+      ],
+      "transform": {
+        "position": {
+          "x": -700,
+          "y": 0,
+          "z": 500
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "locked": false,
+      "tags": [
+        "KITCHEN"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "assembly-closet",
+      "name": "Módulo closet",
+      "children": [
+        {
+          "kind": "PART",
+          "id": "part-closet-shelf"
+        },
+        {
+          "kind": "PART",
+          "id": "part-closet-door"
+        }
+      ],
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "locked": false,
+      "tags": [
+        "CLOSET"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "assembly-module-instance-root",
+      "name": "Módulo demo instanciado",
+      "children": [],
+      "transform": {
+        "position": {
+          "x": 650,
+          "y": 0,
+          "z": 700
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "locked": false,
+      "tags": [
+        "MODULE_INSTANCE"
+      ],
+      "metadata": {}
+    }
+  ],
+  "rootAssemblyId": "assembly-root-demo",
+  "materials": [
+    {
+      "id": "material-board-white",
+      "name": "Melamina blanca demo",
+      "category": "BOARD",
+      "colorHex": "#F4F4F1",
+      "thicknessMm": 18,
+      "roughness": 0.65,
+      "metalness": 0,
+      "metadata": {
+        "demo": true
+      }
+    },
+    {
+      "id": "material-board-oak",
+      "name": "Roble claro demo",
+      "category": "BOARD",
+      "colorHex": "#C69A6B",
+      "thicknessMm": 18,
+      "roughness": 0.72,
+      "metalness": 0,
+      "metadata": {
+        "demo": true
+      }
+    },
+    {
+      "id": "material-stone",
+      "name": "Cuarzo gris demo",
+      "category": "STONE",
+      "colorHex": "#8B8C8F",
+      "thicknessMm": 20,
+      "roughness": 0.45,
+      "metalness": 0,
+      "metadata": {
+        "demo": true
+      }
+    }
+  ],
+  "constraints": [],
+  "bindings": [],
+  "joints": [
+    {
+      "id": "joint-screw",
+      "type": "SCREW",
+      "partAId": "part-base-left",
+      "partBId": "part-base-bottom",
+      "anchorA": {
+        "kind": "FACE",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "normal": {
+          "x": 1,
+          "y": 0,
+          "z": 0
+        },
+        "name": "Cara interior"
+      },
+      "anchorB": {
+        "kind": "EDGE",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "name": "Canto base"
+      },
+      "hardwareInstanceIds": [
+        "hardware-screw-1"
+      ],
+      "machiningFeatureIds": [
+        "machining-screw-pilot"
+      ],
+      "parameters": {
+        "quantity": 1
+      },
+      "metadata": {}
+    },
+    {
+      "id": "joint-hinge",
+      "type": "HINGE",
+      "partAId": "part-base-door",
+      "partBId": "part-base-right",
+      "anchorA": {
+        "kind": "FACE",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "normal": {
+          "x": 0,
+          "y": 0,
+          "z": -1
+        }
+      },
+      "anchorB": {
+        "kind": "FACE",
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "normal": {
+          "x": -1,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hardwareInstanceIds": [
+        "hardware-hinge-1"
+      ],
+      "machiningFeatureIds": [
+        "machining-hinge-cup"
+      ],
+      "parameters": {
+        "openingAngleDeg": 110
+      },
+      "metadata": {}
+    }
+  ],
+  "hardwareDefinitions": [
+    {
+      "id": "hardware-def-screw",
+      "name": "Tornillo confirmat demo",
+      "category": "SCREW",
+      "dimensions": {
+        "diameterMm": 5,
+        "lengthMm": 50
+      },
+      "mountingPattern": [],
+      "colorHex": "#777777",
+      "metadata": {
+        "demo": true
+      }
+    },
+    {
+      "id": "hardware-def-hinge",
+      "name": "Bisagra cazoleta demo",
+      "category": "HINGE",
+      "dimensions": {
+        "cupDiameterMm": 35
+      },
+      "mountingPattern": [
+        {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "diameterMm": 35,
+          "depthMm": 12,
+          "type": "BORE"
+        }
+      ],
+      "kinematics": {
+        "type": "REVOLUTE",
+        "axis": {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        "maxAngleDeg": 110
+      },
+      "colorHex": "#A0A0A0",
+      "metadata": {
+        "demo": true
+      }
+    },
+    {
+      "id": "hardware-def-rod",
+      "name": "Tubo colgador demo",
+      "category": "ACCESSORY",
+      "dimensions": {
+        "lengthMm": 850,
+        "diameterMm": 25
+      },
+      "mountingPattern": [],
+      "colorHex": "#B7B7B7",
+      "metadata": {
+        "demo": true
+      }
+    }
+  ],
+  "hardwareInstances": [
+    {
+      "id": "hardware-screw-1",
+      "definitionId": "hardware-def-screw",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "orientation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "parameters": {},
+      "connectedPartIds": [
+        "part-base-left",
+        "part-base-bottom"
+      ],
+      "jointId": "joint-screw",
+      "metadata": {}
+    },
+    {
+      "id": "hardware-hinge-1",
+      "definitionId": "hardware-def-hinge",
+      "position": {
+        "x": 0,
+        "y": 200,
+        "z": 0
+      },
+      "orientation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "parameters": {},
+      "connectedPartIds": [
+        "part-base-door",
+        "part-base-right"
+      ],
+      "jointId": "joint-hinge",
+      "metadata": {}
+    },
+    {
+      "id": "hardware-rod-1",
+      "definitionId": "hardware-def-rod",
+      "position": {
+        "x": 1200,
+        "y": 1700,
+        "z": -800
+      },
+      "orientation": {
+        "x": 0,
+        "y": 0,
+        "z": 1.57079632679
+      },
+      "parameters": {},
+      "connectedPartIds": [
+        "part-closet-door"
+      ],
+      "metadata": {
+        "semanticRole": "HANGING_ROD"
+      }
+    }
+  ],
+  "machiningFeatures": [
+    {
+      "id": "machining-screw-pilot",
+      "partId": "part-base-left",
+      "type": "BORE",
+      "position": {
+        "x": 0,
+        "y": 20,
+        "z": 0
+      },
+      "orientation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "diameterMm": 3.5,
+      "depthMm": 30,
+      "parameters": {},
+      "jointId": "joint-screw",
+      "metadata": {}
+    },
+    {
+      "id": "machining-hinge-cup",
+      "partId": "part-base-door",
+      "type": "BORE",
+      "position": {
+        "x": 300,
+        "y": 200,
+        "z": 0
+      },
+      "orientation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "diameterMm": 35,
+      "depthMm": 12,
+      "parameters": {},
+      "jointId": "joint-hinge",
+      "metadata": {}
+    }
+  ],
+  "moduleDefinitions": [
+    {
+      "id": "module-def-base",
+      "name": "Gabinete base demo",
+      "description": "Fixture común para desarrollo local",
+      "parameterDefinitions": [
+        {
+          "id": "param-width",
+          "key": "width",
+          "label": "Ancho",
+          "type": "NUMBER",
+          "unit": "mm",
+          "defaultValue": 600,
+          "min": 300,
+          "max": 1200,
+          "step": 1,
+          "ui": "INPUT"
+        }
+      ],
+      "snapDefinitions": [
+        {
+          "id": "snap-back",
+          "name": "Cara posterior",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": -280
+          },
+          "normal": {
+            "x": 0,
+            "y": 0,
+            "z": -1
+          },
+          "compatibleTypes": [
+            "WALL",
+            "MODULE"
+          ],
+          "metadata": {}
+        }
+      ],
+      "origin": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "versionIds": [
+        "module-version-base-v1"
+      ],
+      "currentVersionId": "module-version-base-v1",
+      "tags": [
+        "KITCHEN",
+        "DEMO"
+      ],
+      "metadata": {
+        "baseline": "1.0"
+      }
+    }
+  ],
+  "moduleVersions": [
+    {
+      "id": "module-version-base-v1",
+      "definitionId": "module-def-base",
+      "version": 1,
+      "createdAt": "2026-09-05T00:00:00.000Z",
+      "snapshot": {
+        "rootAssemblyId": "module-template-root",
+        "parts": [
+          {
+            "id": "module-template-part",
+            "name": "Panel plantilla",
+            "shape": "RECTANGULAR_PANEL",
+            "semanticRole": "GENERIC_PANEL",
+            "dimensions": {
+              "widthMm": 600,
+              "heightMm": 720,
+              "thicknessMm": 18
+            },
+            "transform": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "materialId": "material-board-white",
+            "grainDirection": "VERTICAL",
+            "edgeBanding": {
+              "TOP": {
+                "mode": "NONE"
+              },
+              "BOTTOM": {
+                "mode": "NONE"
+              },
+              "LEFT": {
+                "mode": "NONE"
+              },
+              "RIGHT": {
+                "mode": "NONE"
+              }
+            },
+            "manufacturable": true,
+            "machiningFeatureIds": [],
+            "metadata": {}
+          }
+        ],
+        "assemblies": [
+          {
+            "id": "module-template-root",
+            "name": "Raíz plantilla",
+            "children": [
+              {
+                "kind": "PART",
+                "id": "module-template-part"
+              }
+            ],
+            "transform": {
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "metadata": {}
+          }
+        ],
+        "constraints": [],
+        "bindings": [],
+        "joints": [],
+        "hardwareDefinitions": [],
+        "hardwareInstances": [],
+        "machiningFeatures": [],
+        "kinematics": [],
+        "materials": [],
+        "snapDefinitions": [],
+        "parameterBindings": []
+      },
+      "immutable": true,
+      "notes": "Versión demo"
+    }
+  ],
+  "moduleInstances": [
+    {
+      "id": "module-instance-1",
+      "definitionId": "module-def-base",
+      "versionId": "module-version-base-v1",
+      "rootAssemblyId": "assembly-module-instance-root",
+      "name": "Gabinete base instanciado",
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "parameterValues": {
+        "width": 600
+      },
+      "detached": false,
+      "metadata": {}
+    }
+  ],
+  "servicePoints": [
+    {
+      "id": "service-water",
+      "name": "Agua fregadero",
+      "type": "WATER_SUPPLY",
+      "position": {
+        "x": 350,
+        "y": 500,
+        "z": -1750
+      },
+      "size": {
+        "widthMm": 80,
+        "heightMm": 80,
+        "depthMm": 80
+      },
+      "hidden": false,
+      "metadata": {}
+    },
+    {
+      "id": "service-drain",
+      "name": "Drenaje fregadero",
+      "type": "DRAIN",
+      "position": {
+        "x": 450,
+        "y": 300,
+        "z": -1750
+      },
+      "diameterMm": 50,
+      "hidden": false,
+      "metadata": {}
+    },
+    {
+      "id": "service-electric",
+      "name": "Contacto cubierta",
+      "type": "ELECTRICAL",
+      "position": {
+        "x": -800,
+        "y": 1100,
+        "z": -1750
+      },
+      "hidden": false,
+      "metadata": {}
+    }
+  ],
+  "clearanceZones": [
+    {
+      "id": "clearance-fridge-door",
+      "name": "Apertura refrigerador",
+      "type": "DOOR_SWING",
+      "shape": "BOX",
+      "dimensions": {
+        "widthMm": 1000,
+        "heightMm": 1900,
+        "depthMm": 900
+      },
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 650
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "severity": "WARNING",
+      "description": "Zona visual de apertura",
+      "metadata": {},
+      "ownerId": "appliance-fridge-1",
+      "coordinateSpace": "OWNER_LOCAL",
+      "hidden": false
+    }
+  ],
+  "applianceDefinitions": [
+    {
+      "id": "appliance-def-fridge",
+      "name": "Refrigerador demo",
+      "category": "REFRIGERATOR",
+      "manufacturer": "Genérico",
+      "model": "RF-900",
+      "dimensions": {
+        "widthMm": 900,
+        "heightMm": 1800,
+        "depthMm": 750
+      },
+      "requiredOpening": {
+        "widthMm": 920,
+        "heightMm": 1850,
+        "depthMm": 780,
+        "metadata": {}
+      },
+      "clearanceZones": [],
+      "serviceRequirements": [
+        {
+          "serviceType": "ELECTRICAL",
+          "required": true,
+          "maxDistanceMm": 1500,
+          "metadata": {}
+        }
+      ],
+      "doorMotion": {
+        "type": "REVOLUTE",
+        "axis": {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        "minValue": 0,
+        "maxValue": 110,
+        "metadata": {}
+      },
+      "installationMetadata": {},
+      "manufacturable": false,
+      "colorHex": "#BFC3C7",
+      "metadata": {
+        "sourceType": "DEMO"
+      }
+    },
+    {
+      "id": "appliance-def-sink",
+      "name": "Fregadero demo",
+      "category": "CUSTOM",
+      "dimensions": {
+        "widthMm": 700,
+        "heightMm": 220,
+        "depthMm": 500
+      },
+      "requiredOpening": {
+        "widthMm": 660,
+        "heightMm": 200,
+        "depthMm": 460,
+        "metadata": {}
+      },
+      "clearanceZones": [],
+      "serviceRequirements": [
+        {
+          "serviceType": "WATER_SUPPLY",
+          "required": true,
+          "maxDistanceMm": 800,
+          "metadata": {}
+        },
+        {
+          "serviceType": "DRAIN",
+          "required": true,
+          "maxDistanceMm": 600,
+          "metadata": {}
+        }
+      ],
+      "installationMetadata": {},
+      "manufacturable": false,
+      "colorHex": "#9CA3A9",
+      "metadata": {
+        "fixtureType": "SINK",
+        "sourceType": "DEMO"
+      }
+    },
+    {
+      "id": "appliance-def-cooktop",
+      "name": "Parrilla demo",
+      "category": "COOKTOP",
+      "dimensions": {
+        "widthMm": 600,
+        "heightMm": 70,
+        "depthMm": 520
+      },
+      "requiredOpening": {
+        "widthMm": 560,
+        "heightMm": 60,
+        "depthMm": 490,
+        "metadata": {}
+      },
+      "clearanceZones": [],
+      "serviceRequirements": [
+        {
+          "serviceType": "ELECTRICAL",
+          "required": true,
+          "maxDistanceMm": 1200,
+          "metadata": {}
+        }
+      ],
+      "installationMetadata": {},
+      "manufacturable": false,
+      "colorHex": "#262626",
+      "metadata": {
+        "sourceType": "DEMO"
+      }
+    }
+  ],
+  "applianceInstances": [
+    {
+      "id": "appliance-fridge-1",
+      "definitionId": "appliance-def-fridge",
+      "name": "Refrigerador",
+      "transform": {
+        "position": {
+          "x": 1700,
+          "y": 900,
+          "z": -1300
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "metadata": {}
+    },
+    {
+      "id": "appliance-sink-1",
+      "definitionId": "appliance-def-sink",
+      "name": "Fregadero",
+      "transform": {
+        "position": {
+          "x": 350,
+          "y": 920,
+          "z": -1450
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "linkedCutoutId": "cutout-sink",
+      "hidden": false,
+      "metadata": {}
+    },
+    {
+      "id": "appliance-cooktop-1",
+      "definitionId": "appliance-def-cooktop",
+      "name": "Parrilla",
+      "transform": {
+        "position": {
+          "x": -700,
+          "y": 930,
+          "z": -1450
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "linkedCutoutId": "cutout-cooktop",
+      "hidden": false,
+      "metadata": {}
+    }
+  ],
+  "countertops": [
+    {
+      "id": "countertop-main",
+      "name": "Cubierta principal",
+      "outline": {
+        "type": "RECTANGULAR",
+        "widthMm": 2600,
+        "depthMm": 650
+      },
+      "thicknessMm": 20,
+      "heightMm": 900,
+      "materialDefinitionId": "material-stone",
+      "colorHex": "#8B8C8F",
+      "roughness": 0.4,
+      "metalness": 0,
+      "edgeProfile": "SQUARE",
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": -1450
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "cutoutIds": [
+        "cutout-sink",
+        "cutout-cooktop"
+      ],
+      "hidden": false,
+      "metadata": {}
+    }
+  ],
+  "cutouts": [
+    {
+      "id": "cutout-sink",
+      "countertopId": "countertop-main",
+      "type": "SINK",
+      "position2D": {
+        "xMm": 350,
+        "yMm": 0
+      },
+      "widthMm": 660,
+      "depthMm": 460,
+      "radiusMm": 12,
+      "rotation": 0,
+      "linkedApplianceInstanceId": "appliance-sink-1",
+      "metadata": {}
+    },
+    {
+      "id": "cutout-cooktop",
+      "countertopId": "countertop-main",
+      "type": "COOKTOP",
+      "position2D": {
+        "xMm": -700,
+        "yMm": 0
+      },
+      "widthMm": 560,
+      "depthMm": 490,
+      "radiusMm": 8,
+      "rotation": 0,
+      "linkedApplianceInstanceId": "appliance-cooktop-1",
+      "metadata": {}
+    }
+  ],
+  "functionalZones": [
+    {
+      "id": "zone-prep",
+      "name": "Preparación",
+      "type": "PREP",
+      "dimensions": {
+        "widthMm": 900,
+        "heightMm": 900,
+        "depthMm": 700
+      },
+      "transform": {
+        "position": {
+          "x": 400,
+          "y": 450,
+          "z": -1400
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "metadata": {
+        "domain": "KITCHEN"
+      }
+    },
+    {
+      "id": "zone-hanging",
+      "name": "Colgado closet",
+      "type": "HANGING",
+      "dimensions": {
+        "widthMm": 900,
+        "heightMm": 1200,
+        "depthMm": 550
+      },
+      "transform": {
+        "position": {
+          "x": 1200,
+          "y": 1500,
+          "z": -800
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "hidden": false,
+      "metadata": {
+        "domain": "CLOSET"
+      }
+    }
+  ],
+  "sinks": [],
+  "drillingPatternDefinitions": [
+    {
+      "id": "drill-pattern-shelf",
+      "name": "Perforación repisas demo",
+      "diameterMm": 5,
+      "spacingMm": 32,
+      "startOffsetMm": 64,
+      "endOffsetMm": 64,
+      "referenceEdge": "LEFT",
+      "depthMm": 12,
+      "repeatCount": 10,
+      "metadata": {}
+    }
+  ],
+  "assemblySteps": [
+    {
+      "id": "assembly-step-1",
+      "order": 1,
+      "partIds": [
+        "part-base-left",
+        "part-base-right",
+        "part-base-bottom"
+      ],
+      "jointIds": [
+        "joint-screw"
+      ],
+      "description": "Armar caja base",
+      "metadata": {}
+    }
+  ],
+  "dimensionAnnotations": [
+    {
+      "id": "dimension-room-width",
+      "pointA": {
+        "x": -2600,
+        "y": 0,
+        "z": 1900
+      },
+      "pointB": {
+        "x": 2600,
+        "y": 0,
+        "z": 1900
+      },
+      "label": "Ancho habitación",
+      "persistent": true,
+      "metadata": {}
+    }
+  ],
+  "fabricationRuleProfiles": [
+    {
+      "id": "fabrication-profile-demo",
+      "name": "Fabricación demo",
+      "minimumCornerRadiusMm": 3,
+      "rules": {
+        "edgeBandDefault": "ABS_1MM"
+      },
+      "metadata": {
+        "demo": true
+      }
+    }
+  ],
+  "planningRuleProfiles": [
+    {
+      "id": "planning-profile-demo",
+      "name": "Planificación demo",
+      "enabled": true,
+      "source": "DEMO",
+      "sourceLabel": "Fixture local",
+      "rules": [
+        {
+          "id": "rule-workspace",
+          "type": "MIN_WORK_AISLE",
+          "enabled": true,
+          "parameters": {
+            "minMm": 900
+          },
+          "message": "Revisar paso de trabajo",
+          "suggestedAction": "Mantener espacio libre suficiente",
+          "metadata": {}
+        }
+      ],
+      "metadata": {
+        "demo": true
+      }
+    }
+  ],
+  "kinematics": [
+    {
+      "id": "kinematic-door",
+      "type": "REVOLUTE",
+      "movingEntityId": "part-base-door",
+      "referenceEntityId": "part-base-right",
+      "jointId": "joint-hinge",
+      "axis": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "pivot": {
+        "x": 390,
+        "y": 0,
+        "z": 0
+      },
+      "minValue": 0,
+      "maxValue": 110,
+      "currentValue": 0,
+      "metadata": {}
+    }
+  ],
+  "sectionPlanes": [
+    {
+      "id": "section-main",
+      "name": "Sección cocina",
+      "position": {
+        "x": 0,
+        "y": 1000,
+        "z": 0
+      },
+      "normal": {
+        "x": 1,
+        "y": 0,
+        "z": 0
+      },
+      "enabled": false,
+      "inverted": false,
+      "scope": "ALL",
+      "constantMm": 0
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene-general",
+      "name": "Vista general",
+      "camera": {
+        "projection": "PERSPECTIVE",
+        "position": {
+          "x": 4300,
+          "y": 3100,
+          "z": 4200
+        },
+        "target": {
+          "x": 0,
+          "y": 1000,
+          "z": 0
+        },
+        "up": {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        "fov": 42,
+        "orthoScale": 5600
+      },
+      "visibleEntityIds": null,
+      "hiddenEntityIds": [],
+      "displayMode": "TECHNICAL",
+      "sectionPlaneIds": [
+        "section-main"
+      ],
+      "presentation": {
+        "quality": "BALANCED",
+        "wallsMode": "TRANSPARENT",
+        "gridVisible": true,
+        "visibility": {
+          "ROOM": true,
+          "PARTS": true,
+          "MODULES": true,
+          "HARDWARE": true,
+          "MACHINING": true,
+          "GUIDES": true,
+          "SECTIONS": true,
+          "DIMENSIONS": true,
+          "APPLIANCES": true,
+          "COUNTERTOPS": true,
+          "CLEARANCES": false,
+          "SERVICES": true,
+          "FUNCTIONAL_ZONES": true
+        },
+        "activeSectionId": "section-main",
+        "sectionVisibility": true,
+        "guidesVisibility": true,
+        "technicalOverlays": true
+      },
+      "order": 0,
+      "metadata": {
+        "fixture": "baseline-v1"
+      }
+    }
+  ],
+  "activeSceneId": "scene-general",
+  "metadata": {
+    "name": "Cocina demo oficial",
+    "author": "Equipo SIMBO",
+    "createdAt": "2026-09-05T00:00:00.000Z",
+    "updatedAt": "2026-09-05T00:00:00.000Z",
+    "draftRevision": 1,
+    "notes": "SIMBO Design Contract Baseline 1.0 fixture"
+  }
+}

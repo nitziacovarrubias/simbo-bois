@@ -1,0 +1,260 @@
+@layer tokens, reset, existing, layout, workspace, refresh;
+/* StatusBar.css — estilos de StatusBar.
+   La prioridad de capas conserva la secuencia: existing < layout < workspace < refresh.
+   Para cambiar la apariencia actual, modifica el bloque @layer refresh al final.
+   Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
+
+@layer existing {
+.precision-bar, .bottom-actions, .viewbar button {transition:background-color 150ms ease,border-color 150ms ease,color 150ms ease,opacity 150ms ease,transform 150ms ease}
+.cad-measurements {min-height:38px}
+.measurement-buffer {min-width:180px;max-width:300px;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-variant-numeric:tabular-nums;color:#1f5e73;font-weight:750}
+.measurement-buffer.error {color:#a53b31}
+.precision-bar .active {background:#fff1d8!important;border-color:#d79b38!important;color:#7b4d0b!important}
+.bottom-actions {min-width:340px;display:grid;gap:5px}
+.measure-summary {display:flex;align-items:center;gap:8px;padding-top:5px;border-top:1px solid #d8dee2;font-size:10px;color:#485760}
+.measure-summary b {font-size:13px;color:#24657a}
+.viewbar {padding:5px 10px;gap:14px;overflow:hidden}
+.status-context {display:flex;flex-direction:column;min-width:280px;max-width:36%;line-height:1.2}
+.status-context b {font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#f0b454}
+.status-context span {font-size:9px;color:#bac5cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status-signals {display:flex;gap:10px;flex:1;min-width:0;overflow:hidden}
+.status-signals span {font-size:9px;color:#aebbc3;white-space:nowrap}
+.view-group.compact {max-width:54%;overflow-x:auto;scrollbar-width:thin}
+.view-group.compact button, .view-group.compact select {flex:0 0 auto}
+}
+
+@layer layout {
+.precision-bar {position:absolute;z-index:9;left:50%;transform:translateX(-50%);bottom:12px;background:rgba(248,249,250,.97);border:1px solid #b7c0c7;border-radius:7px;box-shadow:0 5px 18px #0002;padding:5px 7px;display:flex;align-items:center;gap:5px;max-width:94%;white-space:nowrap}
+.precision-bar input {width:112px}
+.precision-label {font-size:11px;font-weight:700;color:#4c5962}
+.divider {height:22px;width:1px;background:#c4ccd1}
+.measurement {font-size:11px;color:#176c4d;font-weight:700}
+.bottom-actions {position:absolute;z-index:8;right:12px;bottom:58px;background:rgba(248,249,250,.96);border:1px solid #c2cbd1;border-radius:6px;padding:5px}
+.bottom-actions input {width:62px}
+.viewbar {grid-column:2/-1;grid-row:3;background:#222d35;color:#c8d0d5;display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid #11191e;gap:8px}
+.view-group {display:flex;gap:3px;align-items:center}
+.viewbar button, .viewbar select {background:#35434d;color:#dce2e6;border:1px solid #53616b;border-radius:4px;padding:4px 7px;font-size:10px}
+.viewbar button.active {color:#ffbd52;border-color:#b57820}
+@media (max-width:1200px) {
+.precision-bar {font-size:9px}
+}
+@media (max-width:1200px) {
+.precision-bar button {padding:4px}
+}
+@media (max-width:1200px) {
+.bottom-actions {display:none}
+}
+@media (max-width:900px) {
+.viewbar {grid-column:2}
+}
+.fov-control {display:flex;flex-direction:row;align-items:center;gap:4px;color:#c8d0d5}
+.fov-control input {width:48px;padding:3px;background:#35434d;color:#fff;border-color:#53616b}
+.precision-bar button.active {border-color:#d88a19;color:#8a5709;background:#fff4df}
+}
+
+@layer workspace {
+.viewbar {grid-column:2/-1;height:42px;padding:0 10px;background:#202a32;border-top-color:#12191f;gap:12px}
+.status-context {min-width:250px;max-width:38%}
+.status-context b {font-size:9px}
+.status-context span {font-size:9px}
+.status-signals {justify-content:center}
+.status-signals span {padding:2px 6px;border-radius:999px;background:#2b3740}
+.status-signals .signal-accent {color:#f3b95c;background:#3b3428}
+.status-measurement {display:flex;align-items:center;gap:4px;margin-left:auto;min-width:280px;justify-content:flex-end}
+.status-measurement>span {font:600 10px ui-monospace,SFMono-Regular,Menlo,monospace;color:#dbe4e8;min-width:70px;text-align:right}
+.status-measurement>span.error {color:#ff9a90}
+.status-measurement button {height:25px;padding:3px 6px;background:#303d46;border-color:#4a5962;color:#cdd6db;font-size:8px}
+.status-measurement button.active {color:#f1b453;border-color:#9a6a25}
+@media (max-width:1450px) {
+.status-context {max-width:33%}
+}
+@media (max-width:1450px) {
+.status-measurement button:nth-last-child(-n/**/+2) {display:none}
+}
+@media (max-width:1180px) {
+.status-context {display:none}
+}
+@media (max-width:1180px) {
+.status-measurement {min-width:200px}
+}
+}
+
+@layer refresh {
+.viewbar {height: 48px; min-width: 0; gap: 10px;
+  padding: 0 12px; background: #293241; border-top: 1px solid #405266;}
+.status-context {min-width: 0; max-width: 32%;}
+.status-context b {color: #ffcfb7; font-size: 10px;}
+.status-context span {color: #d0dce5; font-size: 10px;}
+.status-signals {min-width: 0; gap: 5px; justify-content: flex-start;}
+.status-signals span {color: #dbe5ed; background: #384d61; font-size: 10px;}
+.status-measurement {min-width: 0; max-width: 48%; gap: 5px; overflow-x: auto; scrollbar-width: thin;}
+.status-measurement > span {color: #fff; font-size: 11px;}
+.status-measurement button {flex: 0 0 auto; height: 28px; font-size: 10px; color: #e1eaf0; background: #3e5c76; border-color: #647e93;}
+.precision-bar {max-width: calc(100% - 40px);}
+@media (max-width: 1370px) {
+.status-context {max-width: 26%;}
+}
+@media (max-width: 1110px) {
+.status-context {display: none;}
+}
+@media (max-width: 1110px) {
+.status-measurement {max-width: 65%;}
+}
+@media (max-width: 780px) {
+.viewbar {height: 46px;}
+}
+@media (max-width: 780px) {
+.status-measurement {max-width: 80%;}
+}
+@media (max-width: 780px) {
+.status-signals {display: none;}
+}
+}
+
+
+@layer refresh {
+.viewbar {
+  background: #41362f;
+  border-top-color: #5a4b40;
+  color: #f3eee9;
+}
+.status-context b {
+  color: #ffbb4a;
+}
+.status-context span {
+  color: rgba(255,255,255,.72);
+}
+.status-signals span {
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.78);
+}
+.status-signals .signal-accent {
+  background: rgba(243,154,22,.18);
+  color: #ffc465;
+}
+.status-measurement > span {
+  color: #fff2df;
+}
+.status-measurement button {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.12);
+  color: #fff;
+  border-radius: 8px;
+}
+.status-measurement button:hover {
+  background: rgba(255,255,255,.15);
+}
+.status-measurement button.active {
+  color: #ffcb77;
+  border-color: #e29a28;
+}
+}
+
+/* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
+@layer pro {
+
+.viewbar {grid-column:2/-1;grid-row:3;height:42px;min-width:0;min-height:42px;background:var(--ui-coffee);border-top:1px solid #665144;color:#f4eadf;display:flex;align-items:center;gap:12px;justify-content:space-between;padding:0 12px;overflow:hidden}
+.status-context {flex:1 1 auto;max-width:40%;min-width:0;gap:2px}
+.status-context b {font-size:10px;color:#ffc66e;letter-spacing:.065em}
+.status-context span {font-size:10px;color:#e0cdbb}
+.status-signals {flex:0 1 auto;gap:5px;min-width:0;justify-content:flex-start}
+.status-signals span {padding:3px 7px;border-radius:20px;background:#5b483a;color:#f5e7d6;font-size:10px}
+.status-signals .signal-accent {background:#83591d;color:#ffe4b2}
+.status-measurement {display:flex;align-items:center;gap:5px;min-width:0;justify-content:flex-end;overflow-x:auto;scrollbar-width:none}
+.status-measurement>span {font-size:11px;color:#fff5e6;min-width:50px}
+.status-measurement button {flex:0 0 auto;height:27px;min-height:27px;border:1px solid #81634e;border-radius:7px;background:#5b483a;color:#f8ece0;padding:3px 8px;font-size:10px}
+.status-measurement button:hover {background:#78583f;color:#fff}
+.status-measurement button.active {background:#ab6c18;color:#fff;border-color:#d89830}
+@media(max-width:1100px){.status-context{display:none}.status-signals{flex:1}.status-measurement button:nth-last-child(-n+2){display:none}}
+@media(max-width:760px){.status-signals span:first-child{display:none}.status-measurement button:nth-last-child(-n+4){display:none}}
+
+}
+
+/* SIMBO: color café del footer; no se altera su estructura ni funcionalidad. */
+@layer pro {
+  .app-shell > .viewbar {
+    background: #3b2f28;
+    border-top: 2px solid #f2a62f;
+    color: #fff4e4;
+  }
+  .viewbar .status-context b { color: #ffc86e; }
+  .viewbar .status-context span { color: #e5cfb9; }
+  .viewbar .status-signals span {
+    background: #584235;
+    color: #f6e3c9;
+  }
+  .viewbar .status-signals .signal-accent {
+    background: #815617;
+    color: #ffe6ad;
+  }
+  .viewbar .status-measurement > span { color: #fff8ec; }
+  .viewbar .status-measurement button {
+    background: #584235;
+    border-color: #8a6b50;
+    color: #fff6e8;
+  }
+  .viewbar .status-measurement button:hover { background: #75563e; }
+  .viewbar .status-measurement button.active {
+    background: #e79517;
+    border-color: #f2a62f;
+    color: #30200f;
+  }
+}
+
+
+/* Estado transparente/vidrio: tipografía legible y estados por color. */
+@layer pro {
+ .app-shell > .viewbar {
+   background:rgba(255,252,247,.88);
+   border-top:1px solid #cbb69e;
+   color:#3f3026;
+   backdrop-filter:blur(13px);
+   -webkit-backdrop-filter:blur(13px);
+   box-shadow:0 -4px 18px rgba(52,35,19,.09);
+ }
+ .viewbar .status-context b {
+   color:#684021;
+   font-size:12px;
+   font-weight:900;
+ }
+ .viewbar .status-context span {
+   color:#564438;
+   font-size:11px;
+   font-weight:650;
+ }
+ .viewbar .status-signals span {
+   background:#e7f0f5;
+   border:1px solid #c4d9e6;
+   color:#285a78;
+   font-size:10px;
+   font-weight:800;
+ }
+ .viewbar .status-signals .signal-accent {
+   background:#e0efe5;
+   border-color:#b8d9c3;
+   color:#1e6340;
+ }
+ .viewbar .status-measurement > span {
+   min-width:64px;
+   color:#53381d;
+   font-size:12px;
+   font-weight:900;
+ }
+ .viewbar .status-measurement > span.error {color:#ad3030;}
+ .viewbar .status-measurement button {
+   background:#fdf9f3;
+   border:1px solid #d3b999;
+   color:#533b29;
+   min-height:29px;
+   height:29px;
+   font-size:11px;
+   font-weight:800;
+   padding:3px 9px;
+ }
+ .viewbar .status-measurement button:hover {background:#f9e4c1;border-color:#c48e4e;color:#3e2817;}
+ .viewbar .status-measurement button.active {
+   background:#dff2e5;
+   border-color:#87c5a1;
+   color:#20603f;
+ }
+}

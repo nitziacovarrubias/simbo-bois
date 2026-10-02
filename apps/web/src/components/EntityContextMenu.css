@@ -1,0 +1,58 @@
+@layer tokens, reset, existing, layout, workspace, refresh;
+/* EntityContextMenu.css — estilos de EntityContextMenu.
+   La prioridad de capas conserva la secuencia: existing < layout < workspace < refresh.
+   Para cambiar la apariencia actual, modifica el bloque @layer refresh al final.
+   Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
+
+@layer refresh {
+.context-menu-dismiss {position: fixed;
+    inset: 0;
+    z-index: 238}
+.entity-context-menu {position: fixed;
+    z-index: 240;
+    min-width: 190px;
+    max-width: 260px;
+    background: #f9fbfb;
+    border: 1px solid #aebbc3;
+    border-radius: 7px;
+    padding: 5px;
+    box-shadow: 0 10px 30px #0005;
+    display: grid;
+    gap: 2px}
+.entity-context-menu b {padding: 6px 7px;
+    color: #53616a;
+    font-size: 9px;
+    border-bottom: 1px solid #e0e5e8}
+.entity-context-menu button {background: transparent;
+    border: 0;
+    color: #35434c;
+    text-align: left;
+    padding: 6px 8px}
+.entity-context-menu button:hover {background: #e8edef}
+}
+
+
+@layer refresh {
+.entity-context-menu {
+  border-radius: 14px;
+  border-color: #d9cec1;
+  background: #fcfaf7;
+}
+.entity-context-menu b {
+  color: #8b7b6b;
+  border-bottom-color: #e9e1d7;
+}
+.entity-context-menu button:hover {
+  background: #fff1de;
+}
+}
+
+/* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
+@layer pro {
+
+.entity-context-menu {background:#fffdfa;border:1px solid #e0d1bc;border-radius:13px;padding:7px;box-shadow:var(--shadow-lg)}
+.entity-context-menu b {color:#8a6946;font-size:10px;padding:9px}
+.entity-context-menu button {min-height:34px;border-radius:8px;font-size:11px;color:#554134}
+.entity-context-menu button:hover {background:#fff1db;color:#80500e}
+
+}

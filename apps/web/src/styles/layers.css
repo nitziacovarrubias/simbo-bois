@@ -1,0 +1,2 @@
+/* Prioridad estable; "pro" contiene la UI mejorada, sin alterar reglas CAD. */
+@layer tokens, reset, existing, layout, workspace, refresh, pro;

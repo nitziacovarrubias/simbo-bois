@@ -1,0 +1,7 @@
+{
+  "name": "@simbo/design-domain",
+  "version": "0.3.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {"typecheck": "tsc -p ../../tsconfig.json --noEmit"}
+}

@@ -1,0 +1,6 @@
+{
+  "name":"@simbo/web","version":"0.3.0","private":true,"type":"module",
+  "scripts":{"dev":"vite --host 0.0.0.0","build":"tsc -b && vite build","typecheck":"tsc -b --pretty false"},
+  "dependencies":{"@react-three/drei":"^9.120.4","@react-three/fiber":"^8.17.10","@simbo/design-domain":"workspace:*","@simbo/editor-engine":"workspace:*","@simbo/geometry-engine":"workspace:*","@simbo/hardware-engine":"workspace:*","@simbo/joinery-engine":"workspace:*","@simbo/kitchen-engine":"workspace:*","@simbo/kinematics-engine":"workspace:*","@simbo/manufacturing-engine":"workspace:*","@simbo/module-engine":"workspace:*","@simbo/validation-engine":"workspace:*","@tanstack/react-query":"^5.62.8","lucide-react":"^0.468.0","react":"^18.3.1","react-dom":"^18.3.1","three":"^0.171.0","zustand":"^5.0.2"},
+  "devDependencies":{"@types/react":"^18.3.18","@types/react-dom":"^18.3.5","@types/three":"^0.171.0","@vitejs/plugin-react":"^4.3.4","typescript":"^5.7.2","vite":"^6.0.5"}
+}

@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id        String          @id @default(cuid())
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  draft     DesignDraft?
+  versions  DesignVersion[]
+}
+
+model DesignDraft {
+  id            String   @id @default(cuid())
+  projectId     String   @unique
+  schemaVersion Int
+  revision      Int      @default(0)
+  designJson    Json
+  updatedAt     DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model DesignVersion {
+  id            String   @id @default(cuid())
+  projectId     String
+  schemaVersion Int
+  designJson    Json
+  createdAt     DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ModuleCatalogEntry {
+  id             String   @id @default(cuid())
+  definitionId   String   @unique
+  name           String
+  definitionJson Json
+  versionJson    Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
