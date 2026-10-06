@@ -93,6 +93,7 @@ export const DesignDocumentSchema = z.object({
   kinematics:z.array(z.unknown()),sectionPlanes:z.array(z.unknown()),scenes:z.array(z.object({presentation:z.object({visibility:visibilitySchema}).passthrough()}).passthrough()),activeSceneId:z.string().optional(),
   metadata:z.object({name:z.string(),createdAt:z.string(),updatedAt:z.string(),draftRevision:z.number()}).passthrough()
 }).passthrough();
-export const SaveDesignRequestSchema=z.object({design:DesignDocumentSchema});
-export const CreateProjectRequestSchema=z.object({name:z.string().min(1).max(120)});
+export const RevisionRequestSchema=z.object({expectedRevision:z.number().int().nonnegative()}).strict();
+export const SaveDesignRequestSchema=z.object({design:DesignDocumentSchema,expectedRevision:z.number().int().nonnegative()}).strict();
+export const CreateProjectRequestSchema=z.object({name:z.string().trim().min(1).max(120)});
 export type SaveDesignRequest=z.infer<typeof SaveDesignRequestSchema>;

@@ -16,7 +16,8 @@
     "test:e2e": "playwright test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "test:integration": "pnpm --filter @simbo/api build && node --experimental-strip-types --test tests/integration/*.test.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

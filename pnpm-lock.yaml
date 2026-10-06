@@ -54,6 +54,9 @@ importers:
       '@prisma/client':
         specifier: ^6.1.0
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
+      '@simbo/design-domain':
+        specifier: workspace:*
+        version: link:../../packages/design-domain
       '@simbo/shared-contracts':
         specifier: workspace:*
         version: link:../../packages/shared-contracts
