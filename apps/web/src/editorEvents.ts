@@ -1,7 +1,7 @@
 import type { DesignDocument, Id } from '@simbo/design-domain';
 
 export type DesignEvent =
-  | { type: 'design.loaded'; designId: Id; source: 'local' | 'demo' | 'external' }
+  | { type: 'design.loaded'; designId: Id; source: 'local' | 'demo' | 'external' | 'api' }
   | { type: 'design.changed'; designId: Id; revision: number }
   | { type: 'design.saved'; designId: Id; target: 'local' | 'api' | 'version' }
   | { type: 'selection.changed'; designId: Id; selection: Id[] };

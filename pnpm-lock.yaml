@@ -124,6 +124,9 @@ importers:
       '@simbo/module-engine':
         specifier: workspace:*
         version: link:../../packages/module-engine
+      '@simbo/shared-contracts':
+        specifier: workspace:*
+        version: link:../../packages/shared-contracts
       '@simbo/validation-engine':
         specifier: workspace:*
         version: link:../../packages/validation-engine

@@ -2,11 +2,14 @@ import {
   cloneDesign,
   deserializeDesign,
   migrateDesign,
+  serializeDesign,
   validateDesignStructural,
   type DesignDocument,
   type Id,
   type ValidationIssue
 } from '@simbo/design-domain';
+import { DesignDocumentSchema } from '@simbo/shared-contracts';
+import type { DesignResponse } from './apiClient';
 import { createDemoDesign } from './demoDesign';
 import { editorEvents, changedEvent } from './editorEvents';
 import { useEditor } from './store';
@@ -15,6 +18,7 @@ export interface EditorFacadeApi {
   getDesign(): DesignDocument;
   loadDesign(input: string | DesignDocument): void;
   loadDemo(): void;
+  loadProject(projectId:string,userId:string,response:DesignResponse):void;
   getSelection(): Id[];
   selectEntity(id: Id): void;
   focusEntity(id: Id): void;
@@ -41,7 +45,10 @@ useEditor.subscribe(state => {
 function resetForLoadedDesign(design: DesignDocument, source: 'local' | 'demo' | 'external'): void {
   useEditor.setState({
     design,
-    projectId: design.metadata.projectId,
+    projectId: undefined,
+    remoteProject: undefined,
+    saveError: undefined,
+    workspaceHiddenIds: [], hiddenHistory: [], editContextId: undefined, editContextPath: [], guides: [], kinematicValues: {},
     selectedIds: [],
     isolatedIds: null,
     activeSectionId: design.sectionPlanes.find(section => section.enabled)?.id,
@@ -52,12 +59,21 @@ function resetForLoadedDesign(design: DesignDocument, source: 'local' | 'demo' |
     redoStack: [],
     saveStatus: source === 'local' ? 'GUARDADO' : 'PENDIENTE'
   });
+  useEditor.getState().setTool('SELECT');
+  useEditor.getState().fitAll();
   editorEvents.emit({ type: 'design.loaded', designId: design.id, source });
 }
 
 export const editorFacade: EditorFacadeApi = {
   getDesign: () => cloneDesign(useEditor.getState().design),
   loadDesign: input => resetForLoadedDesign(typeof input === 'string' ? deserializeDesign(input) : migrateDesign(input), 'external'),
+  loadProject: (projectId,userId,response) => {
+    const design=migrateDesign(DesignDocumentSchema.parse(response.design));
+    if(design.metadata.projectId!==projectId)throw new Error('El documento recibido pertenece a otro proyecto');
+    resetForLoadedDesign(design,'local');
+    useEditor.setState({projectId,remoteProject:{projectId,userId,connectionId:crypto.randomUUID(),revision:response.revision,savedDesign:serializeDesign(design),persisted:response.persisted,approvedVersionId:response.approvedVersionId},saveStatus:'GUARDADO'});
+    editorEvents.emit({type:'design.loaded',designId:design.id,source:'api'});
+  },
   loadDemo: () => resetForLoadedDesign(createDemoDesign(), 'demo'),
   getSelection: () => [...useEditor.getState().selectedIds],
   selectEntity: id => useEditor.getState().select(id),
