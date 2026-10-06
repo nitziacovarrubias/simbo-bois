@@ -9,7 +9,6 @@ import {
   createPanel,
   getAssemblyWorldTransform,
   getPartWorldTransform,
-  identityTransform,
   type CameraState,
   type MachiningFeature
 } from '../packages/design-domain/src/index.ts';
@@ -19,7 +18,6 @@ import {
   CommandRegistry,
   createGuideLine,
   createGuidePlane,
-  createGuidePoint,
   detectShortcutConflicts,
   canPickEntity,
   entitySelectableByFilters,

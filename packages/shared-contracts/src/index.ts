@@ -65,14 +65,28 @@ export const PlanningRuleProfileSchema=z.object({
   rules:z.array(z.object({id:z.string().min(1),type:z.string().min(1),enabled:z.boolean(),parameters:z.record(z.union([z.number(),z.string(),z.boolean()])),message:z.string().optional(),suggestedAction:z.string().optional(),metadata})),metadata
 }).passthrough();
 
+const scalar = z.union([z.number().finite(), z.string(), z.boolean()]);
+const assemblySchema = z.object({id:z.string().min(1),name:z.string(),children:z.array(z.object({kind:z.enum(['PART','ASSEMBLY']),id:z.string().min(1)}).passthrough()),transform:TransformSchema,metadata}).passthrough();
+const materialSchema = z.object({id:z.string().min(1),name:z.string(),category:z.string(),colorHex:z.string().regex(/^#[0-9A-Fa-f]{6}$/)}).passthrough();
+const bindingSchema = z.object({id:z.string().min(1),targetPath:z.string(),expression:z.object({type:z.string()}).passthrough(),enabled:z.boolean()}).passthrough();
+const constraintSchema = z.object({id:z.string().min(1),type:z.string(),entityIds:z.array(z.string()),parameters:z.record(scalar),enabled:z.boolean()}).passthrough();
+const jointSchema = z.object({id:z.string().min(1),partAId:z.string(),partBId:z.string(),hardwareInstanceIds:z.array(z.string()),machiningFeatureIds:z.array(z.string())}).passthrough();
+const hardwareDefinitionSchema = z.object({id:z.string().min(1)}).passthrough();
+const hardwareInstanceSchema = z.object({id:z.string().min(1),definitionId:z.string(),connectedPartIds:z.array(z.string()),jointId:z.string().optional()}).passthrough();
+const machiningSchema = z.object({id:z.string().min(1),partId:z.string(),jointId:z.string().optional()}).passthrough();
+export const ParameterDefinitionSchema = z.object({id:z.string().min(1),key:z.string().min(1),label:z.string(),type:z.enum(['NUMBER','SELECT','BOOLEAN','COLOR']),defaultValue:scalar,min:z.number().finite().optional(),max:z.number().finite().optional(),options:z.array(z.object({label:z.string(),value:z.union([z.string(),z.number().finite()])}).passthrough()).optional()}).passthrough();
+export const ModuleDefinitionSchema = z.object({id:z.string().min(1),name:z.string(),parameterDefinitions:z.array(ParameterDefinitionSchema),snapDefinitions:z.array(z.unknown()),origin:TransformSchema,versionIds:z.array(z.string()),currentVersionId:z.string(),tags:z.array(z.string()),metadata}).passthrough();
+export const ModuleVersionSchema = z.object({id:z.string().min(1),definitionId:z.string(),version:z.number().int().positive(),createdAt:z.string(),immutable:z.literal(true),snapshot:z.object({rootAssemblyId:z.string(),parts:z.array(partSchema),assemblies:z.array(assemblySchema),constraints:z.array(constraintSchema),bindings:z.array(bindingSchema),joints:z.array(jointSchema),hardwareDefinitions:z.array(hardwareDefinitionSchema),hardwareInstances:z.array(hardwareInstanceSchema),machiningFeatures:z.array(machiningSchema),kinematics:z.array(z.unknown()),materials:z.array(materialSchema),snapDefinitions:z.array(z.unknown()),parameterBindings:z.array(bindingSchema)}).passthrough()}).passthrough();
+export const ModuleInstanceSchema = z.object({id:z.string().min(1),definitionId:z.string(),versionId:z.string(),rootAssemblyId:z.string(),name:z.string(),transform:TransformSchema,parameterValues:z.record(scalar),detached:z.boolean(),metadata}).passthrough();
+
 const visibilitySchema=z.object({ROOM:z.boolean(),PARTS:z.boolean(),MODULES:z.boolean(),HARDWARE:z.boolean(),MACHINING:z.boolean(),GUIDES:z.boolean(),SECTIONS:z.boolean(),DIMENSIONS:z.boolean(),APPLIANCES:z.boolean(),COUNTERTOPS:z.boolean(),CLEARANCES:z.boolean(),SERVICES:z.boolean(),FUNCTIONAL_ZONES:z.boolean()});
 export const DesignDocumentSchema = z.object({
   schemaVersion:z.literal(2), id:z.string().min(1),
   room:z.object({id:z.string(),shape:z.literal('RECTANGULAR'),widthMm:positiveMm,depthMm:positiveMm,heightMm:positiveMm}).passthrough(),
-  parts:z.array(partSchema), assemblies:z.array(z.object({id:z.string(),name:z.string(),children:z.array(z.object({kind:z.enum(['PART','ASSEMBLY']),id:z.string()})),transform:TransformSchema}).passthrough()),
-  rootAssemblyId:z.string(), materials:z.array(z.object({id:z.string(),name:z.string(),category:z.string(),colorHex:z.string().regex(/^#[0-9A-Fa-f]{6}$/)}).passthrough()),
-  constraints:z.array(z.unknown()), bindings:z.array(z.unknown()), joints:z.array(z.unknown()), hardwareDefinitions:z.array(z.unknown()), hardwareInstances:z.array(z.unknown()), machiningFeatures:z.array(z.unknown()),
-  moduleDefinitions:z.array(z.unknown()), moduleVersions:z.array(z.unknown()), moduleInstances:z.array(z.unknown()),
+  parts:z.array(partSchema), assemblies:z.array(assemblySchema),
+  rootAssemblyId:z.string(), materials:z.array(materialSchema),
+  constraints:z.array(constraintSchema), bindings:z.array(bindingSchema), joints:z.array(jointSchema), hardwareDefinitions:z.array(hardwareDefinitionSchema), hardwareInstances:z.array(hardwareInstanceSchema), machiningFeatures:z.array(machiningSchema),
+  moduleDefinitions:z.array(ModuleDefinitionSchema), moduleVersions:z.array(ModuleVersionSchema), moduleInstances:z.array(ModuleInstanceSchema),
   servicePoints:z.array(ServicePointSchema),clearanceZones:z.array(ClearanceZoneSchema),applianceDefinitions:z.array(ApplianceDefinitionSchema),applianceInstances:z.array(ApplianceInstanceSchema),
   countertops:z.array(CountertopSchema),cutouts:z.array(CutoutSchema),functionalZones:z.array(FunctionalZoneSchema),sinks:z.array(z.unknown()),
   drillingPatternDefinitions:z.array(z.unknown()),assemblySteps:z.array(z.unknown()),dimensionAnnotations:z.array(z.unknown()),fabricationRuleProfiles:z.array(z.unknown()),planningRuleProfiles:z.array(PlanningRuleProfileSchema),
