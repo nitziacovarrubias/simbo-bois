@@ -105,7 +105,7 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
         {user&&<span>{user.name} · {user.role==='SUPERVISOR'?'Supervisor':'Arquitecto'}</span>}
         <small>{remote?(remote.approvedVersionId&&serializeDesign(design)===remote.savedDesign?'Aprobación vigente':'Sin aprobación vigente'):'Editor local'}</small>
         {onProjects&&<button type="button" onClick={onProjects}>Proyectos</button>}
-        {(saveError||notice)&&<span role="status">{saveError||notice}</span>}
+        {(saveError||notice)&&<span role="status" title={saveError||notice}>{saveError||notice}</span>}
       </div>
     </header>
 

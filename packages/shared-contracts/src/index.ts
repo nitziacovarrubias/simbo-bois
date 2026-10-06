@@ -6,10 +6,12 @@ const positiveMm = z.number().finite().positive();
 const nonNegativeMm = z.number().finite().nonnegative();
 const metadata = z.record(z.unknown());
 const dimensions3 = z.object({widthMm:positiveMm,heightMm:positiveMm,depthMm:positiveMm});
+const edgeSchema=z.object({mode:z.enum(['NONE','EDGE_BAND']),materialId:z.string().optional(),type:z.string().optional()}).passthrough();
+const edgeBandingSchema=z.object({TOP:edgeSchema,BOTTOM:edgeSchema,LEFT:edgeSchema,RIGHT:edgeSchema}).passthrough();
 const partSchema = z.object({
   id:z.string().min(1), name:z.string().min(1), shape:z.string(), semanticRole:z.string(),
   dimensions:z.object({widthMm:positiveMm,heightMm:positiveMm,thicknessMm:positiveMm}).passthrough(),
-  transform:TransformSchema, materialId:z.string().optional(), grainDirection:z.string(), edgeBanding:z.record(z.unknown()),
+  transform:TransformSchema, materialId:z.string().optional(), grainDirection:z.string(), edgeBanding:edgeBandingSchema,
   manufacturable:z.boolean(), machiningFeatureIds:z.array(z.string()), metadata
 }).passthrough();
 

@@ -13,7 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && pnpm -r --if-present typecheck",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "build": "pnpm -r --if-present build",
-    "test:e2e": "playwright test",
+    "test:e2e": "pnpm --filter @simbo/api build && playwright test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
@@ -31,7 +31,7 @@
     "typescript": "^5.7.2"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node --import tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "6.19.3"
