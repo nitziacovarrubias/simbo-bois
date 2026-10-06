@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Injectable, Module, NotFoundException, Param, Post } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Body, Controller, Get, Inject, Module, NotFoundException, Param, Post, UseGuards } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CreateProjectRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
 import { z } from 'zod';
+import { PrismaService } from './prisma.service.js';
+import { AuthController, AuthService, AuthGuard } from './auth.js';
 
 const ModuleCatalogRequestSchema = z.object({
   definitionId: z.string().min(1),
@@ -14,13 +16,6 @@ function toPrismaJson(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
-@Injectable()
-class PrismaService extends PrismaClient {
-  async onModuleDestroy(): Promise<void> {
-    await this.$disconnect();
-  }
-}
-
 @Controller('health')
 class HealthController {
   @Get()
@@ -29,9 +24,10 @@ class HealthController {
   }
 }
 
+@UseGuards(AuthGuard)
 @Controller('projects')
 class ProjectsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   @Get()
   list() {
@@ -84,9 +80,10 @@ class ProjectsController {
   }
 }
 
+@UseGuards(AuthGuard)
 @Controller('modules')
 class ModulesController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   @Get()
   list() {
@@ -115,5 +112,5 @@ class ModulesController {
   }
 }
 
-@Module({ controllers: [HealthController, ProjectsController, ModulesController], providers: [PrismaService] })
+@Module({ controllers: [HealthController, AuthController, ProjectsController, ModulesController], providers: [PrismaService, AuthService, AuthGuard] })
 export class AppModule {}

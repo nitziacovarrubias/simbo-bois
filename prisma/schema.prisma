@@ -14,6 +14,10 @@ model Project {
   updatedAt DateTime        @updatedAt
   draft     DesignDraft?
   versions  DesignVersion[]
+  ownerId   String?
+  owner     User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId])
 }
 
 model DesignDraft {
@@ -31,6 +35,11 @@ model DesignVersion {
   id            String   @id @default(cuid())
   projectId     String
   schemaVersion Int
+  revision      Int @default(0)
+  approvalStatus DesignApprovalStatus @default(DRAFT)
+  approvedAt    DateTime?
+  approvedById  String?
+  approvedBy    User? @relation(fields: [approvedById], references: [id], onDelete: Restrict)
   designJson    Json
   createdAt     DateTime @default(now())
 
@@ -45,4 +54,37 @@ model ModuleCatalogEntry {
   versionJson    Json
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+enum UserRole {
+  ARCHITECT
+  SUPERVISOR
+}
+
+enum DesignApprovalStatus {
+  DRAFT
+  APPROVED
+}
+
+model User {
+  id           String @id @default(cuid())
+  email        String @unique
+  name         String
+  passwordHash String
+  role         UserRole
+  active       Boolean @default(true)
+  createdAt    DateTime @default(now())
+  sessions     Session[]
+  projects     Project[]
+  approvals    DesignVersion[]
+}
+
+model Session {
+  id        String @id @default(cuid())
+  tokenHash String @unique
+  userId    String
+  expiresAt DateTime
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
