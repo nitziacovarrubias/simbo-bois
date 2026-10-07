@@ -22,15 +22,20 @@ import EntityContextMenu from './components/EntityContextMenu';
 import PresentationWorkspace from './components/PresentationWorkspace';
 import NewProjectDialog from './components/NewProjectDialog';
 import { autosaveNow, editorInput, useEditor } from './store';
+import type { SessionUser } from './apiClient';
+import { serializeDesign } from '@simbo/design-domain';
 import { editorFacade } from './editorFacade';
 
 type ActivePanel = ReturnType<typeof useEditor.getState>['activePanel'];
 
-export default function App() {
+export default function App({user,onProjects,onCreateProject}:{user?:SessionUser;onProjects?:()=>void;onCreateProject?:(name:string)=>Promise<void>}) {
   const design=useEditor(state=>state.design);
   const panel=useEditor(state=>state.activePanel);
   const setPanel=useEditor(state=>state.setActivePanel);
   const saveStatus=useEditor(state=>state.saveStatus);
+  const remote=useEditor(state=>state.remoteProject);
+  const saveError=useEditor(state=>state.saveError);
+  const [notice,setNotice]=useState('');
   const workspace=useEditor(state=>state.workspace);
   const setPanelCollapsed=useEditor(state=>state.setPanelCollapsed);
   const setPanelWidth=useEditor(state=>state.setPanelWidth);
@@ -41,7 +46,7 @@ export default function App() {
 
   useEffect(()=>{
     if(saveStatus!=='PENDIENTE')return;
-    const timer=window.setTimeout(()=>autosaveNow(),700);
+    const timer=window.setTimeout(()=>void autosaveNow().catch(()=>{}),700);
     return()=>window.clearTimeout(timer);
   },[design.metadata.draftRevision,saveStatus]);
 
@@ -89,12 +94,18 @@ export default function App() {
         <div className="brand-copy"><strong>SIMBO</strong><span>BOIS · DISEÑO PARAMÉTRICO</span></div>
       </div>
       <div className="project-name" title={design.metadata.name}>
-        <span>{design.metadata.name}</span><small>Edición de diseño <b>·</b> r{design.metadata.draftRevision}</small>
+        <span>{design.metadata.name}</span><small>Edición de diseño <b>·</b> r{design.metadata.draftRevision}{remote&&` · servidor r${remote.revision}`}</small>
       </div>
       <div className="save-state">
         <span className={`status ${saveStatus.toLowerCase()}`} role="status">{saveStatus}</span>
-        <button className="top-action top-save" onClick={autosaveNow} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/><span>Guardar</span></button>
-        <button className="top-action secondary-dark" onClick={()=>void createVersion()} title="Guardar una nueva versión del diseño">Versión</button>
+        <button className="top-action top-save" onClick={()=>void autosaveNow().catch(()=>{})} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/><span>Guardar</span></button>
+        <button className="top-action secondary-dark" onClick={()=>{setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión'));}} title="Guardar una nueva versión del diseño">Versión</button>
+      </div>
+      <div className="project-connection">
+        {user&&<span>{user.name} · {user.role==='SUPERVISOR'?'Supervisor':'Arquitecto'}</span>}
+        <small>{remote?(remote.approvedVersionId&&serializeDesign(design)===remote.savedDesign?'Aprobación vigente':'Sin aprobación vigente'):'Editor local'}</small>
+        {onProjects&&<button type="button" onClick={onProjects}>Proyectos</button>}
+        {(saveError||notice)&&<span role="status" title={saveError||notice}>{saveError||notice}</span>}
       </div>
     </header>
 
@@ -138,6 +149,6 @@ export default function App() {
       {panel==='LIBRARY'&&<LibraryPanel/>}
     </aside>
     <StatusBar/>
-    {newProjectOpen && <NewProjectDialog onCancel={()=>setNewProjectOpen(false)} onCreate={name=>{createProject(name);setNewProjectOpen(false);}}/>}
+    {newProjectOpen && <NewProjectDialog onCancel={()=>setNewProjectOpen(false)} onCreate={async name=>{if(onCreateProject)await onCreateProject(name);else createProject(name);setNewProjectOpen(false);}}/>}
   </div>;
 }

@@ -1,119 +1,45 @@
-import { Body, Controller, Get, Injectable, Module, NotFoundException, Param, Post } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { CreateProjectRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
+import { Body, Controller, ForbiddenException, Get, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { CreateProjectRequestSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
+import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
+import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
+import { PrismaService } from './prisma.service.js';
+import { ProjectsService } from './projects.service.js';
 
-const ModuleCatalogRequestSchema = z.object({
-  definitionId: z.string().min(1),
-  name: z.string().min(1).max(160),
-  definitionJson: z.unknown(),
-  versionJson: z.unknown()
-});
-
-function toPrismaJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
-
-@Injectable()
-class PrismaService extends PrismaClient {
-  async onModuleDestroy(): Promise<void> {
-    await this.$disconnect();
-  }
-}
-
+const ModuleCatalogRequestSchema=z.object({definitionId:z.string().min(1),name:z.string().min(1).max(160),definitionJson:ModuleDefinitionSchema,versionJson:ModuleVersionSchema}).strict();
+function json(value:unknown):Prisma.InputJsonValue { return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue; }
 @Controller('health')
 class HealthController {
-  @Get()
-  health() {
-    return { ok: true, service: 'simbo-api', time: new Date().toISOString() };
-  }
+  @Get() health() { return {ok:true,service:'simbo-api',time:new Date().toISOString()}; }
 }
-
+@UseGuards(AuthGuard)
 @Controller('projects')
 class ProjectsController {
-  constructor(private readonly prisma: PrismaService) {}
-
-  @Get()
-  list() {
-    return this.prisma.project.findMany({ orderBy: { updatedAt: 'desc' } });
+  constructor(@Inject(ProjectsService) private readonly projects:ProjectsService) {}
+  @Get() list(@CurrentUser() actor:Actor) { return this.projects.list(actor); }
+  @Post() create(@CurrentUser() actor:Actor,@Body() body:unknown) { return this.projects.create(actor,CreateProjectRequestSchema.parse(body).name); }
+  @Get(':id/design') design(@CurrentUser() actor:Actor,@Param('id') id:string) { return this.projects.getDesign(actor,id); }
+  @Post(':id/design') save(@CurrentUser() actor:Actor,@Param('id') id:string,@Body() body:unknown) {
+    const parsed=SaveDesignRequestSchema.parse(body);return this.projects.save(actor,id,parsed.design as unknown as DesignDocument,parsed.expectedRevision);
   }
-
-  @Post()
-  async create(@Body() body: unknown) {
-    const parsed = CreateProjectRequestSchema.parse(body);
-    return this.prisma.project.create({ data: { name: parsed.name } });
-  }
-
-  @Get(':id/design')
-  async getDesign(@Param('id') id: string) {
-    const draft = await this.prisma.designDraft.findUnique({ where: { projectId: id } });
-    if (!draft) throw new NotFoundException('Diseño no encontrado');
-    return draft.designJson;
-  }
-
-  @Post(':id/design')
-  async saveDesign(@Param('id') id: string, @Body() body: unknown) {
-    const parsed = SaveDesignRequestSchema.parse(body);
-    const designJson = toPrismaJson(parsed.design);
-    return this.prisma.designDraft.upsert({
-      where: { projectId: id },
-      create: {
-        projectId: id,
-        schemaVersion: parsed.design.schemaVersion,
-        designJson,
-        revision: parsed.design.metadata.draftRevision
-      },
-      update: {
-        schemaVersion: parsed.design.schemaVersion,
-        designJson,
-        revision: parsed.design.metadata.draftRevision
-      }
-    });
-  }
-
-  @Post(':id/versions')
-  async version(@Param('id') id: string, @Body() body: unknown) {
-    const parsed = SaveDesignRequestSchema.parse(body);
-    return this.prisma.designVersion.create({
-      data: {
-        projectId: id,
-        schemaVersion: parsed.design.schemaVersion,
-        designJson: toPrismaJson(parsed.design)
-      }
-    });
-  }
+  @Get(':id/versions') versions(@CurrentUser() actor:Actor,@Param('id') id:string) { return this.projects.versions(actor,id); }
+  @Get(':id/versions/:versionId') version(@CurrentUser() actor:Actor,@Param('id') id:string,@Param('versionId') versionId:string) { return this.projects.version(actor,id,versionId); }
+  @Post(':id/versions') createVersion(@CurrentUser() actor:Actor,@Param('id') id:string,@Body() body:unknown) { return this.projects.createVersion(actor,id,RevisionRequestSchema.parse(body).expectedRevision); }
+  @Post(':id/versions/:versionId/approve') approve(@CurrentUser() actor:Actor,@Param('id') id:string,@Param('versionId') versionId:string,@Body() body:unknown) { return this.projects.approve(actor,id,versionId,RevisionRequestSchema.parse(body).expectedRevision); }
 }
-
+@UseGuards(AuthGuard)
 @Controller('modules')
 class ModulesController {
-  constructor(private readonly prisma: PrismaService) {}
-
-  @Get()
-  list() {
-    return this.prisma.moduleCatalogEntry.findMany({ orderBy: { updatedAt: 'desc' } });
-  }
-
-  @Post()
-  create(@Body() body: unknown) {
-    const parsed = ModuleCatalogRequestSchema.parse(body);
-    const definitionJson = toPrismaJson(parsed.definitionJson);
-    const versionJson = toPrismaJson(parsed.versionJson);
-    return this.prisma.moduleCatalogEntry.upsert({
-      where: { definitionId: parsed.definitionId },
-      create: {
-        definitionId: parsed.definitionId,
-        name: parsed.name,
-        definitionJson,
-        versionJson
-      },
-      update: {
-        name: parsed.name,
-        definitionJson,
-        versionJson
-      }
-    });
+  constructor(@Inject(PrismaService) private readonly prisma:PrismaService) {}
+  @Get() list() { return this.prisma.moduleCatalogEntry.findMany({orderBy:{updatedAt:'desc'}}); }
+  @Post() create(@CurrentUser() actor:Actor,@Body() body:unknown) {
+    if(actor.role!=='SUPERVISOR') throw new ForbiddenException('Sólo el Supervisor puede modificar el catálogo compartido');
+    const parsed=ModuleCatalogRequestSchema.parse(body);
+    if(parsed.definitionId!==parsed.definitionJson.id||parsed.versionJson.definitionId!==parsed.definitionId||parsed.definitionJson.currentVersionId!==parsed.versionJson.id) throw new UnprocessableEntityException('Definition/Version de catálogo incoherentes');
+    const data={name:parsed.name,definitionJson:json(parsed.definitionJson),versionJson:json(parsed.versionJson)};
+    return this.prisma.moduleCatalogEntry.upsert({where:{definitionId:parsed.definitionId},create:{definitionId:parsed.definitionId,...data},update:data});
   }
 }
-
-@Module({ controllers: [HealthController, ProjectsController, ModulesController], providers: [PrismaService] })
+@Module({controllers:[HealthController,AuthController,ProjectsController,ModulesController],providers:[PrismaService,AuthService,AuthGuard,ProjectsService]})
 export class AppModule {}

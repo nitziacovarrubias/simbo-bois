@@ -11,6 +11,7 @@ import {
   localToWorld,
   rotateVectorByEuler,
   touchDesign,
+  validateModuleParameters,
   type Assembly,
   type Binding,
   type Constraint,
@@ -443,6 +444,9 @@ export function instantiateModule(
   if (!definition) throw new Error('ModuleDefinition inexistente');
   const version = design.moduleVersions.find(candidate => candidate.id === (options.versionId ?? definition.currentVersionId));
   if (!version) throw new Error('ModuleVersion inexistente');
+  if (version.definitionId !== definition.id) throw new Error('ModuleVersion no pertenece a ModuleDefinition');
+  const errors = validateModuleParameters(definition, options.parameterValues ?? {});
+  if (errors.length) throw new Error(errors.join('; '));
   installSnapshotDependencies(design, version.snapshot);
   const { snapshot } = remapSnapshot(version.snapshot);
   applySnapshotParameters(snapshot, definition, options.parameterValues ?? {});
@@ -565,6 +569,8 @@ export function updateModuleInstanceParameters(design: DesignDocument, instanceI
   const definition = design.moduleDefinitions.find(candidate => candidate.id === instance.definitionId);
   const version = design.moduleVersions.find(candidate => candidate.id === instance.versionId);
   if (!definition || !version) throw new Error('Definition/Version de instancia inexistente');
+  const errors = validateModuleParameters(definition, { ...instance.parameterValues, ...values });
+  if (errors.length) throw new Error(errors.join('; '));
   for (const source of version.snapshot.parts) {
     const current = findPartByLineage(design, instance.rootAssemblyId, source.id);
     if (!current) continue;

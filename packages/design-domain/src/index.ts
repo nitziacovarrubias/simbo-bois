@@ -681,6 +681,29 @@ export function parseAngleDeg(input: string | number): number {
   return Number(m[1]);
 }
 
+/** Valida exclusivamente tipos y límites declarados por la definición del módulo. */
+export function validateModuleParameters(definition: ModuleDefinition, values: Record<string, number | string | boolean>): string[] {
+  const errors: string[] = [];
+  const keys = new Set<string>();
+  for (const parameter of definition.parameterDefinitions) {
+    if (keys.has(parameter.key)) errors.push(`Parámetro duplicado ${parameter.key}`);
+    keys.add(parameter.key);
+    const value = values[parameter.key] ?? parameter.defaultValue;
+    if (parameter.type === 'NUMBER') {
+      if (typeof value !== 'number' || !Number.isFinite(value)) errors.push(`${parameter.label}: requiere un número finito`);
+      else {
+        if (parameter.min !== undefined && value < parameter.min) errors.push(`${parameter.label}: menor que ${parameter.min}`);
+        if (parameter.max !== undefined && value > parameter.max) errors.push(`${parameter.label}: mayor que ${parameter.max}`);
+      }
+      if (parameter.min !== undefined && parameter.max !== undefined && parameter.min > parameter.max) errors.push(`${parameter.label}: límites invertidos`);
+    } else if (parameter.type === 'BOOLEAN' && typeof value !== 'boolean') errors.push(`${parameter.label}: requiere sí/no`);
+    else if (parameter.type === 'COLOR' && (typeof value !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(value))) errors.push(`${parameter.label}: color HEX inválido`);
+    else if (parameter.type === 'SELECT' && !parameter.options?.some(option => option.value === value)) errors.push(`${parameter.label}: opción no declarada`);
+  }
+  for (const key of Object.keys(values)) if (!keys.has(key)) errors.push(`Parámetro no declarado ${key}`);
+  return errors;
+}
+
 export function validateDesignStructural(design: DesignDocument): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const fail = (code: string, entityId: Id | undefined, message: string) => issues.push({ code, severity: 'ERROR', entityId, message });
@@ -693,6 +716,7 @@ export function validateDesignStructural(design: DesignDocument): ValidationIssu
     const d = p.dimensions;
     if (![d.widthMm,d.heightMm,d.thicknessMm].every(Number.isFinite) || d.widthMm <= 0 || d.heightMm <= 0 || d.thicknessMm <= 0) fail('INVALID_DIMENSIONS', p.id, `${p.name}: dimensiones deben ser > 0 y finitas`);
   }
+  for (const material of design.materials) register(material.id, 'MaterialDefinition');
   for (const a of design.assemblies) register(a.id, 'Assembly');
   for (const j of design.joints) register(j.id, 'Joint');
   for (const h of design.hardwareDefinitions) register(h.id, 'HardwareDefinition');
@@ -719,6 +743,47 @@ export function validateDesignStructural(design: DesignDocument): ValidationIssu
   for (const a of design.assemblies) for (const child of a.children) {
     if (child.kind === 'PART' && !partIds.has(child.id)) fail('ASSEMBLY_PART_REF', a.id, `Assembly ${a.name} referencia Part inexistente ${child.id}`);
     if (child.kind === 'ASSEMBLY' && !assemblyIds.has(child.id)) fail('ASSEMBLY_CHILD_REF', a.id, `Assembly ${a.name} referencia Assembly inexistente ${child.id}`);
+  }
+  const materialIds = new Set(design.materials.map(material => material.id));
+  for (const part of design.parts) {
+    if (part.materialId && !materialIds.has(part.materialId)) fail('PART_MATERIAL_REF', part.id, `Material inexistente ${part.materialId}`);
+    for (const edge of Object.values(part.edgeBanding)) if (edge.materialId && !materialIds.has(edge.materialId)) fail('EDGE_MATERIAL_REF', part.id, `Material de canto inexistente ${edge.materialId}`);
+  }
+  const parents = new Map<Id, Id>();
+  for (const assembly of design.assemblies) for (const child of assembly.children) {
+    if (parents.has(child.id)) fail('MULTIPLE_PARENTS', child.id, 'Una entidad debe tener un único padre');
+    parents.set(child.id, assembly.id);
+  }
+  if (parents.has(design.rootAssemblyId)) fail('ROOT_HAS_PARENT', design.rootAssemblyId, 'Root Assembly no debe tener padre');
+  const visiting = new Set<Id>();
+  const visited = new Set<Id>();
+  const assemblies = new Map(design.assemblies.map(assembly => [assembly.id, assembly]));
+  const visit = (id: Id): void => {
+    if (visiting.has(id)) { fail('ASSEMBLY_CYCLE', id, 'Ciclo en jerarquía Assembly'); return; }
+    if (visited.has(id)) return;
+    visiting.add(id);
+    for (const child of assemblies.get(id)?.children ?? []) if (child.kind === 'ASSEMBLY') visit(child.id);
+    visiting.delete(id); visited.add(id);
+  };
+  for (const assembly of design.assemblies) visit(assembly.id);
+  for (const definition of design.moduleDefinitions) {
+    for (const message of validateModuleParameters(definition, {})) fail('MODULE_PARAMETER', definition.id, message);
+    for (const id of [...definition.versionIds, definition.currentVersionId]) {
+      const version = design.moduleVersions.find(candidate => candidate.id === id);
+      if (!version || version.definitionId !== definition.id) fail('MODULE_VERSION_REF', definition.id, `Versión ajena o inexistente ${id}`);
+    }
+  }
+  for (const version of design.moduleVersions) {
+    if (!design.moduleDefinitions.some(definition => definition.id === version.definitionId)) fail('MODULE_DEFINITION_REF', version.id, 'Definición de versión inexistente');
+    if (!version.snapshot.assemblies.some(assembly => assembly.id === version.snapshot.rootAssemblyId)) fail('MODULE_SNAPSHOT_ROOT', version.id, 'Root Assembly de snapshot inexistente');
+  }
+  for (const instance of design.moduleInstances) {
+    const definition = design.moduleDefinitions.find(candidate => candidate.id === instance.definitionId);
+    const version = design.moduleVersions.find(candidate => candidate.id === instance.versionId);
+    if (!definition) fail('MODULE_DEFINITION_REF', instance.id, 'Definición de instancia inexistente');
+    if (!version || version.definitionId !== instance.definitionId) fail('MODULE_VERSION_REF', instance.id, 'Versión de instancia ajena o inexistente');
+    if (!assemblyIds.has(instance.rootAssemblyId)) fail('MODULE_ROOT_REF', instance.id, 'Root Assembly de instancia inexistente');
+    if (definition) for (const message of validateModuleParameters(definition, instance.parameterValues)) fail('MODULE_PARAMETER', instance.id, message);
   }
   for (const j of design.joints) {
     if (!partIds.has(j.partAId)) fail('JOINT_PART_A', j.id, `Joint referencia Part A inexistente ${j.partAId}`);

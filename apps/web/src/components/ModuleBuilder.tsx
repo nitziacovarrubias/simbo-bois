@@ -8,14 +8,16 @@ const parameterTypeLabel: Record<ParameterType, string> = { NUMBER:'Número', SE
 export function ParameterConfigurator() {
   const design = useEditor(state => state.design);
   const update = useEditor(state => state.setInstanceParameters);
+  const [error,setError]=useState('');
+  const change=(id:string,key:string,value:number|string|boolean)=>{try{update(id,{[key]:value});setError('');}catch(error){setError(error instanceof Error?error.message:'Parámetro inválido');}};
   const detach = useEditor(state => state.detachInstance);
   if (!design.moduleInstances.length) return <p className="muted">Inserta un módulo para configurar sus parámetros públicos.</p>;
-  return <div className="instances">{design.moduleInstances.map(instance => {
+  return <div className="instances">{error&&<p role="alert">{error}</p>}{design.moduleInstances.map(instance => {
     const definition = design.moduleDefinitions.find(value => value.id === instance.definitionId);
     if (!definition) return null;
     return <div key={instance.id} className="card">
       <div className="row"><strong>{instance.name}</strong><span className="badge">v{design.moduleVersions.find(value => value.id === instance.versionId)?.version}</span>{instance.detached && <span className="badge danger">Independiente</span>}</div>
-      {definition.parameterDefinitions.map(parameter => <ParameterField key={parameter.id} definition={parameter} value={instance.parameterValues[parameter.key] ?? parameter.defaultValue} onChange={value => update(instance.id, { [parameter.key]:value })} />)}
+      {definition.parameterDefinitions.map(parameter => <ParameterField key={parameter.id} definition={parameter} value={instance.parameterValues[parameter.key] ?? parameter.defaultValue} onChange={value => change(instance.id,parameter.key,value)} />)}
       {!instance.detached && <button className="secondary" onClick={() => detach(instance.id)} title="Desvincular esta instancia del módulo original">Desvincular</button>}
     </div>;
   })}</div>;
@@ -25,7 +27,7 @@ function ParameterField({ definition, value, onChange }: { definition:ParameterD
   const parameter = definition;
   if (parameter.type === 'BOOLEAN') return <label className="toggle"><input type="checkbox" checked={Boolean(value)} onChange={event => onChange(event.target.checked)} />{parameter.label}</label>;
   if (parameter.type === 'COLOR') return <label>{parameter.label}<div className="row"><input aria-label={`Color ${parameter.label}`} type="color" value={String(value)} onChange={event => onChange(event.target.value.toUpperCase())} /><input value={String(value)} onChange={event => onChange(event.target.value)} /></div></label>;
-  if (parameter.type === 'SELECT') return <label>{parameter.label}<select value={String(value)} onChange={event => onChange(event.target.value)}>{parameter.options?.map(option => <option key={String(option.value)} value={String(option.value)}>{option.label}</option>)}</select></label>;
+  if (parameter.type === 'SELECT') return <label>{parameter.label}<select value={String(value)} onChange={event => onChange(parameter.options?.find(option=>String(option.value)===event.target.value)?.value??event.target.value)}>{parameter.options?.map(option => <option key={String(option.value)} value={String(option.value)}>{option.label}</option>)}</select></label>;
   if (parameter.ui === 'SLIDER') return <label>{parameter.label} <b>{Number(value)} {parameter.unit === 'mm' ? 'mm' : ''}</b><input type="range" min={parameter.min} max={parameter.max} step={parameter.step ?? 1} value={Number(value)} onChange={event => onChange(Number(event.target.value))} /></label>;
   return <label>{parameter.label}<input type="number" min={parameter.min} max={parameter.max} step={parameter.step ?? 1} value={Number(value)} onChange={event => onChange(Number(event.target.value))} /></label>;
 }
