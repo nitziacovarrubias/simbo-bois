@@ -99,3 +99,56 @@ export const RevisionRequestSchema=z.object({expectedRevision:z.number().int().n
 export const SaveDesignRequestSchema=z.object({design:DesignDocumentSchema,expectedRevision:z.number().int().nonnegative()}).strict();
 export const CreateProjectRequestSchema=z.object({name:z.string().trim().min(1).max(120)});
 export type SaveDesignRequest=z.infer<typeof SaveDesignRequestSchema>;
+
+export const GenerateCuttingListParamsSchema = z.object({
+ projectId: z.string().min(1),
+ designVersionId: z.string().min(1)
+}).strict();
+export const CuttingListSourceSchema = z.object({
+ projectId: z.string().min(1),
+ designVersionId: z.string().min(1),
+ revision: z.number().int().nonnegative()
+}).strict();
+export const CuttingListOriginSchema = z.object({
+ partId: z.string().min(1),
+ assemblyPath: z.array(z.string().min(1)),
+ moduleInstanceId: z.string().min(1).optional(),
+ moduleDefinitionId: z.string().min(1).optional(),
+ moduleVersionId: z.string().min(1).optional(),
+ sourceModuleEntityId: z.string().min(1).optional()
+}).strict();
+export const CuttingListMaterialSchema = z.object({
+ id: z.string().min(1),
+ name: z.string()
+}).strict();
+
+export const CuttingListRowSchema = z.object({
+ id: z.string().min(1),
+ name: z.string().min(1),
+ widthMm: positiveMm,
+ heightMm: positiveMm,
+ thicknessMm: positiveMm,
+ material: CuttingListMaterialSchema,
+ grainDirection: z.enum([
+ 'NONE', 'HORIZONTAL', 'VERTICAL', 'CUSTOM'
+ ]),
+ quantity: z.number().int().positive(),
+ origins: z.array(CuttingListOriginSchema).min(1)
+}).strict();
+export const CuttingListResponseSchema = z.object({
+ source: CuttingListSourceSchema,
+ rows: z.array(CuttingListRowSchema).min(1)
+}).strict();
+export const CuttingListErrorResponseSchema = z.object({
+ message: z.string().min(1)
+}).passthrough();
+export type GenerateCuttingListParams =
+ z.infer<typeof GenerateCuttingListParamsSchema>;
+export type CuttingListOrigin =
+ z.infer<typeof CuttingListOriginSchema>;
+export type CuttingListRow =
+ z.infer<typeof CuttingListRowSchema>;
+export type CuttingListResponse =
+ z.infer<typeof CuttingListResponseSchema>;
+export type CuttingListErrorResponse =
+ z.infer<typeof CuttingListErrorResponseSchema>;
