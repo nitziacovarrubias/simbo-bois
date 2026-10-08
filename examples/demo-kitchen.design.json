@@ -417,6 +417,50 @@
       "metadata": {
         "fixture": "baseline-v1"
       }
+    },
+    {
+      "id": "part-demo-instantiated-module-template-part",
+      "name": "Panel plantilla",
+      "shape": "RECTANGULAR_PANEL",
+      "semanticRole": "GENERIC_PANEL",
+      "dimensions": {
+        "widthMm": 600,
+        "heightMm": 720,
+        "thicknessMm": 18
+      },
+      "transform": {
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "materialId": "material-board-white",
+      "grainDirection": "VERTICAL",
+      "edgeBanding": {
+        "TOP": {
+          "mode": "NONE"
+        },
+        "BOTTOM": {
+          "mode": "NONE"
+        },
+        "LEFT": {
+          "mode": "NONE"
+        },
+        "RIGHT": {
+          "mode": "NONE"
+        }
+      },
+      "manufacturable": true,
+      "machiningFeatureIds": [],
+      "metadata": {
+        "sourceModuleEntityId": "module-template-part"
+      }
     }
   ],
   "assemblies": [
@@ -431,6 +475,10 @@
         {
           "kind": "ASSEMBLY",
           "id": "assembly-closet"
+        },
+        {
+          "kind": "ASSEMBLY",
+          "id": "assembly-module-instance-root"
         }
       ],
       "transform": {
@@ -533,12 +581,17 @@
     {
       "id": "assembly-module-instance-root",
       "name": "Módulo demo instanciado",
-      "children": [],
+      "children": [
+        {
+          "kind": "PART",
+          "id": "part-demo-instantiated-module-template-part"
+        }
+      ],
       "transform": {
         "position": {
-          "x": 650,
+          "x": 0,
           "y": 0,
-          "z": 700
+          "z": 0
         },
         "rotation": {
           "x": 0,
@@ -546,12 +599,9 @@
           "z": 0
         }
       },
-      "hidden": false,
-      "locked": false,
-      "tags": [
-        "MODULE_INSTANCE"
-      ],
-      "metadata": {}
+      "metadata": {
+        "sourceModuleEntityId": "module-template-root"
+      }
     }
   ],
   "rootAssemblyId": "assembly-root-demo",

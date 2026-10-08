@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { hashPassword } from '../apps/api/src/security.ts';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -7,7 +8,7 @@ async function main(): Promise<void> {
   const project = await prisma.project.upsert({
     where: { id: 'demo-project' },
     create: { id: 'demo-project', name: 'SIMBO Demo — Baseline 1.0' },
-    update: { name: 'SIMBO Demo — Baseline 1.0' }
+    update: {}
   });
 
   const demoRaw = await readFile(new URL('../examples/demo-kitchen.design.json', import.meta.url), 'utf8');
@@ -22,42 +23,28 @@ async function main(): Promise<void> {
       revision: Number(metadata.draftRevision ?? 0),
       designJson: demoDesign as Prisma.InputJsonValue
     },
-    update: {
-      schemaVersion: Number(demoDesign.schemaVersion),
-      revision: Number(metadata.draftRevision ?? 0),
-      designJson: demoDesign as Prisma.InputJsonValue
-    }
+    update: {}
   });
 
-  const definition = {
-    id: 'demo-module-definition',
-    name: 'Módulo demostrativo data-driven',
-    description: 'DEMO / SUPOSICIÓN: no representa un estándar BOIS',
-    parameterDefinitions: [{ id: 'demo-width', key: 'width', label: 'Ancho', type: 'NUMBER', defaultValue: 800, unit: 'mm', min: 300, max: 1600, step: 1, ui: 'INPUT' }],
-    snapDefinitions: [{ id: 'demo-snap-back', name: 'Conexión pared trasera', position: { x: 0, y: 0, z: 0 }, normal: { x: 0, y: 0, z: -1 }, compatibleTypes: ['WALL', 'MODULE'], metadata: { demo: true } }],
-    versionIds: ['demo-module-v1'],
-    currentVersionId: 'demo-module-v1',
-    tags: ['DEMO'],
-    metadata: { demo: true }
-  };
-  const version = {
-    id: 'demo-module-v1',
-    definitionId: definition.id,
-    version: 1,
-    createdAt: new Date().toISOString(),
-    immutable: true,
-    snapshot: {
-      rootAssemblyId: 'demo-root',
-      parts: [],
-      assemblies: [{ id: 'demo-root', name: 'Módulo demostrativo raíz', children: [], transform: { position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } }, metadata: { demo: true } }],
-      constraints: [], bindings: [], joints: [], hardwareDefinitions: [], hardwareInstances: [], machiningFeatures: [], kinematics: [], materials: [], snapDefinitions: [], parameterBindings: []
-    }
-  };
+  const definitions = demoDesign.moduleDefinitions as Array<Prisma.InputJsonObject>;
+  const versions = demoDesign.moduleVersions as Array<Prisma.InputJsonObject>;
+  const definition = definitions[0]!;
+  const version = versions.find(value=>value.id===definition.currentVersionId)!;
   await prisma.moduleCatalogEntry.upsert({
-    where: { definitionId: definition.id },
-    create: { definitionId: definition.id, name: definition.name, definitionJson: definition, versionJson: version },
-    update: { name: definition.name, definitionJson: definition, versionJson: version }
+    where: { definitionId: String(definition.id) },
+    create: { definitionId: String(definition.id), name: String(definition.name), definitionJson: definition, versionJson: version },
+    update: {}
   });
+
+  for (const role of ['SUPERVISOR','ARCHITECT'] as const) {
+    const email=process.env[`BOOTSTRAP_${role}_EMAIL`]?.trim().toLowerCase();
+    const password=process.env[`BOOTSTRAP_${role}_PASSWORD`];
+    if (!email && !password) continue;
+    if (!email || !password) throw new Error(`Completa correo y contraseña de BOOTSTRAP_${role}`);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(`Correo BOOTSTRAP_${role} inválido`);
+    if (await prisma.user.findUnique({where:{email}})) continue;
+    await prisma.user.create({data:{email,name:process.env[`BOOTSTRAP_${role}_NAME`]?.trim() || role,role,passwordHash:await hashPassword(password)}});
+  }
 
   console.log(`Seed project: ${project.id}; design: demo-kitchen; module: ${definition.id}`);
 }

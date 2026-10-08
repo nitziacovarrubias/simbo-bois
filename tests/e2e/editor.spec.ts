@@ -1,49 +1,71 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import { hashPassword } from '../../apps/api/src/security.ts';
+
+const prisma=new PrismaClient({datasourceUrl:process.env.TEST_DATABASE_URL});
+const email=`precu07-e2e-${randomUUID()}@example.test`;
+const password='Contraseña de E2E únicamente 2026';let userId:string;
+test.beforeAll(async()=>{const user=await prisma.user.create({data:{email,name:'Supervisor E2E',role:'SUPERVISOR',passwordHash:await hashPassword(password)}});userId=user.id;});
+test.afterAll(async()=>{if(userId){await prisma.project.deleteMany({where:{ownerId:userId}});await prisma.user.delete({where:{id:userId}});}await prisma.$disconnect();});
+
+async function expandRoot(page:Page) {
+  const expand=page.locator('.tree-row').first().getByRole('button',{name:'Expandir',exact:true});
+  if(await expand.count())await expand.click();
+}
+async function localProject(page:Page,name:string) {
+  await page.goto('/');await page.getByRole('button',{name:'Abrir editor local'}).click();
+  await page.getByRole('button',{name:'Nuevo proyecto',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'Nuevo proyecto'});await dialog.getByLabel('Nombre del proyecto').fill(name);await dialog.getByRole('button',{name:'Crear proyecto'}).click();
+  await expect(page.locator('.project-name')).toContainText(name);await expandRoot(page);
+}
+async function duplicate(page:Page) {
+  await page.getByTitle('Paleta de comandos',{exact:true}).click();
+  const palette=page.getByRole('dialog',{name:'Paleta de comandos'});await palette.getByRole('textbox').fill('Duplicar');await palette.getByRole('button',{name:'Duplicar',exact:true}).click();
+}
+async function save(page:Page) {
+  await page.getByRole('button',{name:'Guardar diseño',exact:true}).click();
+  await expect(page.locator('.save-state .status')).toHaveText('GUARDADO');
+}
+async function signIn(page:Page) {
+  await page.goto('/');await page.getByLabel('Correo',{exact:true}).fill(email);await page.getByLabel('Contraseña',{exact:true}).fill(password);await page.getByRole('button',{name:'Entrar',exact:true}).click();await expect(page.getByText('Supervisor E2E · Supervisor')).toBeVisible();
+}
+async function remoteProject(page:Page,name:string) {
+  await signIn(page);await page.getByRole('button',{name:'Nuevo proyecto',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'Nuevo proyecto'});await dialog.getByLabel('Nombre del proyecto').fill(name);await dialog.getByRole('button',{name:'Crear proyecto'}).click();
+  await expect(page.locator('.project-name')).toContainText(name);await expandRoot(page);
+}
+function projectRow(page:Page,name:string) {return page.locator('.project-list article').filter({has:page.getByRole('heading',{name,exact:true})});}
 
 test('demo principal: proyecto -> room -> panel exacto -> módulo -> guardar -> reload',async({page})=>{
- await page.goto('/');
- page.on('dialog',d=>d.accept('Proyecto E2E'));
- await page.getByTitle('Nuevo proyecto').click();
- await expect(page.getByText('Proyecto E2E')).toBeVisible();
- const room=page.locator('.room-mini');
- await room.getByLabel('Ancho mm').fill('3600');
- await room.getByLabel('Prof. mm').fill('3000');
- await room.getByLabel('Alto mm').fill('2500');
- await page.getByTitle('Panel').click();
- const inspector=page.locator('.inspector');
- await inspector.getByLabel('Ancho mm').fill('700');
- await inspector.getByLabel('Alto mm').fill('500');
- await inspector.getByLabel('Grosor mm').fill('18');
- await page.getByTitle('Duplicate').click();
- await page.getByTitle('Module Builder').click();
- await expect(page.getByText('Module Builder')).toBeVisible();
- await page.getByText('Guardar módulo + versión').click();
- await expect(page.locator('.catalog-item')).toHaveCount(1);
- await page.locator('.catalog-item').click();
- await page.getByRole('button',{name:'Guardar'}).click();
- await page.reload();
- await expect(page.getByText('Proyecto E2E')).toBeVisible();
- expect(await page.locator('.tree-row').count()).toBeGreaterThan(1);
+ await localProject(page,'Proyecto E2E local');
+ const room=page.locator('.room-mini');await room.getByRole('spinbutton',{name:'Ancho mm',exact:true}).fill('3600');await room.getByRole('spinbutton',{name:'Prof. mm',exact:true}).fill('3000');await room.getByRole('spinbutton',{name:'Alto mm',exact:true}).fill('2500');
+ await page.getByRole('button',{name:'Panel',exact:true}).click();const inspector=page.locator('.inspector');
+ for(const [name,value] of [['Ancho mm','700'],['Alto mm','500'],['Grosor mm','18']]){const field=inspector.getByRole('textbox',{name,exact:true});await field.fill(value!);await field.press('Enter');}
+ await duplicate(page);await page.getByRole('button',{name:'Constructor de módulos',exact:true}).click();
+ await page.getByRole('button',{name:'Guardar módulo',exact:true}).click();await expect(page.locator('.catalog-item')).toHaveCount(1);await page.locator('.catalog-item').click();await save(page);
+ await page.reload();await page.getByRole('button',{name:'Abrir editor local'}).click();await expect(page.locator('.project-name')).toContainText('Proyecto E2E local');
+ await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing tbody tr')).toHaveCount(3);await expect(page.locator('.manufacturing tbody')).toContainText('700 × 500 × 18');
 });
-
 test('persistencia de unión: screw hardware + machining',async({page})=>{
- await page.goto('/');
- await page.getByTitle('Panel').click();
- await page.getByTitle('Duplicate').click();
- const rows=page.locator('.tree-row').filter({has:page.locator('.role-dot')});
- const count=await rows.count();
- await rows.nth(Math.max(0,count-2)).click();
- await rows.nth(Math.max(0,count-1)).click({modifiers:['Control']});
- await page.getByTitle('Uniones').click();
- await page.getByLabel('Método').selectOption('SCREW');
- await page.getByLabel('Diámetro mm').fill('4');
- await page.getByLabel('Longitud mm').fill('50');
- await page.getByLabel('Cantidad').fill('3');
- await page.getByLabel('Separación mm').fill('150');
- await page.getByRole('button',{name:'Crear unión y confirmar preview'}).click();
- await expect(page.getByText(/3 herrajes · 3 mecanizados/)).toBeVisible();
- await page.getByRole('button',{name:'Guardar'}).click();
- await page.reload();
- await page.getByTitle('Manufactura').click();
- await expect(page.getByText('Manufacturing Data')).toBeVisible();
+ await localProject(page,'Unión E2E');await page.getByRole('button',{name:'Panel',exact:true}).click();await duplicate(page);
+ const rows=page.locator('.outliner .tree-row.tree-part');await expect(rows).toHaveCount(2);await rows.nth(0).click();await rows.nth(1).click({modifiers:['Control']});
+ await page.getByRole('button',{name:'Uniones',exact:true}).click();const panel=page.locator('.joinery-panel');await panel.getByRole('combobox',{name:'Método',exact:true}).selectOption('SCREW');
+ for(const [name,value] of [['Diámetro mm','4'],['Longitud mm','50'],['Cantidad','3'],['Separación mm','150']])await panel.getByRole('spinbutton',{name,exact:true}).fill(value!);
+ await panel.getByRole('button',{name:'Crear unión',exact:true}).click();await expect(panel.getByText('3 herrajes · 3 mecanizados')).toBeVisible();await save(page);
+ await page.reload();await page.getByRole('button',{name:'Abrir editor local'}).click();await page.getByRole('button',{name:'Manufactura',exact:true}).click();
+ await expect(page.getByText('Datos de manufactura',{exact:true})).toBeVisible();const stats=page.locator('.manufacturing .stats');await expect(stats.locator('div').nth(1).locator('b')).toHaveText('3');await expect(stats.locator('div').nth(2).locator('b')).toHaveText('3');
+});
+test('Supervisor: proyecto remoto, piezas, versión aprobada, reapertura e historia',async({page})=>{
+ const name='Aprobación E2E '+randomUUID();await remoteProject(page,name);await page.getByRole('button',{name:'Panel',exact:true}).click();await page.getByRole('button',{name:'Constructor de módulos',exact:true}).click();await page.getByRole('button',{name:'Guardar módulo',exact:true}).click();await page.locator('.catalog-item').click();await save(page);
+ await page.getByRole('button',{name:'Versión',exact:true}).click();await expect(page.getByText('Versión creada',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Proyectos',exact:true}).click();
+ await projectRow(page,name).getByRole('button',{name:'Revisar versiones'}).click();await page.getByRole('button',{name:'Aprobar diseño',exact:true}).click();await expect(page.getByText('Aprobada · Vigente',{exact:true})).toBeVisible();
+ await page.reload();await projectRow(page,name).getByRole('button',{name:'Abrir diseño'}).click();await expect(page.getByText('Aprobación vigente',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing tbody tr')).toHaveCount(2);
+ await page.getByRole('button',{name:'Panel',exact:true}).click();await save(page);await expect(page.getByText('Sin aprobación vigente',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Proyectos',exact:true}).click();await projectRow(page,name).getByRole('button',{name:'Revisar versiones'}).click();await expect(page.getByText('Aprobada · Histórica',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('heading',{name:'Iniciar sesión',exact:true})).toBeVisible();
+});
+test('fallo remoto visible y reintento: no se confirma una copia local como guardado servidor',async({page})=>{
+ const name='Reintento E2E '+randomUUID();await remoteProject(page,name);
+ await page.route('**/api/projects/*/design',async route=>{if(route.request().method()==='POST')await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({message:'Fallo temporal de prueba'})});else await route.continue();});
+ await page.getByRole('button',{name:'Panel',exact:true}).click();await page.getByRole('button',{name:'Guardar diseño',exact:true}).click();await expect(page.locator('.save-state .status')).toHaveText('ERROR');await expect(page.getByText('Fallo temporal de prueba',{exact:true})).toBeVisible();await expect(page.locator('.project-name')).toContainText('servidor r0');
+ await page.unroute('**/api/projects/*/design');await save(page);await expect(page.locator('.project-name')).toContainText('servidor r1');await page.getByRole('button',{name:'Proyectos',exact:true}).click();await page.reload();await projectRow(page,name).getByRole('button',{name:'Abrir diseño'}).click();await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing tbody tr')).toHaveCount(1);
 });

@@ -12,3 +12,33 @@ export function collectManufacturingData(design:DesignDocument):ManufacturingDat
   const hardware=collectHardware(design);
   return{parts,countertops,hardware,machiningFeatures:structuredClone(design.machiningFeatures),edgeBanding:parts.map(part=>({partId:part.id,edges:structuredClone(part.edgeBanding)})),summary:{partCount:parts.length,countertopCount:countertops.length,hardwareCount:hardware.reduce((count,item)=>count+item.quantity,0),machiningCount:design.machiningFeatures.length}};
 }
+
+export interface PartOrigin {
+  partId: Id;
+  assemblyPath: Id[];
+  moduleInstanceId?: Id;
+  moduleDefinitionId?: Id;
+  moduleVersionId?: Id;
+  sourceModuleEntityId?: Id;
+}
+
+/** Consulta derivada de la jerarquía local; no almacena geometría ni agrupa piezas. */
+export function getPartOrigin(design: DesignDocument, partId: Id): PartOrigin {
+  const part = design.parts.find(candidate => candidate.id === partId);
+  if (!part) throw new Error(`Part inexistente ${partId}`);
+  const path: Id[] = [];
+  const seen = new Set<Id>([partId]);
+  let childId = partId;
+  while (true) {
+    const parent = design.assemblies.find(assembly => assembly.children.some(child => child.id === childId));
+    if (!parent) break;
+    if (seen.has(parent.id)) throw new Error('Ciclo en jerarquía Assembly');
+    seen.add(parent.id); path.unshift(parent.id); childId = parent.id;
+  }
+  const instance = design.moduleInstances.find(candidate => path.includes(candidate.rootAssemblyId));
+  return {
+    partId, assemblyPath: path, moduleInstanceId: instance?.id,
+    moduleDefinitionId: instance?.definitionId, moduleVersionId: instance?.versionId,
+    sourceModuleEntityId: typeof part.metadata.sourceModuleEntityId === 'string' ? part.metadata.sourceModuleEntityId : undefined
+  };
+}

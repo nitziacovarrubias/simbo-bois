@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { apiClient } from './apiClient';
 import {
   addPartToAssembly,
   cloneDesign,
@@ -146,6 +147,20 @@ const measurementBuffer = new MeasurementsBuffer();
 const shortcutManager = new ShortcutManager();
 const cameraHistory = new CameraHistory(20);
 
+export interface RemoteProject {
+  projectId:string;
+  userId:string;
+  connectionId:string;
+  revision:number;
+  savedDesign:string;
+  persisted:boolean;
+  approvedVersionId:string|null;
+}
+function projectCache(context:RemoteProject):string {return `simbo.project.${context.userId}.${context.projectId}`;}
+function cacheRemote(context:RemoteProject,design:DesignDocument):void {
+  localStorage.setItem(projectCache(context),JSON.stringify({design:JSON.parse(serializeDesign(design)),revision:context.revision}));
+}
+
 interface EditorState {
   design: DesignDocument;
   selectedIds: Id[];
@@ -185,6 +200,8 @@ interface EditorState {
   cameraTransition?: CameraTransition;
   saveStatus: SaveStatus;
   projectId?: string;
+  remoteProject?: RemoteProject;
+  saveError?: string;
   activePanel: 'INSPECTOR' | 'MODULE' | 'JOINERY' | 'MANUFACTURING' | 'SCENES' | 'HEALTH' | 'LIBRARY';
   workspace: WorkspacePreferences;
   kinematicValues: Record<Id, number>;
@@ -1079,44 +1096,47 @@ export const useEditor = create<EditorState>((set, get) => ({
   undo: () => set(state => { const raw = state.undoStack.at(-1); if (!raw) return {}; toolManager.cancel(); return { design: deserializeDesign(raw), undoStack: state.undoStack.slice(0, -1), redoStack: [serializeDesign(state.design), ...state.redoStack], saveStatus: 'PENDIENTE', toolPreview: undefined, toolPreviewEntityId: undefined }; }),
   redo: () => set(state => { const raw = state.redoStack[0]; if (!raw) return {}; toolManager.cancel(); return { design: deserializeDesign(raw), undoStack: [...state.undoStack, serializeDesign(state.design)], redoStack: state.redoStack.slice(1), saveStatus: 'PENDIENTE', toolPreview: undefined, toolPreviewEntityId: undefined }; }),
   saveLocal: () => {
-    set({ saveStatus: 'GUARDANDO' });
+    const state=get();
+    if(!state.remoteProject)set({saveStatus:'GUARDANDO',saveError:undefined});
     try {
-      const design = get().design;
-      localStorage.setItem(STORAGE, serializeDesign(design));
-      set({ saveStatus: 'GUARDADO' });
-      editorEvents.emit({ type: 'design.saved', designId: design.id, target: 'local' });
-    } catch { set({ saveStatus: 'ERROR' }); }
+      if(state.remoteProject)cacheRemote(state.remoteProject,state.design);else localStorage.setItem(STORAGE,serializeDesign(state.design));
+      if(!state.remoteProject)set({saveStatus:'GUARDADO'});
+      editorEvents.emit({type:'design.saved',designId:state.design.id,target:'local'});
+    } catch {set({saveStatus:'ERROR',saveError:'No se pudo guardar la copia local'});}
   },
   reloadLocal: () => {
-    const raw = localStorage.getItem(STORAGE);
-    if (raw) {
-      const design=deserializeDesign(raw);
-      set({ design, projectId: design.metadata.projectId, selectedIds: [], isolatedIds:null, activeSectionId:design.sectionPlanes.find(section=>section.enabled)?.id, activeSceneId:design.activeSceneId, selectedSectionId:undefined, sectionDraft:undefined, undoStack:[], redoStack:[], saveStatus: 'GUARDADO' });
-      editorEvents.emit({ type: 'design.loaded', designId: design.id, source: 'local' });
+    const context=get().remoteProject;
+    const raw=localStorage.getItem(context?projectCache(context):STORAGE);
+    if(raw) {
+      const cache=context?JSON.parse(raw) as {design:unknown;revision:number}:undefined;
+      if(context&&cache?.revision!==context.revision)throw new Error('La copia local corresponde a otra revisión del servidor; conserva el conflicto antes de reemplazar el diseño');
+      const design=deserializeDesign(context?JSON.stringify(cache?.design):raw);
+      if(context&&(design.metadata.projectId!==context.projectId||design.id!==get().design.id))throw new Error('Copia local de otro proyecto');
+      set({design,projectId:context?.projectId,selectedIds:[],isolatedIds:null,activeSectionId:design.sectionPlanes.find(section=>section.enabled)?.id,activeSceneId:design.activeSceneId,selectedSectionId:undefined,sectionDraft:undefined,undoStack:[],redoStack:[],saveStatus:context&&serializeDesign(design)!==context.savedDesign?'PENDIENTE':'GUARDADO',saveError:undefined});
+      editorEvents.emit({type:'design.loaded',designId:design.id,source:'local'});
     }
   },
   createProject: name => {
-    const design = createEmptyDesign(name);
-    set({ design, projectId: undefined, selectedIds: [], isolatedIds:null, activeSectionId:undefined, activeSceneId:undefined, selectedSectionId:undefined, sectionDraft:undefined, undoStack: [], redoStack: [], saveStatus: 'PENDIENTE' });
-    fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'}/projects`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }) })
-      .then(response => response.ok ? response.json() : Promise.reject(new Error('API unavailable')))
-      .then((project: { id: string }) => { const current = cloneDesign(get().design); current.metadata.projectId = project.id; set({ projectId: project.id, design: current, saveStatus: 'PENDIENTE' }); })
-      .catch(() => { /* Fallback local primero. */ });
+    toolManager.cancel();
+    const design=createEmptyDesign(name);
+    set({design,projectId:undefined,remoteProject:undefined,saveError:undefined,selectedIds:[],isolatedIds:null,workspaceHiddenIds:[],hiddenHistory:[],editContextId:undefined,editContextPath:[],guides:[],kinematicValues:{},activeSectionId:undefined,activeSceneId:undefined,selectedSectionId:undefined,sectionDraft:undefined,undoStack:[],redoStack:[],saveStatus:'PENDIENTE'});
+    get().setTool('SELECT');get().fitAll();
   },
   createVersion: async () => {
-    const { projectId, design } = get();
-    if (!projectId) {
-      const raw = localStorage.getItem('simbo.versions.v1');
-      const versions = raw ? JSON.parse(raw) as unknown[] : [];
-      versions.push({ createdAt: new Date().toISOString(), design: JSON.parse(serializeDesign(design)) });
-      localStorage.setItem('simbo.versions.v1', JSON.stringify(versions));
-      get().saveLocal();
-      editorEvents.emit({ type: 'design.saved', designId: design.id, target: 'version' });
-      return;
+    const connection=get().remoteProject?.connectionId;
+    await autosaveNow();
+    const {design,remoteProject}=get();
+    if(!connection) {
+      const raw=localStorage.getItem('simbo.versions.v1');
+      const versions=raw?JSON.parse(raw) as unknown[]:[];
+      versions.push({createdAt:new Date().toISOString(),design:JSON.parse(serializeDesign(design))});
+      localStorage.setItem('simbo.versions.v1',JSON.stringify(versions));
+    } else {
+      if(remoteProject?.connectionId!==connection)throw new Error('El proyecto activo cambió');
+      if(serializeDesign(design)!==remoteProject.savedDesign)throw new Error('El diseño cambió durante el guardado; guarda de nuevo antes de versionar');
+      await apiClient.createVersion(remoteProject.projectId,remoteProject.revision);
     }
-    const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'}/projects/${projectId}/versions`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ design }) });
-    if (!response.ok) throw new Error('No se pudo crear la versión');
-    editorEvents.emit({ type: 'design.saved', designId: design.id, target: 'version' });
+    editorEvents.emit({type:'design.saved',designId:design.id,target:'version'});
   },
   manufacturing: () => collectManufacturingData(get().design),
   health: () => modelHealth(get().design)
@@ -1129,14 +1149,35 @@ export const editorInput = new InputManager({
   keyDown: event => useEditor.getState().handleKeyboard(event)
 });
 
-export function autosaveNow(): void {
-  const state = useEditor.getState();
-  state.saveLocal();
-  if (!state.projectId) return;
-  fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api'}/projects/${state.projectId}/design`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ design: state.design }) })
-    .then(response => {
-      if (!response.ok) throw new Error('No se pudo guardar en API');
-      editorEvents.emit({ type: 'design.saved', designId: state.design.id, target: 'api' });
-    })
-    .catch(() => useEditor.setState({ saveStatus: 'ERROR' }));
+let saveQueue:Promise<void>=Promise.resolve();
+/** Serializa escrituras y sólo confirma el documento reconocido por el servidor. */
+export function autosaveNow():Promise<void> {
+  const connection=useEditor.getState().remoteProject?.connectionId;
+  saveQueue=saveQueue.catch(()=>{}).then(async()=>{
+    const state=useEditor.getState();
+    if(state.remoteProject?.connectionId!==connection)return;
+    if(!state.remoteProject) {
+      state.saveLocal();
+      if(useEditor.getState().saveStatus==='ERROR')throw new Error(useEditor.getState().saveError);
+      return;
+    }
+    const context=state.remoteProject;
+    const snapshot=cloneDesign(state.design);const raw=serializeDesign(snapshot);
+    try {cacheRemote(context,snapshot);}catch{/* La confirmación remota sigue siendo necesaria. */}
+    if(context.persisted&&raw===context.savedDesign){useEditor.setState({saveStatus:'GUARDADO',saveError:undefined});return;}
+    useEditor.setState({saveStatus:'GUARDANDO',saveError:undefined});
+    try {
+      const result=await apiClient.saveDesign(context.projectId,snapshot,context.revision);
+      const current=useEditor.getState();
+      if(current.remoteProject?.connectionId!==context.connectionId)return;
+      const unchanged=serializeDesign(current.design)===raw;
+      useEditor.setState({remoteProject:{...context,revision:result.revision,savedDesign:raw,persisted:true,approvedVersionId:result.revision===context.revision?context.approvedVersionId:null},saveStatus:unchanged?'GUARDADO':'PENDIENTE',saveError:undefined});
+      try {cacheRemote(useEditor.getState().remoteProject!,current.design);}catch{/* copia local opcional */}
+      editorEvents.emit({type:'design.saved',designId:snapshot.id,target:'api'});
+    } catch(error) {
+      if(useEditor.getState().remoteProject?.connectionId===context.connectionId)useEditor.setState({saveStatus:'ERROR',saveError:error instanceof Error?error.message:'No se pudo guardar el diseño'});
+      throw error;
+    }
+  });
+  return saveQueue;
 }

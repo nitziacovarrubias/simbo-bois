@@ -52,7 +52,8 @@
   },
   "include": [
     "packages/**/*.ts",
-    "tests/*.test.ts",
-    "types/**/*.d.ts"
+    "tests/**/*.ts",
+    "types/**/*.d.ts",
+    "playwright.config.ts"
   ]
 }
