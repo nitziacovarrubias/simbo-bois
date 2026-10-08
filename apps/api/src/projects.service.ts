@@ -2,6 +2,7 @@ import { ConflictException, Inject, Injectable, NotFoundException, ForbiddenExce
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
 import { DesignDocumentSchema } from '@simbo/shared-contracts';
+import { generateCuttingList, validateCuttingListInput } from '@simbo/manufacturing-engine';
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
 import { PrismaService } from './prisma.service.js';
@@ -105,6 +106,36 @@ export class ProjectsService {
       if(version.approvalStatus==='APPROVED') return {id:version.id,approvalStatus:version.approvalStatus,approvedAt:version.approvedAt,approvedById:version.approvedById};
       const approved=await tx.designVersion.update({where:{id:versionId},data:{approvalStatus:'APPROVED',approvedAt:new Date(),approvedById:actor.id}});
       return {id:approved.id,approvalStatus:approved.approvalStatus,approvedAt:approved.approvedAt,approvedById:approved.approvedById};
+    });
+  }
+
+  async cuttingList(actor: Actor, id: string, versionId: string) {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException('Sólo el Supervisor puede generar despiece');
+    }
+    return this.locked(actor, id, async tx => {
+      const version = await tx.designVersion.findFirst({
+        where: { id: versionId, projectId: id }
+      });
+      if (!version) throw new NotFoundException('Versión no encontrada');
+      if (version.approvalStatus !== 'APPROVED') {
+        throw new ConflictException('Aprueba el diseño antes de generar despiece');
+      }
+      const draft = await tx.designDraft.findUnique({ where: { projectId: id } });
+      const design = this.document(version.designJson, id);
+      if (!draft || version.revision !== draft.revision
+        || !isDeepStrictEqual(design, this.document(draft.designJson, id))) {
+        throw new ConflictException('La versión aprobada ya no es vigente');
+      }
+      const issues = validateCuttingListInput(design);
+      if (issues.length > 0) {
+        throw new UnprocessableEntityException({
+          message: issues.map(issue => issue.message).join('; '), issues
+        });
+      }
+      return generateCuttingList(design, {
+        projectId: id, designVersionId: version.id, revision: version.revision
+      });
     });
   }
 }

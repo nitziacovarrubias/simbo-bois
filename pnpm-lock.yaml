@@ -57,6 +57,9 @@ importers:
       '@simbo/design-domain':
         specifier: workspace:*
         version: link:../../packages/design-domain
+      '@simbo/manufacturing-engine':
+        specifier: workspace:*
+        version: link:../../packages/manufacturing-engine
       '@simbo/shared-contracts':
         specifier: workspace:*
         version: link:../../packages/shared-contracts
