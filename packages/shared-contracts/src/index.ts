@@ -14,6 +14,17 @@ const partSchema = z.object({
   transform:TransformSchema, materialId:z.string().optional(), grainDirection:z.string(), edgeBanding:edgeBandingSchema,
   manufacturable:z.boolean(), machiningFeatureIds:z.array(z.string()), metadata
 }).passthrough();
+const cutListOriginSchema = z.object({
+  partId:z.string().min(1),partName:z.string().min(1),assemblyPath:z.array(z.object({id:z.string().min(1),name:z.string().min(1)})),
+  moduleInstanceId:z.string().optional(),moduleInstanceName:z.string().optional(),moduleDefinitionId:z.string().optional(),moduleDefinitionName:z.string().optional(),
+  moduleVersionId:z.string().optional(),sourceModuleEntityId:z.string().optional(),sourceModuleEntityName:z.string().optional()
+});
+export const CutListItemSchema = z.object({
+  id:z.string().min(1),name:z.string().min(1),widthMm:positiveMm,heightMm:positiveMm,thicknessMm:positiveMm,
+  materialName:z.string().optional(),grainDirection:z.string().min(1),quantity:z.number().int().positive(),origins:z.array(cutListOriginSchema)
+});
+export const CutListResultSchema = z.object({items:z.array(CutListItemSchema)});
+export type CutListResult = z.infer<typeof CutListResultSchema>;
 
 export const RequiredOpeningSchema = dimensions3.extend({
   offsets:z.object({leftMm:z.number().optional(),rightMm:z.number().optional(),topMm:z.number().optional(),bottomMm:z.number().optional(),frontMm:z.number().optional(),backMm:z.number().optional()}).optional(),

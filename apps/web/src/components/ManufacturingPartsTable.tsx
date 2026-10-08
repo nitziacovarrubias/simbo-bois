@@ -1,19 +1,10 @@
-import type { ManufacturingPart, PartOrigin } from '@simbo/manufacturing-engine';
+import type { CutListResult } from '@simbo/shared-contracts';
 import { uiLabel } from '../uiLabels';
 
-export interface ManufacturingPartRow {
-  part: ManufacturingPart;
-  origin: PartOrigin;
-  assemblyPath: string[];
-  moduleInstanceName?: string;
-  moduleDefinitionName?: string;
-  sourceEntityName?: string;
-}
-
-export default function ManufacturingPartsTable({ rows }: { rows: ManufacturingPartRow[] }) {
+export default function ManufacturingPartsTable({ result }: { result: CutListResult }) {
   return <section className="manufacturing-parts" aria-labelledby="manufacturing-parts-title">
     <div className="panel-subtitle" id="manufacturing-parts-title">Lista de piezas</div>
-    {rows.length === 0 ? <div className="empty-state-card" role="status">No hay piezas manufacturables en este diseño.</div> : <>
+    {result.items.length === 0 ? <div className="empty-state-card" role="status">No hay piezas manufacturables en este diseño.</div> : <>
       <div className="table-wrap">
         <table className="manufacturing-parts-table">
           <caption className="sr-only">Piezas, medidas y trazabilidad de manufactura</caption>
@@ -21,29 +12,28 @@ export default function ManufacturingPartsTable({ rows }: { rows: ManufacturingP
             <th scope="col">Pieza</th><th scope="col">Ancho</th><th scope="col">Alto</th><th scope="col">Grosor</th>
             <th scope="col">Material</th><th scope="col">Veta</th><th scope="col">Cantidad</th><th scope="col">Origen</th>
           </tr></thead>
-          <tbody>{rows.map(({ part, origin, assemblyPath, moduleInstanceName, moduleDefinitionName, sourceEntityName }) => <tr key={part.id}>
-            <td>{part.name}</td>
-            <td>{part.widthMm} mm</td>
-            <td>{part.heightMm} mm</td>
-            <td>{part.thicknessMm} mm</td>
-            <td>{part.material?.name ?? 'No disponible'}</td>
-            <td>{uiLabel(part.grainDirection)}</td>
-            <td title="El contrato de manufactura no define cantidad por pieza">No disponible</td>
+          <tbody>{result.items.map(item => <tr key={item.id}>
+            <td>{item.name}</td>
+            <td>{item.widthMm} mm</td>
+            <td>{item.heightMm} mm</td>
+            <td>{item.thicknessMm} mm</td>
+            <td>{item.materialName ?? 'No disponible'}</td>
+            <td>{uiLabel(item.grainDirection)}</td>
+            <td>{item.quantity}</td>
             <td><details>
-              <summary>Ver origen</summary>
-              <dl className="manufacturing-origin">
-                <dt>ID de pieza</dt><dd>{origin.partId}</dd>
-                <dt>Ruta de ensamblaje</dt><dd>{assemblyPath.length ? assemblyPath.join(' / ') : 'No disponible en el diseño'}</dd>
-                <dt>Instancia de módulo</dt><dd>{moduleInstanceName ?? 'No disponible en el diseño'}{origin.moduleInstanceId ? ` · ${origin.moduleInstanceId}` : ''}</dd>
-                <dt>Definición de módulo</dt><dd>{moduleDefinitionName ?? 'No disponible en el diseño'}{origin.moduleDefinitionId ? ` · ${origin.moduleDefinitionId}` : ''}</dd>
-                <dt>Versión de módulo</dt><dd>{origin.moduleVersionId ?? 'No disponible en el diseño'}</dd>
-                <dt>Pieza de origen</dt><dd>{sourceEntityName ?? (origin.sourceModuleEntityId ? `Nombre no disponible · ${origin.sourceModuleEntityId}` : 'No disponible en el diseño')}</dd>
-              </dl>
-            </details></td>
+              <summary>Ver origen ({item.origins.length})</summary>
+              {item.origins.length === 0 ? <span>No hay orígenes disponibles.</span> : item.origins.map((origin, index) => <dl className="manufacturing-origin" key={`${origin.partId}-${index}`}>
+                <dt>Pieza</dt><dd>{origin.partName} · {origin.partId}</dd>
+                <dt>Ruta de ensamblaje</dt><dd>{origin.assemblyPath.length ? origin.assemblyPath.map(assembly => assembly.name).join(' / ') : 'Sin ensamblaje'}</dd>
+                <dt>Instancia de módulo</dt><dd>{origin.moduleInstanceName ?? 'No disponible'}{origin.moduleInstanceId ? ` · ${origin.moduleInstanceId}` : ''}</dd>
+                <dt>Definición de módulo</dt><dd>{origin.moduleDefinitionName ?? 'No disponible'}{origin.moduleDefinitionId ? ` · ${origin.moduleDefinitionId}` : ''}</dd>
+                <dt>Versión de módulo</dt><dd>{origin.moduleVersionId ?? 'No disponible'}</dd>
+                <dt>Pieza de origen</dt><dd>{origin.sourceModuleEntityName ?? 'No disponible'}{origin.sourceModuleEntityId ? ` · ${origin.sourceModuleEntityId}` : ''}</dd>
+              </dl>)}</details></td>
           </tr>)}</tbody>
         </table>
       </div>
-      <p className="muted manufacturing-data-note">La cantidad por pieza no está definida en el contrato de manufactura. Los datos de origen muestran la jerarquía y referencias disponibles en el diseño.</p>
+      <p className="muted manufacturing-data-note">Se muestra una fila por pieza física existente; no se agrupan piezas ni se genera un despiece.</p>
     </>}
   </section>;
 }

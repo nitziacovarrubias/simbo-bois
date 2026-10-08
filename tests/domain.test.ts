@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { CutListResultSchema } from '../packages/shared-contracts/src/index.ts';
 import { addPartToAssembly, createAssembly, createEmptyDesign, createPanel, deserializeDesign, serializeDesign, type Binding } from '../packages/design-domain/src/index.ts';
 import { applyBindings, detectBindingCycles } from '../packages/constraint-engine/src/index.ts';
 import { DocumentHistory, ToolManager, activateScene, applySnap, cameraPreset, createScene, createSectionPlane, duplicateArray, movePartExact, snapFaceToFace } from '../packages/editor-engine/src/index.ts';
@@ -10,6 +11,8 @@ import { createModuleDefinitionFromAssembly, detachModuleInstance, instantiateMo
 import { modelHealth } from '../packages/validation-engine/src/index.ts';
 
 function basicTwoParts(){const d=createEmptyDesign('Test');const mat=d.materials[0]!;const a=createPanel({name:'A',materialId:mat.id,dimensions:{widthMm:700,heightMm:500,thicknessMm:18},transform:{position:{x:0,y:250,z:0},rotation:{x:0,y:0,z:0}}});const b=createPanel({name:'B',materialId:mat.id,dimensions:{widthMm:700,heightMm:500,thicknessMm:18},transform:{position:{x:900,y:250,z:0},rotation:{x:0,y:0,z:0}}});addPartToAssembly(d,a);addPartToAssembly(d,b);return{d,a,b}}
+
+test('Shared cut-list contract validates quantity and multiple origins',()=>{const origin={partId:'part-a',partName:'Lateral',assemblyPath:[{id:'assembly-a',name:'Gabinete'}]};const result=CutListResultSchema.parse({items:[{id:'lateral',name:'Lateral',widthMm:700,heightMm:500,thicknessMm:18,materialName:'Melamina',grainDirection:'VERTICAL',quantity:2,origins:[origin,{...origin,partId:'part-b'}]}]});assert.equal(result.items[0]!.quantity,2);assert.equal(result.items[0]!.origins.length,2);assert.equal(CutListResultSchema.safeParse({items:[{...result.items[0]!,quantity:0}]}).success,false)});
 
 test('DesignDocument serializa y recarga sin perder material/section/scenes',()=>{const d=createEmptyDesign();const p=createPanel({materialId:d.materials[0]!.id});addPartToAssembly(d,p);d.materials[0]!.colorHex='#FFFFFF';d.materials[0]!.roughness=.44;const section=createSectionPlane();d.sectionPlanes.push(section);const camera=cameraPreset('FRONT');d.scenes.push(createScene('Frontal',camera,'TECHNICAL',d));const r=deserializeDesign(serializeDesign(d));assert.equal(r.parts[0]!.dimensions.widthMm,700);assert.equal(r.materials[0]!.colorHex,'#FFFFFF');assert.equal(r.materials[0]!.roughness,.44);assert.equal(r.sectionPlanes.length,1);assert.equal(r.scenes[0]!.name,'Frontal')});
 
