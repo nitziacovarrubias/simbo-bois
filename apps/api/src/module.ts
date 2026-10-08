@@ -1,6 +1,6 @@
 import { Body, Controller, ForbiddenException, Get, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { CreateProjectRequestSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
+import { CreateProjectRequestSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
@@ -27,6 +27,19 @@ class ProjectsController {
   @Get(':id/versions/:versionId') version(@CurrentUser() actor:Actor,@Param('id') id:string,@Param('versionId') versionId:string) { return this.projects.version(actor,id,versionId); }
   @Post(':id/versions') createVersion(@CurrentUser() actor:Actor,@Param('id') id:string,@Body() body:unknown) { return this.projects.createVersion(actor,id,RevisionRequestSchema.parse(body).expectedRevision); }
   @Post(':id/versions/:versionId/approve') approve(@CurrentUser() actor:Actor,@Param('id') id:string,@Param('versionId') versionId:string,@Body() body:unknown) { return this.projects.approve(actor,id,versionId,RevisionRequestSchema.parse(body).expectedRevision); }
+  @Post(':id/versions/:versionId/cutting-list')
+  cuttingList(
+    @CurrentUser() actor: Actor,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string
+  ) {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId: id, designVersionId: versionId
+    });
+    return this.projects.cuttingList(
+      actor, params.projectId, params.designVersionId
+    );
+  }
 }
 @UseGuards(AuthGuard)
 @Controller('modules')

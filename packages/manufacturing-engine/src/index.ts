@@ -64,3 +64,5 @@ export function generateCuttingList(
   const rows = buildCuttingListRows(design, data.parts, origins);
   return CuttingListResponseSchema.parse({ source: parsedSource, rows });
 }
+
+export { validateCuttingListInput };
