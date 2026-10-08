@@ -235,6 +235,9 @@ importers:
       '@simbo/hardware-engine':
         specifier: workspace:*
         version: link:../hardware-engine
+      '@simbo/shared-contracts':
+        specifier: workspace:*
+        version: link:../shared-contracts
 
   packages/module-engine:
     dependencies:
