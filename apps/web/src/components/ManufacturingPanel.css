@@ -43,5 +43,13 @@ th {
 .manufacturing tbody tr:hover td {background:#fff2df}
 .manufacturing .joint-row {padding:11px 0;border-color:#ebdfd1;font-size:11px}
 .manufacturing .joint-row small {white-space:normal;overflow-wrap:anywhere;line-height:1.45;font-size:10px}
+.manufacturing .manufacturing-parts-table {width:max-content;min-width:100%;}
+.manufacturing-parts .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.manufacturing-parts-table th,.manufacturing-parts-table td {vertical-align:top;}
+.manufacturing-parts-table details summary {cursor:pointer;color:#69452c;font-weight:700;}
+.manufacturing-origin {display:grid;grid-template-columns:max-content minmax(120px,1fr);gap:4px 10px;white-space:normal;}
+.manufacturing-origin dt {font-weight:700;}
+.manufacturing-origin dd {margin:0;overflow-wrap:anywhere;}
+.manufacturing-data-note {font-size:10px;line-height:1.45;white-space:normal;}
 
 }
