@@ -1,5 +1,12 @@
 import type { Countertop, Cutout, DesignDocument, EdgeBanding, GrainDirection, Id, MachiningFeature, MaterialDefinition, Part } from '../../design-domain/src/index.ts';
 import { collectHardware, type HardwareRequirement } from '../../hardware-engine/src/index.ts';
+import {
+  CuttingListSourceSchema,
+  CuttingListResponseSchema,
+  type CuttingListResponse
+} from '../../shared-contracts/src/index.ts';
+import { validateCuttingListInput } from './cutting-list-validation.ts';
+import { buildCuttingListRows } from './cutting-list.ts';
 export interface ManufacturingPart { id:Id;name:string;semanticRole:string;shape:string;widthMm:number;heightMm:number;thicknessMm:number;material?:MaterialDefinition;colorHex?:string;grainDirection:GrainDirection;edgeBanding:EdgeBanding;machiningFeatures:MachiningFeature[];metadata:Record<string,unknown>; }
 export interface ManufacturingCountertop { id:Id;name:string;outline:Countertop['outline'];thicknessMm:number;heightMm:number;material?:MaterialDefinition;colorHex?:string;cutouts:Cutout[];metadata:Record<string,unknown>; }
 export interface ManufacturingData { parts:ManufacturingPart[];countertops:ManufacturingCountertop[];hardware:HardwareRequirement[];machiningFeatures:MachiningFeature[];edgeBanding:Array<{partId:Id;edges:EdgeBanding}>;summary:{partCount:number;countertopCount:number;hardwareCount:number;machiningCount:number}; }
@@ -44,3 +51,20 @@ export function getPartOrigin(design: DesignDocument, partId: Id): PartOrigin {
     sourceModuleEntityId: typeof part.metadata.sourceModuleEntityId === 'string' ? part.metadata.sourceModuleEntityId : undefined
   };
 }
+
+export function generateCuttingList(
+  design: DesignDocument,
+  source: CuttingListResponse['source']
+): CuttingListResponse {
+  const issues = validateCuttingListInput(design);
+  if (issues.length > 0) {
+    throw new Error(issues.map(issue => issue.message).join('; '));
+  }
+  const parsedSource = CuttingListSourceSchema.parse(source);
+  const data = collectManufacturingData(design);
+  const origins = data.parts.map(part => getPartOrigin(design, part.id));
+  const rows = buildCuttingListRows(design, data.parts, origins);
+  return CuttingListResponseSchema.parse({ source: parsedSource, rows });
+}
+
+export { validateCuttingListInput };

@@ -1,4 +1,9 @@
 import type { DesignDocument } from '@simbo/design-domain';
+import {
+  GenerateCuttingListParamsSchema,
+  CuttingListResponseSchema,
+  type CuttingListResponse
+} from '@simbo/shared-contracts';
 
 export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'; }
 export interface ProjectSummary { id:string;name:string;ownerId:string|null;updatedAt:string; }
@@ -35,5 +40,17 @@ export const apiClient={
   saveDesign:(id:string,design:DesignDocument,expectedRevision:number)=>request<{revision:number}>(`/projects/${encodeURIComponent(id)}/design`,{design,expectedRevision}),
   versions:(id:string)=>request<VersionSummary[]>(`/projects/${encodeURIComponent(id)}/versions`),
   createVersion:(id:string,expectedRevision:number)=>request<{id:string;revision:number}>(`/projects/${encodeURIComponent(id)}/versions`,{expectedRevision}),
-  approve:(id:string,versionId:string,expectedRevision:number)=>request(`/projects/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/approve`,{expectedRevision})
+  approve:(id:string,versionId:string,expectedRevision:number)=>request(`/projects/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/approve`,{expectedRevision}),
+  async generateCuttingList(
+    projectId: string,
+    designVersionId: string
+  ): Promise<CuttingListResponse> {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId, designVersionId
+    });
+    const path = `/projects/${encodeURIComponent(params.projectId)}`
+      + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list`;
+    const response = await request<unknown>(path, {});
+    return CuttingListResponseSchema.parse(response);
+  }
 };

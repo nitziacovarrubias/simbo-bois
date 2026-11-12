@@ -15,6 +15,7 @@
     "@nestjs/platform-express": "10.4.22",
     "@prisma/client": "^6.1.0",
     "@simbo/shared-contracts": "workspace:*",
+    "@simbo/manufacturing-engine": "workspace:*",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
     "reflect-metadata": "^0.2.2",
