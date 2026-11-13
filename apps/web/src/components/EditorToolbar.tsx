@@ -1,17 +1,18 @@
 import './EditorToolbar.css';
 import type { ReactNode } from 'react';
-import { ChevronDown, CircleDot, Copy, Cuboid, Eye, Focus, Group, Layers3, Move3D, Redo2, Rotate3D, Ruler, Undo2, Ungroup } from 'lucide-react';
+import { Camera as CameraIcon, ChevronDown, CircleDot, Copy, Cuboid, Eye, Focus, Group, Layers3, Move3D, Redo2, Rotate3D, Ruler, Undo2, Ungroup } from 'lucide-react';
 import { useEditor } from '../store';
 import { runEditorCommand } from '../commandRuntime';
 import { editorFacade } from '../editorFacade';
 import { exportViewportPng } from './Viewport';
+import { DEMO_FOCUSED_UI } from '../demoUiConfig';
 
 function ToolGroup({ label, children }: { label: string; children: ReactNode }) {
   return <div className="tool-group"><span className="tool-group-label">{label}</span><div className="tool-group-actions">{children}</div></div>;
 }
 
 function ToolButton({ active = false, label, shortcut, onClick, icon }: { active?: boolean; label: string; shortcut?: string; onClick: () => void; icon: ReactNode }) {
-  return <button className={`tool-button ${active ? 'active' : ''}`} aria-label={label} onClick={onClick} title={`${label}${shortcut ? ` · ${shortcut}` : ''}`}>{icon}<span>{label}</span>{shortcut && <kbd>{shortcut}</kbd>}</button>;
+  return <button className={`tool-button ${active ? 'active' : ''}`} aria-label={label} onClick={onClick} title={`${label}${shortcut ? ` · ${shortcut}` : ''}`}>{icon}<span className="sr-only">{label}</span></button>;
 }
 
 export default function EditorToolbar() {
@@ -27,7 +28,13 @@ export default function EditorToolbar() {
     <ToolGroup label="Historial"><ToolButton label="Deshacer" shortcut="Ctrl/Cmd+Z" onClick={() => runEditorCommand('editor.undo')} icon={<Undo2 />} /><ToolButton label="Rehacer" shortcut="Ctrl/Cmd+Shift+Z" onClick={() => runEditorCommand('editor.redo')} icon={<Redo2 />} /></ToolGroup>
     <details className="toolbar-overflow">
       <summary title="Más acciones" aria-label="Más acciones"><ChevronDown /></summary>
-      <div className="toolbar-menu" role="menu">
+      <div className="toolbar-menu" role="group" aria-label="Acciones adicionales">
+        {DEMO_FOCUSED_UI ? <>
+          <button onClick={() => runEditorCommand('editor.duplicate')}><Copy />Duplicar</button>
+          <button onClick={() => runEditorCommand('editor.group')}><Group />Agrupar</button>
+          <button onClick={() => runEditorCommand('editor.showAll')}><Eye />Mostrar todo</button>
+          <button onClick={() => exportViewportPng(1)}><CameraIcon />Exportar imagen</button>
+        </> : <>
         <button onClick={() => runEditorCommand('editor.duplicate')}><Copy />Duplicar</button>
         <button onClick={() => runEditorCommand('editor.group')}><Group />Agrupar</button>
         <button onClick={() => runEditorCommand('editor.ungroup')}><Ungroup />Desagrupar</button>
@@ -55,6 +62,7 @@ export default function EditorToolbar() {
         <button onClick={() => editorFacade.loadDemo()}>Abrir demo oficial</button>
         <button onClick={() => exportViewportPng(1)}>Exportar PNG 1x</button>
         <button onClick={() => exportViewportPng(2)}>Exportar PNG 2x</button>
+        </>}
       </div>
     </details>
   </div>;

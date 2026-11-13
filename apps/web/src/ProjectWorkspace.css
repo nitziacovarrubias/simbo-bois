@@ -1,4 +1,553 @@
-.project-workspace{min-height:100vh;padding:32px;max-width:1200px;margin:0 auto;color:#39261c;background:#fcf8f2;font-family:inherit}.project-workspace header{display:flex;align-items:center;gap:18px;margin-bottom:28px}.project-workspace header img{width:64px}.project-workspace h1{margin:0}.project-workspace h2{font-size:18px}.project-workspace button{background:#6e4934;color:white;border:0;border-radius:6px;padding:10px 15px;cursor:pointer}.project-workspace button:disabled{opacity:.55;cursor:wait}.project-workspace input{display:block;width:100%;padding:10px;margin:6px 0 18px;border:1px solid #c4b3a4;border-radius:5px}.project-login{max-width:400px;padding:24px;border:1px solid #ddd0c3;border-radius:10px;background:white}.project-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}.project-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.project-list article,.project-versions article{padding:18px;border:1px solid #ddd0c3;background:white;border-radius:8px}.project-list article button{margin-right:8px;margin-bottom:6px}.project-versions{margin-top:24px}.project-versions article{display:flex;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.project-error{padding:12px;color:#8b2118;background:#ffe9e5;border-radius:6px}.project-local{margin-top:24px}.project-connection{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px;max-width:280px;font-size:11px;line-height:1.25;color:#fff3e5}.project-connection button{font-size:11px;padding:3px 8px;background:#6e4934;color:white;border:1px solid #ae896b;border-radius:4px}.project-connection [role=status]{color:#ffe1a4}
+/* ---------- Login ---------- */
+.simbo-login-page{
+  min-height:100vh;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:center;
+  gap:clamp(48px,8vw,140px);
+  padding:56px clamp(48px,8vw,140px) 56px 0px;
+  background:#f7f3ee;
+  color:#332d2a;
+  font-family:Inter,"Segoe UI",Arial,sans-serif;
+}
+
+.simbo-login-brand{
+  align-self:center;
+  justify-self:end;
+  width:min(100%,520px);
+}
+
+.simbo-login-logo-row{
+  display:flex;
+  align-items:center;
+  gap:22px;
+  margin-bottom:28px;
+  color:#4b4744;
+  font-weight:300;
+  font-size:clamp(52px,5.1vw,84px);
+  line-height:1;
+  letter-spacing:.02em;
+}
+
+.simbo-login-logo-row img{
+  width:clamp(96px,8.7vw,132px);
+  height:clamp(96px,8.7vw,132px);
+  object-fit:contain;
+}
+
+.simbo-login-brand h1{
+  margin:0 0 16px;
+  font-size:clamp(42px,4.2vw,64px);
+  line-height:1.03;
+  letter-spacing:-.035em;
+  font-weight:800;
+}
+
+.simbo-login-brand p{
+  max-width:510px;
+  margin:0;
+  font-size:clamp(21px,1.85vw,30px);
+  line-height:1.15;
+  font-weight:400;
+}
+
+.simbo-login-card{
+  box-sizing:border-box;
+  width:100%;
+  min-height:690px;
+  display:flex;
+  flex-direction:column;
+  padding:108px clamp(46px,5vw,72px) 52px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(47,37,30,.10);
+}
+
+.simbo-login-card-header{
+  padding-bottom:50px;
+  border-bottom:2px solid #e0e4e8;
+  margin-bottom:26px;
+}
+
+.simbo-login-card-header h2{
+  width:max-content;
+  margin:0;
+  padding:0 10px 10px;
+  color:#d74834;
+  border-bottom:2px solid #e24a35;
+  font-size:44px;
+  line-height:1;
+  font-weight:700;
+}
+
+.simbo-login-form{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.simbo-login-form label{
+  display:block;
+  color:#4f5868;
+  font-size:21px;
+  line-height:1.2;
+  font-weight:400;
+}
+
+.simbo-login-form input{
+  box-sizing:border-box;
+  display:block;
+  width:100%;
+  height:48px;
+  margin-top:4px;
+  padding:0 14px;
+  border:1px solid #d7dee7;
+  border-radius:7px;
+  outline:none;
+  background:#edf2f6;
+  color:#344054;
+  font:inherit;
+  font-size:20px;
+  transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+
+.simbo-login-form input::placeholder{color:#8795aa}
+
+.simbo-login-form input:focus{
+  border-color:#c8a59e;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(215,72,52,.10);
+}
+
+.simbo-login-divider{
+  height:1px;
+  margin-top:8px;
+  background:#dde2e8;
+}
+
+.simbo-login-submit-row{
+  margin-top:auto;
+  padding-top:160px;
+}
+
+.simbo-login-submit-row button{
+  min-width:205px;
+  min-height:48px;
+  padding:11px 22px;
+  border:0;
+  border-radius:7px;
+  background:#d9432f;
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s ease,transform .15s ease,opacity .15s ease;
+}
+
+.simbo-login-submit-row button:hover:not(:disabled){background:#bf3726}
+.simbo-login-submit-row button:active:not(:disabled){transform:translateY(1px)}
+.simbo-login-submit-row button:disabled{opacity:.6;cursor:wait}
+
+.simbo-local-link{
+  width:max-content;
+  margin-top:18px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#687386;
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+
+.simbo-login-error{
+  margin:-8px 0 22px;
+}
+
+/* ---------- Vista de proyectos: Figma BOIS ---------- */
+.project-workspace {
+  --project-bg: #f8f4f0;
+  --project-brown: #281d17;
+  --project-orange: #ff8500;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(--project-bg);
+  color: #332d29;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+/* Barra a todo el ancho, independiente del panel central. */
+.project-workspace .project-navbar {
+  width: 100%;
+  min-height: 94px;
+  box-sizing: border-box;
+  padding: 12px clamp(20px, 2vw, 36px);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  background: var(--project-brown);
+  color: #fff;
+}
+.project-navbar-brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+  font-weight: 300;
+  font-size: clamp(27px, 3vw, 43px);
+  letter-spacing: .015em;
+}
+.project-navbar-brand img {
+  width: clamp(47px, 4.5vw, 62px);
+  height: clamp(47px, 4.5vw, 62px);
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.project-navbar-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.project-navbar-active {
+  position: relative;
+  display: inline-block;
+  padding: 14px 12px 16px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: .01em;
+}
+.project-navbar-active::after {
+  content: "";
+  position: absolute;
+  height: 5px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  background: #f8f7f5;
+  box-shadow: 0 2px 3px rgba(0,0,0,.32);
+}
+
+.project-workspace-content {
+  max-width: 1355px;
+  margin: 0 auto;
+  padding: clamp(30px, 4vw, 60px) 28px 34px;
+  box-sizing: border-box;
+}
+.project-board {
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(60,44,32,.085);
+  border-radius: 10px;
+  padding: 34px clamp(22px, 5.5vw, 92px) 42px;
+}
+.project-board-intro {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.project-board-intro h1 {
+  margin: 0 0 12px;
+  color: #323232;
+  font-size: clamp(30px, 3.2vw, 43px);
+  font-weight: 850;
+  letter-spacing: -.028em;
+  line-height: 1.13;
+}
+.project-board-intro p {
+  margin: 0 auto;
+  max-width: 1040px;
+  color: #929292;
+  font-size: clamp(14px, 1.35vw, 18px);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.project-workspace button {
+  background: var(--project-orange);
+  border: 0;
+  border-radius: 2px;
+  padding: 10px 16px;
+  color: white;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s;
+}
+.project-workspace button:hover:not(:disabled) {
+  background: #e97700;
+  box-shadow: 0 2px 6px rgba(231,119,0,.16);
+}
+.project-workspace button:focus-visible {
+  outline: 3px solid #7b572a;
+  outline-offset: 3px;
+}
+.project-workspace button:disabled { opacity: .55; cursor: wait; }
+.project-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0e8df;
+}
+.project-actions .project-user {
+  margin-right: auto;
+  color: #7c746f;
+  font-size: 13px;
+  font-weight: 600;
+}
+.project-actions button:last-child { background: #5e4940; }
+.project-actions button:last-child:hover:not(:disabled) { background: #43332d; }
+
+/* Galería: 3 tarjetas por fila con la distribución del mockup. */
+.project-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: clamp(20px, 2.5vw, 38px);
+  row-gap: 46px;
+}
+.project-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: #fff;
+}
+/* Marcador visual de una cocina, sin presentar fotos ficticias como proyectos reales. */
+.project-card-visual {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2.18 / 1;
+  width: 100%;
+  background: linear-gradient(176deg, #d6d1c9 0 52%, #bdb4a9 52% 100%);
+  isolation: isolate;
+}
+.project-kitchen-wall {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0 65%, rgba(41,41,41,.23) 65% 75%, transparent 75%),
+              linear-gradient(120deg, rgba(255,255,255,.4), transparent 60%);
+}
+.project-kitchen-upper {
+  position: absolute;
+  left: 9%; right: 9%; top: 8%; height: 33%;
+  background: repeating-linear-gradient(90deg, #e4e0d9 0 24%, #c8c3bc 24.2% 24.8%, #e4e0d9 25% 50%);
+  box-shadow: 4px 6px 12px rgba(49,44,38,.22);
+}
+.project-kitchen-backsplash {
+  position: absolute;
+  left: 9%; right: 9%; top: 43%; height: 19%;
+  background: linear-gradient(100deg, #c0bfb8, #e5e3dc, #aaa79e);
+}
+.project-kitchen-counter {
+  position: absolute;
+  left: 7%; right: 7%; top: 61%; height: 7%;
+  background: linear-gradient(#f3f0e9, #b9b5b0);
+  box-shadow: 0 3px 8px #514f4966;
+}
+.project-kitchen-lower {
+  position: absolute;
+  left: 9%; right: 9%; top: 68%; bottom: 0;
+  background: repeating-linear-gradient(90deg, #6b5f56 0 24%, #403a35 24.2% 25%, #70665c 25% 50%);
+}
+.project-kitchen-island {
+  position: absolute;
+  bottom: -11%; left: 39%; width: 38%; height: 35%;
+  transform: skew(-15deg);
+  background: linear-gradient(#d5d0c7 0 14%, #514a44 14% 100%);
+  box-shadow: -8px -4px 16px #24201d55;
+}
+.project-card:nth-child(3n + 2) .project-card-visual {
+  background: linear-gradient(176deg, #d1d0c9 0 52%, #adaaa2 52%);
+}
+.project-card:nth-child(3n + 2) .project-kitchen-lower {
+  background: repeating-linear-gradient(90deg, #b2a99d 0 24%, #85796d 24.2% 25%, #b2a99d 25% 50%);
+}
+.project-card:nth-child(3n) .project-kitchen-upper {
+  background: repeating-linear-gradient(90deg, #b6b1a9 0 24%, #8e8a82 24.2% 25%, #c3bfb8 25% 50%);
+}
+.project-card:nth-child(3n) .project-kitchen-lower {
+  background: repeating-linear-gradient(90deg, #494b4c 0 24%, #313536 24.2% 25%, #545656 25% 50%);
+}
+.project-card-visual-caption {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .1em;
+  text-shadow: 0 1px 4px #0008;
+}
+.project-card-details {
+  flex: 1;
+  padding: 18px 3px 19px;
+  border-bottom: 2px solid var(--project-orange);
+}
+.project-card-details h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 750;
+  color: #333;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-color: #b9b4b0;
+  text-underline-offset: 3px;
+}
+.project-card-details h2::before {
+  content: "•";
+  color: var(--project-orange);
+  padding-right: 12px;
+}
+.project-card-details p {
+  margin: 0;
+  color: #999da4;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.project-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  padding-top: 13px;
+}
+.project-workspace .project-card-actions button {
+  width: min(100%, 184px);
+  min-height: 39px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.project-workspace .project-card-actions button + button { background: #fa9d2e; }
+.project-workspace .project-card-actions button + button:hover:not(:disabled) { background: #ed8615; }
+.project-empty {
+  grid-column: 1 / -1;
+  padding: 48px 24px;
+  margin: 0;
+  color: #888;
+  background: #faf8f5;
+  text-align: center;
+  border: 1px dashed #e8ded3;
+  border-radius: 8px;
+}
+.project-versions {
+  margin-top: 45px;
+  padding-top: 30px;
+  border-top: 1px solid #ebdfd2;
+}
+.project-versions > h2 { margin: 0 0 8px; font-size: 24px; }
+.project-versions > p { color: #6d6d6d; }
+.project-versions article {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 11px;
+  padding: 15px;
+  border: 1px solid #e8ded4;
+  border-radius: 6px;
+}
+.project-versions article > span { color: #666; }
+.project-versions table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 560px;
+  font-size: 13px;
+}
+.project-versions th, .project-versions td {
+  border: 1px solid #e8ded4;
+  padding: 9px;
+  text-align: left;
+}
+.project-versions th { background: #f4efe9; }
+.project-versions:has(table) { overflow-x: auto; }
+.project-error {
+  padding: 12px;
+  margin-bottom: 18px;
+  color: #8b2118;
+  background: #ffe9e5;
+  border-radius: 6px;
+}
+.project-workspace .project-local {
+  display: block;
+  margin: 22px 0 0 auto;
+  padding: 8px 12px;
+  background: transparent;
+  color: #7a6e66;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.project-workspace .project-local:hover:not(:disabled) {
+  background: #eee8e1;
+  box-shadow: none;
+}
+/* Selector compartido con la topbar del editor; conservar estilos y comportamiento. */
+.project-connection { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:3px; max-width:280px; font-size:11px; line-height:1.25; color:#fff3e5; }
+.project-connection button { font-size:11px; padding:3px 8px; background:#6e4934; color:white; border:1px solid #ae896b; border-radius:4px; }
+.project-connection [role=status] { color:#ffe1a4; }
+
+@media (max-width: 1050px) {
+  .project-workspace-content { padding-inline: 24px; }
+  .project-board { padding-inline: 34px; }
+  .project-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .project-workspace .project-navbar { min-height: 72px; gap: 12px; padding: 12px 16px; }
+  .project-navbar-brand { gap: 8px; font-size: 25px; }
+  .project-navbar-brand img { width: 39px; height: 39px; }
+  .project-navbar-active { font-size: 13px; padding: 9px 4px 12px; }
+  .project-navbar-active::after { left: 0; right: 0; bottom: 2px; height: 3px; }
+  .project-workspace-content { padding: 20px 12px; }
+  .project-board { padding: 26px 16px 29px; }
+  .project-board-intro h1 { font-size: 31px; }
+  .project-actions { justify-content: flex-start; }
+  .project-actions .project-user { flex-basis: 100%; }
+  .project-list { grid-template-columns: 1fr; row-gap: 35px; }
+  .project-card-visual { aspect-ratio: 2.15; }
+  .project-workspace .project-card-actions button { width: min(100%, 190px); }
+}
+
+@media(max-width:980px){
+  .simbo-login-page{
+    grid-template-columns:1fr;
+    gap:38px;
+    padding:44px 28px;
+  }
+
+  .simbo-login-brand{
+    justify-self:center;
+    text-align:center;
+  }
+
+  .simbo-login-logo-row{justify-content:center}
+  .simbo-login-brand p{margin-inline:auto}
+  .simbo-login-card{justify-self:center;max-width:680px;min-height:auto;padding-top:62px}
+  .simbo-login-submit-row{padding-top:72px}
+}
+
+@media(max-width:600px){
+  .simbo-login-page{padding:28px 18px;gap:26px}
+  .simbo-login-logo-row{margin-bottom:18px;gap:14px;font-size:46px}
+  .simbo-login-logo-row img{width:78px;height:78px}
+  .simbo-login-brand h1{font-size:38px}
+  .simbo-login-brand p{font-size:20px}
+  .simbo-login-card{padding:42px 24px 32px;border-radius:10px}
+  .simbo-login-card-header{padding-bottom:30px;margin-bottom:24px}
+  .simbo-login-card-header h2{font-size:36px}
+  .simbo-login-form label{font-size:18px}
+  .simbo-login-form input{font-size:18px}
+  .simbo-login-submit-row{padding-top:48px}
+  .simbo-login-submit-row button{width:100%}
+}
 
 @layer pro {
   .app-shell .topbar{grid-template-columns:196px minmax(0,1fr) auto minmax(160px,240px);gap:12px}
@@ -7,4 +556,370 @@
   .project-connection>button{grid-column:2;grid-row:1/span 2;align-self:center}
   .project-connection>[role=status]{grid-column:1/-1;font-size:10px}
   @media(max-width:1110px){.app-shell .topbar{grid-template-columns:160px minmax(0,1fr) auto 170px;gap:8px}}
+}
+.login-brand-logo {
+  filter: brightness(0);
+}
+
+/* Permitir desplazamiento en la pantalla de proyectos */
+.project-workspace {
+  height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Permitir desplazamiento horizontal en tablas grandes */
+.project-workspace .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* ---------- SIMBO CU-07 · Despiece (estilo Figma) ---------- */
+/* Específico de la pantalla de proyectos; no modifica el editor 2D/3D. */
+.project-workspace .project-btn,
+.simbo-login-page .simbo-login-submit-row button,
+.simbo-login-page .simbo-local-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.project-workspace .project-btn svg,
+.simbo-login-page button svg {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+}
+.project-workspace .project-actions .project-btn--create { background: #ff8700; color: #fff; }
+.project-workspace .project-actions .project-btn--create:hover:not(:disabled) { background: #e97800; }
+.project-workspace .project-actions .project-btn--refresh { background: #5ea9d6; color: #fff; }
+.project-workspace .project-actions .project-btn--refresh:hover:not(:disabled) { background: #3a95c9; }
+.project-workspace .project-actions .project-btn--logout { background: #5d4940; color: #fff; }
+.project-workspace .project-actions .project-btn--logout:hover:not(:disabled) { background: #413229; }
+.project-workspace .project-card-actions .project-btn--open { background: #ff8500; color: #fff; }
+.project-workspace .project-card-actions .project-btn--review { background: #ffa035; color: #fff; }
+.project-workspace .project-versions article .project-btn--approve { background: #198754; color: #fff; }
+.project-workspace .project-versions article .project-btn--approve:hover:not(:disabled) { background: #137247; }
+.project-workspace .project-versions article .project-btn--generate { background: #d88b2a; color: #fff; }
+.project-workspace .project-versions article .project-btn--generate:hover:not(:disabled) { background: #b77320; }
+.project-workspace .project-local.project-btn--local { display: flex; }
+
+.project-workspace .cutting-board {
+  margin: 28px 0 10px;
+  padding: 14px 0 0;
+  border-top: 1px solid #e9e0d6;
+}
+.project-workspace .cutting-board-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 12px;
+}
+.project-workspace .cutting-board-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.project-workspace .cutting-board-heading h3 {
+  margin: 0;
+  color: #f47b00;
+  font-size: clamp(19px, 2vw, 25px);
+  font-weight: 800;
+  line-height: 1.3;
+}
+.project-workspace .cutting-board-heading span {
+  font-size: 12px;
+  color: #777;
+}
+.project-workspace .cutting-board-toolbar .project-btn--excel {
+  min-height: 38px;
+  padding: 9px 18px;
+  border-radius: 3px;
+  background: #1c9657;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.project-workspace .cutting-board-toolbar .project-btn--excel:hover:not(:disabled) {
+  background: #147744;
+}
+.project-workspace .cutting-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: 2px;
+  border: 1px solid #c7dbc6;
+}
+.project-workspace .project-versions .cutting-table {
+  width: 100%;
+  min-width: 930px;
+  border-spacing: 0;
+  border-collapse: separate;
+  color: #292420;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.project-workspace .project-versions .cutting-table-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  margin: -1px;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+.project-workspace .project-versions .cutting-table th,
+.project-workspace .project-versions .cutting-table td {
+  padding: 12px 10px;
+  border: 0;
+  border-bottom: 1px solid #b8d4b9;
+  border-right: 1px solid #d5e6d6;
+  text-align: center;
+  vertical-align: middle;
+}
+.project-workspace .project-versions .cutting-table th:last-child,
+.project-workspace .project-versions .cutting-table td:last-child { border-right: 0; }
+.project-workspace .project-versions .cutting-table tbody tr:last-child td { border-bottom: 0; }
+.project-workspace .project-versions .cutting-table th {
+  padding: 16px 10px;
+  background: #c5e1c3;
+  color: #27211e;
+  font-size: 14px;
+  font-weight: 750;
+}
+.project-workspace .project-versions .cutting-table th small {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+}
+.project-workspace .project-versions .cutting-table tbody tr:nth-child(even) td:not(:last-child) {
+  background: #fbfdf9;
+}
+.project-workspace .project-versions .cutting-table .cutting-table-concept {
+  font-weight: 700;
+  text-align: left;
+  min-width: 190px;
+}
+.project-workspace .project-versions .cutting-table .cutting-table-quantity,
+.project-workspace .project-versions .cutting-table .cutting-table-number {
+  font-variant-numeric: tabular-nums;
+}
+.project-workspace .project-versions .cutting-table .cutting-table-number { width: 40px; font-weight: 800; }
+.project-workspace .project-versions .cutting-table .cutting-table-dimensions { white-space: nowrap; font-weight: 600; }
+.project-workspace .project-versions .cutting-table .cutting-table-origins {
+  background: #94d48c;
+  min-width: 170px;
+  max-width: 315px;
+  overflow-wrap: anywhere;
+}
+.project-workspace .project-versions .cutting-table tr:nth-child(even) .cutting-table-origins { background: #85cd7c; }
+.project-workspace .cutting-table-origins details { text-align: left; }
+.project-workspace .cutting-table-origins summary {
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #224b23;
+}
+.project-workspace .cutting-table-origins summary:focus-visible { outline: 2px solid #11583a; outline-offset: 3px; }
+.project-workspace .cutting-table-origins ul {
+  padding-left: 16px;
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.project-workspace .cutting-board-note {
+  margin: 12px 0 0;
+  color: #736c65;
+  font-size: 12px;
+  line-height: 1.5;
+}
+@media (max-width: 700px) {
+  .project-workspace .cutting-board-toolbar { align-items: stretch; }
+  .project-workspace .cutting-board-toolbar .project-btn--excel { width: 100%; }
+  .project-workspace .project-actions .project-btn { font-size: 12px; }
+}
+
+/* ---------- Refinamiento visual: legibilidad y densidad ---------- */
+/* Solo presentación. Las peticiones, los permisos y los botones mantienen su comportamiento. */
+.simbo-login-page {
+  gap: clamp(28px, 5vw, 92px);
+  padding: clamp(28px, 4vw, 56px) clamp(20px, 5vw, 90px);
+}
+.simbo-login-brand { justify-self: center; }
+.simbo-login-brand h1 { font-size: clamp(34px, 3.4vw, 55px); line-height: 1.08; }
+.simbo-login-brand p { font-size: clamp(17px, 1.5vw, 23px); line-height: 1.45; }
+.simbo-login-card {
+  min-height: 0;
+  max-width: 610px;
+  padding: clamp(32px, 4.2vw, 64px) clamp(24px, 4vw, 58px) 32px;
+}
+.simbo-login-card-header { padding-bottom: 24px; margin-bottom: 22px; }
+.simbo-login-card-header h2 { font-size: clamp(30px, 3vw, 40px); }
+.simbo-login-form { gap: 16px; }
+.simbo-login-form label { font-size: clamp(15px, 1.45vw, 18px); }
+.simbo-login-form input { height: 47px; font-size: 16px; }
+.simbo-login-submit-row { padding-top: 28px; }
+.simbo-local-link { margin-top: 18px; }
+
+.project-workspace { --project-orange: #ed840b; }
+.project-workspace .project-navbar { min-height: 76px; }
+.project-navbar-brand { font-size: clamp(26px, 2.3vw, 34px); }
+.project-navbar-brand img { width: 48px; height: 48px; }
+.project-navbar-active { font-size: 15px; letter-spacing: .06em; }
+.project-workspace-content { max-width: 1360px; padding: clamp(18px, 3vw, 42px) clamp(14px, 3vw, 36px) 32px; }
+.project-board { padding: clamp(20px, 3vw, 38px) clamp(16px, 4vw, 54px) 38px; }
+.project-board-intro { margin-bottom: 25px; }
+.project-board-intro h1 { font-size: clamp(27px, 2.6vw, 36px); margin-bottom: 7px; }
+.project-board-intro p { font-size: 14px; line-height: 1.5; font-weight: 500; }
+
+.project-actions { gap: 8px; margin-bottom: 23px; }
+.project-actions .project-user {
+  flex: 1 1 210px;
+  min-width: 0;
+  margin-right: 10px;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+.project-workspace .project-btn {
+  min-height: 39px;
+  max-width: 100%;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+}
+.project-workspace .project-btn svg { flex-shrink: 0; width: 16px; height: 16px; }
+.project-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px 24px; }
+.project-card { min-width: 0; }
+.project-card-visual { border-radius: 8px; }
+.project-card-visual-caption { font-size: 9px; }
+.project-card-details { min-width: 0; padding: 14px 2px 14px; }
+.project-card-details h2 { font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; text-decoration: none; }
+.project-card-details h2::before { padding-right: 7px; }
+.project-card-details p { font-size: 12px; line-height: 1.5; }
+.project-card-actions { gap: 7px; padding-top: 11px; }
+.project-workspace .project-card-actions button { width: 100%; min-height: 39px; }
+.project-empty { font-size: 14px; }
+
+.project-versions { min-width: 0; margin-top: 32px; padding-top: 25px; overflow: visible; }
+.project-versions:has(table) { overflow-x: visible; }
+.project-versions > h2 { font-size: clamp(18px, 2vw, 23px); line-height: 1.4; overflow-wrap: anywhere; }
+.project-versions > p { margin: 6px 0 18px; font-size: 13px; line-height: 1.5; }
+.project-versions article {
+  min-width: 0;
+  gap: 9px 12px;
+  margin-bottom: 9px;
+  padding: 12px 14px;
+  background: #fffdfa;
+  border: 1px solid #eee6dd;
+  border-radius: 8px;
+}
+.project-versions article > strong { min-width: 0; font-size: 13px; }
+.project-versions article > span, .project-versions article > small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.project-versions article .project-btn { margin-left: auto; }
+.project-versions article .project-btn + .project-btn { margin-left: 0; }
+.project-versions .cutting-source { margin: 18px 0 0; font-size: 12px; color: #6e635a; }
+
+.project-workspace .cutting-board { margin-top: 18px; padding-top: 18px; }
+.project-workspace .cutting-board-toolbar { align-items: center; gap: 10px; }
+.project-workspace .cutting-board-heading h3 { font-size: clamp(18px, 2vw, 22px); }
+.project-workspace .cutting-board-heading span { font-size: 12px; }
+.project-workspace .cutting-board-toolbar .project-btn--excel { min-height: 39px; font-size: 12px; }
+.project-workspace .cutting-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
+  border: 1px solid #dfebdb;
+  border-radius: 8px;
+  scrollbar-color: #bdd2b8 #f5f8f3;
+}
+.project-workspace .project-versions .cutting-table {
+  width: 100%;
+  min-width: 860px;
+  table-layout: auto;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.project-workspace .project-versions .cutting-table th,
+.project-workspace .project-versions .cutting-table td {
+  padding: 10px 9px;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.project-workspace .project-versions .cutting-table th {
+  background: #cce6c8;
+  font-size: 12px;
+  text-align: center;
+  white-space: normal;
+}
+.project-workspace .project-versions .cutting-table th small { font-size: 10px; font-weight: 500; }
+.project-workspace .project-versions .cutting-table .cutting-table-concept { min-width: 132px; max-width: 250px; font-size: 12px; }
+.project-workspace .project-versions .cutting-table .cutting-table-number { width: 34px; }
+.project-workspace .project-versions .cutting-table .cutting-table-dimensions { min-width: 96px; white-space: nowrap; }
+.project-workspace .project-versions .cutting-table .cutting-table-origins {
+  min-width: 122px;
+  max-width: 230px;
+  background: #e9f5e6;
+  overflow-wrap: anywhere;
+}
+.project-workspace .project-versions .cutting-table tr:nth-child(even) .cutting-table-origins { background: #ddf0d8; }
+.project-workspace .cutting-table-origins summary { font-size: 12px; color: #23643e; line-height: 1.45; }
+.project-workspace .cutting-table-origins ul {
+  max-width: 100%;
+  margin-top: 9px;
+  padding-left: 13px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+.project-workspace .cutting-board-note { font-size: 11px; line-height: 1.5; }
+.project-workspace .project-local { font-size: 12px; }
+
+@media (max-width: 1080px) {
+  .project-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .project-workspace .project-versions article .project-btn { margin-left: 0; }
+}
+@media (max-width: 680px) {
+  .project-workspace .project-navbar { grid-template-columns: 1fr auto; min-height: 68px; gap: 10px; }
+  .project-navbar-spacer { display: none; }
+  .project-navbar-brand { font-size: 23px; gap: 7px; }
+  .project-navbar-brand img { width: 38px; height: 38px; }
+  .project-navbar-active { font-size: 12px; padding-inline: 4px; }
+  .project-board { padding: 22px 14px 26px; }
+  .project-list { grid-template-columns: minmax(0,1fr); gap: 27px; }
+  .project-actions { gap: 7px; }
+  .project-actions .project-user { flex-basis: 100%; margin: 0 0 4px; }
+  .project-workspace .project-actions .project-btn { flex: 1 1 auto; min-width: 0; }
+  .project-workspace .project-card-actions button { min-height: 42px; }
+  .project-versions article { align-items: flex-start; }
+  .project-versions article > strong { width: 100%; }
+  .project-workspace .cutting-board-toolbar .project-btn--excel { width: auto; }
+  .simbo-login-page { padding: 28px 18px; gap: 26px; }
+  .simbo-login-card { padding: 35px 24px 27px; }
+  .simbo-login-card-header { padding-bottom: 20px; margin-bottom: 20px; }
+  .simbo-login-submit-row { padding-top: 27px; }
+}
+@media (max-width: 390px) {
+  .project-navbar-brand { font-size: 19px; }
+  .project-navbar-brand img { width: 34px; height: 34px; }
+  .project-workspace .project-actions .project-btn { width: 100%; flex-basis: 100%; }
+  .project-workspace .cutting-board-toolbar .project-btn--excel { width: 100%; }
 }

@@ -1,6 +1,6 @@
 import './LibraryPanel.css';
 import { useMemo, useState } from 'react';
-import { Box, Search } from 'lucide-react';
+import { Box, Search, Boxes, Microwave, Palette, Wrench, Plus } from 'lucide-react';
 import type { ApplianceCategory } from '@simbo/design-domain';
 import { useEditor } from '../store';
 import { uiLabel } from '../uiLabels';
@@ -12,7 +12,7 @@ export default function LibraryPanel() {
   const design = useEditor(state => state.design);
   const insertAppliance = useEditor(state => state.insertApplianceDefinition);
   const insertModule = useEditor(state => state.insertModule);
-  const [tab, setTab] = useState<Tab>('APPLIANCES');
+  const [tab, setTab] = useState<Tab>('MODULES');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<'ALL' | ApplianceCategory>('ALL');
   const q = query.trim().toLowerCase();
@@ -21,14 +21,14 @@ export default function LibraryPanel() {
 
   return <section className="panel library-panel">
     <div className="panel-heading"><div><span className="eyebrow">Local</span><div className="panel-title">Biblioteca</div></div><Box /></div>
-    <div className="library-tabs">{(['MODULES','APPLIANCES','MATERIALS','HARDWARE'] as const).map(value => <button key={value} className={tab === value ? 'active' : ''} onClick={() => setTab(value)}>{tabLabel[value]}</button>)}</div>
+    <div className="library-tabs">{(['MODULES','APPLIANCES','MATERIALS','HARDWARE'] as const).map(value => <button key={value} className={tab === value ? 'active' : ''} onClick={() => setTab(value)} title={tabLabel[value]} aria-label={tabLabel[value]} aria-pressed={tab === value}>{value === 'MODULES' ? <Boxes aria-hidden="true"/> : value === 'APPLIANCES' ? <Microwave aria-hidden="true"/> : value === 'MATERIALS' ? <Palette aria-hidden="true"/> : <Wrench aria-hidden="true"/>}<span className="sr-only">{tabLabel[value]}</span></button>)}</div>
     <label className="search"><Search /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Buscar…" aria-label="Buscar en biblioteca" /></label>
     {tab === 'APPLIANCES' && <>
       <select className="library-category" aria-label="Categoría de electrodoméstico" value={category} onChange={event => setCategory(event.target.value as typeof category)}>{categories.map(value => <option key={value} value={value}>{uiLabel(value)}</option>)}</select>
-      <div className="library-list">{appliances.map(definition => <article className="library-card" key={definition.id}><span className="library-swatch" style={{ background:definition.colorHex }} /><div><b>{definition.name}</b><small>{uiLabel(definition.category)} · {definition.dimensions.widthMm}×{definition.dimensions.heightMm}×{definition.dimensions.depthMm} mm</small>{definition.metadata.sourceType === 'DEMO' && <em>DEMO / GENÉRICO</em>}</div><button onClick={() => insertAppliance(definition.id)}>Insertar</button></article>)}{!appliances.length && <div className="muted">Sin resultados.</div>}</div>
+      <div className="library-list">{appliances.map(definition => <article className="library-card library-card--swatch" key={definition.id}><span className="library-swatch" style={{ background:definition.colorHex }} /><div className="library-card-copy"><b title={definition.name}>{definition.name}</b><small>{uiLabel(definition.category)} · {definition.dimensions.widthMm}×{definition.dimensions.heightMm}×{definition.dimensions.depthMm} mm</small>{definition.metadata.sourceType === 'DEMO' && <em>DEMO / GENÉRICO</em>}</div><button onClick={() => insertAppliance(definition.id)} title={`Insertar ${definition.name}`} aria-label={`Insertar ${definition.name}`}><Plus aria-hidden="true"/><span className="sr-only">Insertar</span></button></article>)}{!appliances.length && <div className="muted">Sin resultados.</div>}</div>
     </>}
-    {tab === 'MODULES' && <div className="library-list">{design.moduleDefinitions.filter(value => !q || value.name.toLowerCase().includes(q)).map(definition => <article className="library-card" key={definition.id}><div><b>{definition.name}</b><small>{definition.tags.join(' · ') || 'Módulo local'}</small></div><button onClick={() => insertModule(definition.id)}>Insertar</button></article>)}{!design.moduleDefinitions.length && <div className="muted">Guarda un conjunto como módulo para añadirlo aquí.</div>}</div>}
-    {tab === 'MATERIALS' && <div className="library-list">{design.materials.filter(value => !q || value.name.toLowerCase().includes(q)).map(material => <article className="library-card" key={material.id}><span className="library-swatch" style={{ background:material.colorHex }} /><div><b>{material.name}</b><small>{material.thicknessMm ?? '—'} mm</small></div></article>)}</div>}
-    {tab === 'HARDWARE' && <div className="library-list">{design.hardwareDefinitions.filter(value => !q || value.name.toLowerCase().includes(q)).map(definition => <article className="library-card" key={definition.id}><div><b>{definition.name}</b><small>{uiLabel(definition.category)}</small></div></article>)}{!design.hardwareDefinitions.length && <div className="muted">Sin herrajes definidos.</div>}</div>}
+    {tab === 'MODULES' && <div className="library-list">{design.moduleDefinitions.filter(value => !q || value.name.toLowerCase().includes(q)).map(definition => <article className="library-card library-card--plain" key={definition.id}><div className="library-card-copy"><b title={definition.name}>{definition.name}</b><small>{definition.tags.join(' · ') || 'Módulo local'}</small></div><button onClick={() => insertModule(definition.id)} title={`Insertar ${definition.name}`} aria-label={`Insertar ${definition.name}`}><Plus aria-hidden="true"/><span className="sr-only">Insertar</span></button></article>)}{!design.moduleDefinitions.length && <div className="muted">Guarda un conjunto como módulo para añadirlo aquí.</div>}</div>}
+    {tab === 'MATERIALS' && <div className="library-list">{design.materials.filter(value => !q || value.name.toLowerCase().includes(q)).map(material => <article className="library-card library-card--swatch library-card--readonly" key={material.id}><span className="library-swatch" style={{ background:material.colorHex }} /><div className="library-card-copy"><b title={material.name}>{material.name}</b><small>{material.thicknessMm ?? '—'} mm</small></div></article>)}</div>}
+    {tab === 'HARDWARE' && <div className="library-list">{design.hardwareDefinitions.filter(value => !q || value.name.toLowerCase().includes(q)).map(definition => <article className="library-card library-card--plain" key={definition.id}><div className="library-card-copy"><b title={definition.name}>{definition.name}</b><small>{uiLabel(definition.category)}</small></div></article>)}{!design.hardwareDefinitions.length && <div className="muted">Sin herrajes definidos.</div>}</div>}
   </section>;
 }

@@ -1,0 +1,657 @@
+/*
+ * SIMBO · editor UI refresh
+ * Alcance: navbar, navegación lateral, biblioteca y pie de estado.
+ * No cambia la posición del canvas, herramientas CAD, comandos ni permisos.
+ * Reglas intencionalmente limitadas a .app-shell para no afectar login/proyectos.
+ */
+
+.app-shell {
+  --shell-coffee: #2b201a;
+  --shell-coffee-soft: #443229;
+  --shell-orange: #ed971b;
+  --shell-paper: #faf7f2;
+  --shell-line: #e7ded3;
+  --shell-text: #382f2a;
+}
+
+/* 1. Navbar — mismo lenguaje visual que la lista de Proyectos ------------ */
+.app-shell { grid-template-rows: 68px minmax(0, 1fr) 42px; }
+
+.app-shell > .topbar {
+  grid-column: 1 / -1;
+  position: relative;
+  height: 68px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 0 clamp(14px, 2vw, 30px);
+  background: #281d17;
+  border-bottom: 1px solid #453229;
+  box-shadow: 0 2px 7px rgba(33, 21, 15, .18);
+  color: #fff;
+  z-index: 20;
+}
+.app-shell > .topbar > * { min-width: 0; }
+
+.app-shell > .topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  width: max-content;
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+.app-shell > .topbar .brand-icon {
+  width: 43px;
+  height: 43px;
+  flex: 0 0 43px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+.app-shell > .topbar .brand-icon img {
+  width: 43px;
+  height: 43px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.app-shell > .topbar .brand-icon .brand-logo-fallback { color: #fff; }
+.app-shell > .topbar .brand-copy { min-width: 0; }
+.app-shell > .topbar .brand strong {
+  display: block;
+  font-size: clamp(21px, 2.1vw, 30px);
+  font-weight: 350;
+  letter-spacing: .01em;
+  line-height: 1;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.app-shell > .topbar .project-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  text-align: center;
+}
+.app-shell > .topbar .project-name > span {
+  position: relative;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  padding: 12px 0 13px;
+  color: #fff;
+  font-size: clamp(13px, 1.25vw, 18px);
+  font-weight: 500;
+  letter-spacing: .012em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-shell > .topbar .project-name > span::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  height: 3px;
+  background: #fff;
+  box-shadow: 0 2px 3px rgba(0,0,0,.28);
+}
+
+.app-shell > .topbar .topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  min-width: 0;
+}
+.app-shell > .topbar .topbar-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.app-shell > .topbar .top-action,
+.app-shell > .topbar .top-action.secondary-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 0 0 38px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  border: 1px solid #755643;
+  border-radius: 9px;
+  background: #4c382c;
+  color: #fff2e6;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+}
+.app-shell > .topbar .top-action svg {
+  display: block;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+.app-shell > .topbar .top-save {
+  background: #18845a;
+  border-color: #319c76;
+  color: #fff;
+}
+.app-shell > .topbar .top-save:hover { background: #22996b; border-color: #6ac9a2; }
+.app-shell > .topbar .top-action.secondary-dark:hover { background: #6a4d38; border-color: #b38a60; }
+.app-shell > .topbar .top-action.top-back {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  padding: 0 13px;
+  background: #cc4039;
+  border-color: #dc5750;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.app-shell > .topbar .top-action.top-back:hover {
+  background: #ad302b;
+  border-color: #f0726d;
+}
+.app-shell > .topbar .top-action:focus-visible {
+  outline: 2px solid #ffe0b6;
+  outline-offset: 3px;
+}
+.app-shell > .topbar .top-action:active { transform: translateY(1px); }
+.app-shell > .topbar .topbar-notice {
+  position: absolute;
+  right: 15px;
+  top: calc(100% + 8px);
+  max-width: min(380px, calc(100vw - 30px));
+  padding: 9px 12px;
+  border: 1px solid #dfc297;
+  border-radius: 7px;
+  background: #fff8ea;
+  color: #694322;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  box-shadow: 0 5px 18px rgba(28, 20, 12, .18);
+  z-index: 60;
+}
+
+/* 2. Botones de navegación y encabezado de paneles ---------------------- */
+.app-shell > .left-rail {
+  background: #3b2b23;
+  border-right: 1px solid #5b4335;
+}
+.app-shell > .left-rail button {
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: #d6c4b2;
+  box-shadow: none;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.app-shell > .left-rail button:hover {
+  background: #5d4434;
+  color: #fff2e2;
+  border-color: #785a44;
+}
+.app-shell > .left-rail button.active {
+  background: var(--shell-orange);
+  color: #352314;
+  border-color: #ffbb62;
+  box-shadow: 0 3px 9px rgba(32,20,10,.15);
+}
+.app-shell .left-panel .panel-shell-heading,
+.app-shell .right-panel .panel-shell-heading {
+  min-height: 43px;
+  padding-left: 15px;
+  background: #f1aa37;
+  border-bottom: 1px solid #e9a02c;
+  color: #372619;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.25;
+  letter-spacing: .065em;
+}
+.app-shell .left-panel .panel-shell-heading > span,
+.app-shell .right-panel .panel-shell-heading > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell .left-panel .panel-shell-heading button,
+.app-shell .right-panel .panel-shell-heading button {
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.22);
+  border: 0;
+  color: #4d321b;
+}
+.app-shell .left-panel .panel-shell-heading button:hover,
+.app-shell .right-panel .panel-shell-heading button:hover {
+  background: rgba(255,255,255,.65);
+  color: #2e2015;
+}
+
+/* 3. Biblioteca: tarjetas legibles y compactas ------------------------- */
+.app-shell .right-panel:has(.library-panel) { background: var(--shell-paper); }
+.app-shell .right-panel .library-panel {
+  min-width: 0;
+  width: 100%;
+  padding: 14px 13px 20px;
+  background: transparent;
+}
+/* Biblioteca ya aparece en la franja superior del panel. */
+.app-shell .right-panel .library-panel > .panel-heading { display: none; }
+.app-shell .right-panel .library-panel .library-tabs {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 7px;
+  min-width: 0;
+  margin: 0 0 13px;
+}
+.app-shell .right-panel .library-panel .library-tabs button,
+.app-shell .right-panel .panel .library-tabs button {
+  min-width: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #fffdf9;
+  border: 1px solid #e7d9c8;
+  border-radius: 10px;
+  color: #76583c;
+  box-shadow: none;
+}
+.app-shell .right-panel .library-panel .library-tabs button svg { width: 18px; height: 18px; }
+.app-shell .right-panel .library-panel .library-tabs button:hover { background: #fff1dc; border-color: #eeb96d; }
+.app-shell .right-panel .library-panel .library-tabs button.active,
+.app-shell .right-panel .panel .library-tabs button.active {
+  background: #f49b17;
+  border-color: #e08b0d;
+  color: #34210f;
+  box-shadow: 0 2px 8px rgba(228,138,16,.13);
+}
+
+.app-shell .right-panel .library-panel > .search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-width: 0;
+  height: 41px;
+  margin: 0 0 13px;
+  padding: 0 12px;
+  border: 1px solid #dfd1c2;
+  border-radius: 10px;
+  background: #fff;
+  color: #97754c;
+  box-shadow: none;
+}
+.app-shell .right-panel .library-panel > .search > svg {
+  position: static;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: #ac7b35;
+}
+.app-shell .right-panel .library-panel > .search > input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--shell-text);
+  font-size: 12px;
+  box-shadow: none;
+}
+.app-shell .right-panel .library-panel > .search:focus-within {
+  border-color: #e0a64b;
+  box-shadow: 0 0 0 3px rgba(240,159,49,.14);
+}
+.app-shell .right-panel .library-panel > .search input::placeholder { color: #a99c90; }
+.app-shell .right-panel .library-panel .library-category {
+  width: 100%;
+  height: 39px;
+  min-width: 0;
+  margin: 0 0 12px;
+  border-radius: 9px;
+  border: 1px solid #ded1c3;
+  color: #574332;
+  background: #fff;
+  font-size: 12px;
+}
+.app-shell .right-panel .library-panel .library-list {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 9px;
+}
+.app-shell .right-panel .library-panel .library-card {
+  width: 100%;
+  min-width: 0;
+  min-height: 74px;
+  margin: 0;
+  padding: 11px 10px 11px 13px;
+  display: grid;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e9e1d7;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(44,30,19,.035);
+  transition: border-color .16s, background .16s, box-shadow .16s;
+}
+.app-shell .right-panel .library-panel .library-card:hover {
+  border-color: #e2c7a1;
+  box-shadow: 0 4px 12px rgba(44,30,19,.06);
+}
+/* A plain module has NO swatch: reserve no fake swatch column. */
+.app-shell .right-panel .library-panel .library-card--plain {
+  grid-template-columns: minmax(0,1fr) 36px;
+}
+.app-shell .right-panel .library-panel .library-card--swatch {
+  grid-template-columns: 28px minmax(0,1fr) 36px;
+}
+.app-shell .right-panel .library-panel .library-card--readonly.library-card--swatch {
+  grid-template-columns: 28px minmax(0,1fr);
+}
+.app-shell .right-panel .library-panel .library-card--plain:not(:has(> button)) {
+  grid-template-columns: minmax(0,1fr);
+}
+.app-shell .right-panel .library-panel .library-card-copy {
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.app-shell .right-panel .library-panel .library-card-copy b {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-width: 100%;
+  margin: 0 0 4px;
+  color: #3b3029;
+  font-size: 12.5px;
+  font-weight: 730;
+  line-height: 1.34;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+}
+.app-shell .right-panel .library-panel .library-card-copy small {
+  display: block;
+  max-width: 100%;
+  color: #928579;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-shell .right-panel .library-panel .library-card-copy em {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  color: #9f753a;
+  font-size: 9px;
+  font-style: normal;
+}
+.app-shell .right-panel .library-panel .library-card > .library-swatch {
+  grid-column: 1;
+  width: 27px;
+  height: 27px;
+  border-radius: 8px;
+  border: 1px solid #ddd0c0;
+}
+.app-shell .right-panel .library-panel .library-card--plain > .library-card-copy { grid-column: 1; }
+.app-shell .right-panel .library-panel .library-card--swatch > .library-card-copy { grid-column: 2; }
+.app-shell .right-panel .library-panel .library-card--plain > button,
+.app-shell .right-panel .panel .library-card--plain > button {
+  grid-column: 2;
+}
+.app-shell .right-panel .library-panel .library-card--swatch > button,
+.app-shell .right-panel .panel .library-card--swatch > button {
+  grid-column: 3;
+}
+.app-shell .right-panel .library-panel .library-card > button,
+.app-shell .right-panel .panel .library-card > button {
+  justify-self: end;
+  align-self: center;
+  flex: 0 0 36px;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: #fff3e1;
+  border: 1px solid #f0d0a4;
+  border-radius: 9px;
+  color: #a36314;
+  box-shadow: none;
+}
+.app-shell .right-panel .library-panel .library-card > button svg {width:18px;height:18px;}
+.app-shell .right-panel .library-panel .library-card > button:hover {
+  background: #ee9b27;
+  border-color: #df8918;
+  color: #fff;
+}
+.app-shell .right-panel .library-panel .muted {
+  color: #817466;
+  line-height: 1.45;
+  font-size: 12px;
+}
+
+/* 4. Footer: discreto, legible y con todos los controles accesibles ------ */
+.app-shell > .viewbar {
+  grid-row: 3;
+  grid-column: 2 / -1;
+  min-width: 0;
+  min-height: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  overflow: hidden;
+  border-top: 1px solid rgba(176,150,122,.5);
+  background: rgba(255,252,247,.96);
+  color: #4b382a;
+  box-shadow: 0 -3px 12px rgba(66,43,25,.07);
+  backdrop-filter: blur(12px);
+}
+.app-shell > .viewbar .status-context {
+  flex: 1 1 300px;
+  min-width: 0;
+  max-width: 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+  overflow: hidden;
+}
+.app-shell > .viewbar .status-context b {
+  display: block;
+  min-width: 0;
+  color: #5f422d;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .04em;
+}
+.app-shell > .viewbar .status-context span {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  color: #79665a;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-shell > .viewbar .status-signals {
+  flex: 0 1 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 270px;
+  overflow: hidden;
+}
+.app-shell > .viewbar .status-signals span {
+  min-width: 0;
+  max-width: 135px;
+  padding: 4px 7px;
+  border-radius: 6px;
+  border: 1px solid #e2d8ca;
+  background: #f6f2ec;
+  color: #67513d;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-shell > .viewbar .status-signals .signal-accent {
+  border-color: #b5d1c1;
+  background: #e6f1e9;
+  color: #326948;
+}
+.app-shell > .viewbar .status-measurement {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 45%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-left: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.app-shell > .viewbar .status-measurement > span {
+  min-width: 46px;
+  max-width: 104px;
+  font-size: 11px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: #61462e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+.app-shell > .viewbar .status-measurement > span.error { color: #b4362e; }
+.app-shell > .viewbar .status-measurement button,
+.app-shell > .viewbar .status-measurement button:nth-last-child(-n+4) {
+  flex: 0 0 31px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 31px;
+  min-width: 31px;
+  height: 29px;
+  min-height: 29px;
+  padding: 0;
+  background: #fffdfa;
+  border: 1px solid #decfbc;
+  border-radius: 7px;
+  color: #604831;
+  box-shadow: none;
+}
+.app-shell > .viewbar .status-measurement button svg {width:15px;height:15px;stroke-width:1.9;}
+.app-shell > .viewbar .status-measurement button:hover {
+  background: #fceacd;
+  border-color: #d3a665;
+  color: #51361f;
+}
+.app-shell > .viewbar .status-measurement button.active {
+  background: #e4f1e8;
+  border-color: #99c6a8;
+  color: #27613e;
+}
+
+/* Layout responsivo sin ocultar herramientas funcionales. */
+@media (max-width: 1200px) {
+  .app-shell > .topbar .top-action.top-back span { display: none; }
+  .app-shell > .topbar .top-action.top-back {
+    flex: 0 0 38px;
+    width: 38px;
+    min-width: 38px;
+    padding: 0;
+  }
+  .app-shell > .viewbar .status-context {max-width:40%;}
+  .app-shell > .viewbar .status-signals {max-width:190px;}
+}
+@media (max-width: 880px) {
+  .app-shell > .topbar { gap: 8px; padding-inline: 12px; }
+  .app-shell > .topbar .brand { gap: 7px; }
+  .app-shell > .topbar .brand-icon { width: 33px; height: 33px; flex-basis: 33px; }
+  .app-shell > .topbar .brand-icon img { width: 33px; height: 33px; }
+  .app-shell > .topbar .brand strong { font-size: 20px; }
+  .app-shell > .topbar .project-name > span { font-size: 13px; }
+  .app-shell > .viewbar .status-context {max-width:35%;}
+  .app-shell > .viewbar .status-signals {max-width:150px;}
+}
+@media (max-width: 600px) {
+  .app-shell > .topbar { grid-template-columns: minmax(80px,1fr) minmax(0,1.1fr) minmax(105px,1fr); gap: 5px; padding: 0 7px; }
+  .app-shell > .topbar .brand strong { font-size: 16px; }
+  .app-shell > .topbar .brand-icon { width: 28px; height: 28px; flex-basis: 28px; }
+  .app-shell > .topbar .brand-icon img { width: 28px; height: 28px; }
+  .app-shell > .topbar .brand {gap: 4px;}
+  .app-shell > .topbar .topbar-actions {gap: 4px;}
+  .app-shell > .topbar .top-action,
+  .app-shell > .topbar .top-action.secondary-dark,
+  .app-shell > .topbar .top-action.top-back { width: 32px; min-width: 32px; flex-basis: 32px; height: 33px; min-height: 33px; }
+  .app-shell > .topbar .top-action svg { width: 16px; height: 16px; }
+  .app-shell > .topbar .project-name > span {font-size:11px;}
+  .app-shell > .viewbar {gap:6px;padding:0 6px;}
+  .app-shell > .viewbar .status-context {max-width:none;flex:1 1 72px;}
+  .app-shell > .viewbar .status-context span {display:none;}
+  .app-shell > .viewbar .status-signals {display:none;}
+  .app-shell > .viewbar .status-measurement {max-width:calc(100% - 80px);}
+  .app-shell > .viewbar .status-measurement > span {min-width:31px;}
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell > .topbar button,
+  .app-shell .library-card,
+  .app-shell .left-rail button { transition: none; }
+}
