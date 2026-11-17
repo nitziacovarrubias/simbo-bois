@@ -1,5 +1,7 @@
 import './StatusBar.css';
 import { useMemo } from 'react';
+import { ArrowLeft, ArrowRight, Compass, Layers, Plus, ScanLine } from 'lucide-react';
+import { DEMO_FOCUSED_UI } from '../demoUiConfig';
 import { measurePartsWorld } from '@simbo/editor-engine';
 import { useEditor } from '../store';
 import { runEditorCommand } from '../commandRuntime';
@@ -54,16 +56,16 @@ export default function StatusBar() {
   }, [design, selected]);
 
   return <div className="viewbar" role="status" aria-live="polite">
-    <div className="status-context"><b>{toolLabel(tool)}</b><span>{statusHint(tool, toolPhase)}</span></div>
+    <div className="status-context"><b>{toolLabel(tool)}</b><span title={statusHint(tool, toolPhase)}>{statusHint(tool, toolPhase)}</span></div>
     <div className="status-signals"><span>{inferenceCandidate?.label ?? 'Sin inferencia'}</span>{axisLock && <span className="signal-accent">Eje {axisLock.toUpperCase()}</span>}<span>{selected.length} sel.</span></div>
     <div className="status-measurement">
       <span className={measurementError ? 'error' : ''}>{measurementNormalized || measurementRaw || (measureResult ? `${measureResult.distanceMm.toFixed(2)} mm` : distance ? `${distance.distanceMm.toFixed(2)} mm` : '—')}</span>
-      {measureResult && <button onClick={addGuide}>+ Guía</button>}
-      <button title="Cambiar proyección" onClick={() => runEditorCommand('view.projection')}>Proyección</button>
-      <button title="Vista anterior" onClick={() => runEditorCommand('view.previous')}>Anterior</button>
-      <button title="Vista siguiente" onClick={() => runEditorCommand('view.next')}>Siguiente</button>
-      <button className={exploded ? 'active' : ''} onClick={() => setExploded(!exploded)}>Explosión</button>
-      <button onClick={() => runEditorCommand('section.create')}>Sección</button>
+      {measureResult && <button onClick={addGuide} aria-label="Añadir guía" title="Añadir guía"><Plus aria-hidden="true"/></button>}
+      <button title="Cambiar proyección" aria-label="Cambiar proyección" onClick={() => runEditorCommand('view.projection')}><Compass aria-hidden="true"/></button>
+      <button title="Vista anterior" aria-label="Vista anterior" onClick={() => runEditorCommand('view.previous')}><ArrowLeft aria-hidden="true"/></button>
+      <button title="Vista siguiente" aria-label="Vista siguiente" onClick={() => runEditorCommand('view.next')}><ArrowRight aria-hidden="true"/></button>
+      <button className={exploded ? 'active' : ''} title="Vista explosionada" aria-label="Vista explosionada" aria-pressed={exploded} onClick={() => setExploded(!exploded)}><Layers aria-hidden="true"/></button>
+      {!DEMO_FOCUSED_UI && <button title="Crear sección" aria-label="Crear sección" onClick={() => runEditorCommand('section.create')}><ScanLine aria-hidden="true"/></button>}
     </div>
   </div>;
 }

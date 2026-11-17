@@ -53,3 +53,20 @@ th {
 .manufacturing-data-note {font-size:10px;line-height:1.45;white-space:normal;}
 
 }
+
+/* Tablas del panel de manufactura: textos completos sin desbordar el panel. */
+@layer pro {
+  .manufacturing .table-wrap { max-width: 100%; }
+  .manufacturing .manufacturing-parts-table th,
+  .manufacturing .manufacturing-parts-table td { vertical-align: top; }
+  .manufacturing .manufacturing-parts-table td:first-child,
+  .manufacturing .manufacturing-parts-table td:nth-child(5) {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-width: 210px;
+  }
+  .manufacturing .manufacturing-origin { max-width: 360px; grid-template-columns: 1fr; gap: 2px; }
+  .manufacturing .manufacturing-origin dt { margin-top: 7px; }
+  .manufacturing .manufacturing-origin dd { white-space: normal; overflow-wrap: anywhere; }
+  .manufacturing .manufacturing-parts-table details summary { white-space: normal; }
+}

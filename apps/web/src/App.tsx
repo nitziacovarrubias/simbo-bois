@@ -1,6 +1,8 @@
 import './App.css';
+import { DEMO_FOCUSED_UI } from './demoUiConfig';
+import './demo-ui-polish.css';
 import { useEffect, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
-import { Box, Camera, CircleDot, Cuboid, FolderPlus, Layers3, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench } from 'lucide-react';
+import { Box, Camera, CircleDot, Cuboid, FolderPlus, History, Layers3, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench, ArrowLeft } from 'lucide-react';
 import Viewport from './components/Viewport';
 import Outliner from './components/Outliner';
 import Inspector from './components/Inspector';
@@ -23,8 +25,8 @@ import PresentationWorkspace from './components/PresentationWorkspace';
 import NewProjectDialog from './components/NewProjectDialog';
 import { autosaveNow, editorInput, useEditor } from './store';
 import type { SessionUser } from './apiClient';
-import { serializeDesign } from '@simbo/design-domain';
 import { editorFacade } from './editorFacade';
+import './editor-surface.css';
 
 type ActivePanel = ReturnType<typeof useEditor.getState>['activePanel'];
 
@@ -33,7 +35,6 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
   const panel=useEditor(state=>state.activePanel);
   const setPanel=useEditor(state=>state.setActivePanel);
   const saveStatus=useEditor(state=>state.saveStatus);
-  const remote=useEditor(state=>state.remoteProject);
   const saveError=useEditor(state=>state.saveError);
   const [notice,setNotice]=useState('');
   const workspace=useEditor(state=>state.workspace);
@@ -85,40 +86,36 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
   } as CSSProperties;
 
   return <div className="app-shell" style={shellSizes}>
-    <header className="topbar">
-      <div className="brand" aria-label="SIMBO · BOIS Cocinas y Closets">
+    <header className="topbar" aria-label={user ? `Editor SIMBO · ${user.name}` : 'Editor SIMBO'}>
+      <div className="brand" aria-label="SIMBO">
         <span className="brand-icon" aria-hidden="true">
           <img src="/simbo-logo.svg" alt="" onError={event => { event.currentTarget.hidden = true; }} />
           <Layers3 className="brand-logo-fallback" />
         </span>
-        <div className="brand-copy"><strong>SIMBO</strong><span>BOIS · DISEÑO PARAMÉTRICO</span></div>
+        <div className="brand-copy"><strong>SIMBO</strong></div>
       </div>
-      <div className="project-name" title={design.metadata.name}>
-        <span>{design.metadata.name}</span><small>Edición de diseño <b>·</b> r{design.metadata.draftRevision}{remote&&` · servidor r${remote.revision}`}</small>
+      <div className="project-name" title={`${design.metadata.name} · Revisión ${design.metadata.draftRevision}`}>
+        <span>{design.metadata.name}</span>
       </div>
-      <div className="save-state">
-        <span className={`status ${saveStatus.toLowerCase()}`} role="status">{saveStatus}</span>
-        <button className="top-action top-save" onClick={()=>void autosaveNow().catch(()=>{})} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/><span>Guardar</span></button>
-        <button className="top-action secondary-dark" onClick={()=>{setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión'));}} title="Guardar una nueva versión del diseño">Versión</button>
+      <div className="topbar-actions">
+        <span className="topbar-sr-only" role="status">Estado de guardado: {saveStatus}</span>
+        <button type="button" className="top-action top-save" onClick={()=>void autosaveNow().catch(()=>{})} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/></button>
+        <button type="button" className="top-action secondary-dark" onClick={()=>{setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión'));}} title="Guardar nueva versión" aria-label="Guardar nueva versión"><History aria-hidden="true"/></button>
+        {onProjects&&<button type="button" className="top-action top-back" onClick={onProjects} title="Volver a proyectos" aria-label="Volver a proyectos"><ArrowLeft aria-hidden="true"/><span>Volver a proyectos</span></button>}
       </div>
-      <div className="project-connection">
-        {user&&<span>{user.name} · {user.role==='SUPERVISOR'?'Supervisor':'Arquitecto'}</span>}
-        <small>{remote?(remote.approvedVersionId&&serializeDesign(design)===remote.savedDesign?'Aprobación vigente':'Sin aprobación vigente'):'Editor local'}</small>
-        {onProjects&&<button type="button" onClick={onProjects}>Proyectos</button>}
-        {(saveError||notice)&&<span role="status" title={saveError||notice}>{saveError||notice}</span>}
-      </div>
+      {(saveError||notice)&&<span className="topbar-notice" role="status" title={saveError||notice}>{saveError||notice}</span>}
     </header>
 
     <aside className="left-rail" aria-label="Áreas del editor">
-      <button title="Nuevo proyecto" aria-label="Nuevo proyecto" onClick={()=>setNewProjectOpen(true)}><FolderPlus/></button>
+      {!DEMO_FOCUSED_UI && <button title="Nuevo proyecto" aria-label="Nuevo proyecto" onClick={()=>setNewProjectOpen(true)}><FolderPlus/></button>}
       <button title="Abrir demo oficial" aria-label="Abrir demo oficial" onClick={()=>editorFacade.loadDemo()}><Layers3/></button>
       <button className={panel==='INSPECTOR'?'active':''} title="Propiedades" aria-label="Propiedades" onClick={()=>openPanel('INSPECTOR')}><Settings2/></button>
       <button className={panel==='LIBRARY'?'active':''} title="Biblioteca" aria-label="Biblioteca" onClick={()=>openPanel('LIBRARY')}><Box/></button>
-      <button className={panel==='MODULE'?'active':''} title="Constructor de módulos" aria-label="Constructor de módulos" onClick={()=>openPanel('MODULE')}><Cuboid/></button>
-      <button className={panel==='JOINERY'?'active':''} title="Uniones" aria-label="Uniones" onClick={()=>openPanel('JOINERY')}><Wrench/></button>
+      {!DEMO_FOCUSED_UI && <button className={panel==='MODULE'?'active':''} title="Constructor de módulos" aria-label="Constructor de módulos" onClick={()=>openPanel('MODULE')}><Cuboid/></button>}
+      {!DEMO_FOCUSED_UI && <button className={panel==='JOINERY'?'active':''} title="Uniones" aria-label="Uniones" onClick={()=>openPanel('JOINERY')}><Wrench/></button>}
       <button className={panel==='MANUFACTURING'?'active':''} title="Manufactura" aria-label="Manufactura" onClick={()=>openPanel('MANUFACTURING')}><Scissors/></button>
       <button className={panel==='SCENES'?'active':''} title="Escenas y secciones" aria-label="Escenas y secciones" onClick={()=>openPanel('SCENES')}><Camera/></button>
-      <button className={panel==='HEALTH'?'active':''} title="Salud del modelo" aria-label="Salud del modelo" onClick={()=>openPanel('HEALTH')}><CircleDot/></button>
+      {!DEMO_FOCUSED_UI && <button className={panel==='HEALTH'?'active':''} title="Salud del modelo" aria-label="Salud del modelo" onClick={()=>openPanel('HEALTH')}><CircleDot/></button>}
     </aside>
 
     <aside className={`left-panel ${workspace.leftPanelCollapsed?'collapsed':''}`} aria-label="Panel de escena y habitación"><div className="panel-shell-heading"><span>Diseño y escena</span><button type="button" aria-label="Cerrar panel izquierdo" title="Cerrar panel" onClick={()=>setPanelCollapsed('left',true)}><PanelLeftClose aria-hidden="true"/></button></div><Outliner/><RoomPanel/></aside>
