@@ -1,0 +1,44 @@
+
+name: SIMBO - Recordatorios de entregas
+
+on:
+  schedule:
+    - cron: '15 9 * * *'
+      timezone: 'America/Hermosillo'
+
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Simular sin publicar comentarios'
+        type: boolean
+        required: true
+        default: true
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: simbo-issue-reminders
+  cancel-in-progress: false
+
+jobs:
+  recordatorios:
+    name: Revisar fechas de entrega
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Ejecutar recordatorios
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+        run: node scripts/issue-reminders.mjs
