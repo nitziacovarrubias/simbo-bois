@@ -159,11 +159,22 @@ for (const issue of issues) {
         `#${issue.number}: vence ${due.display}; faltan ${remaining} días`
     );
 
-    if (!Object.hasOwn(messages, remaining)) {
-        continue;
+    const daysLate = -remaining;
+
+    const isUpcomingReminder = Object.hasOwn(messages, remaining);
+
+    const isOverdueReminder =
+    remaining < 0 &&
+    (daysLate - 1) % 3 === 0;
+
+    if (!isUpcomingReminder && !isOverdueReminder) {
+    continue;
     }
 
-    eligible++;
+    const reminderText = isOverdueReminder
+    ? `⚠️ La fecha límite se superó hace ${daysLate} día${daysLate === 1 ? "" : "s"}. Por favor, actualicen el avance de la tarea y creen la Pull Request si aún no lo han hecho.`
+    : messages[remaining];
+        eligible++;
 
     // Identificador único por issue, plazo y tipo de aviso.
     const marker =
@@ -190,7 +201,7 @@ for (const issue of issues) {
         "",
         mentions,
         "",
-        messages[remaining],
+        reminderText,
         `**Fecha límite:** ${due.display}`,
         "",
         "Recuerden actualizar el avance de la issue y preparar",
