@@ -1,5 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
 import { CreateProjectRequestSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
@@ -38,6 +37,43 @@ class ProjectsController {
     });
     return this.projects.cuttingList(
       actor, params.projectId, params.designVersionId
+    );
+  }
+@Post(':id/versions/:versionId/cutting-list/authorize')
+  @HttpCode(200)
+  authorizeCuttingList(
+    @CurrentUser() actor: Actor,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() body: unknown
+  ) {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId: id,
+      designVersionId: versionId
+    });
+    const parsedBody = RevisionRequestSchema.parse(body);
+    return this.projects.authorizeCuttingList(
+      actor,
+      params.projectId,
+      params.designVersionId,
+      parsedBody.expectedRevision
+    );
+  }
+
+  @Get(':id/versions/:versionId/cutting-list/authorization')
+  getCuttingListAuthorization(
+    @CurrentUser() actor: Actor,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string
+  ) {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId: id,
+      designVersionId: versionId
+    });
+    return this.projects.getCuttingListAuthorization(
+      actor,
+      params.projectId,
+      params.designVersionId
     );
   }
 }
