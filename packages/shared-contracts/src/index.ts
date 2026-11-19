@@ -163,3 +163,34 @@ export type CuttingListResponse =
  z.infer<typeof CuttingListResponseSchema>;
 export type CuttingListErrorResponse =
  z.infer<typeof CuttingListErrorResponseSchema>;
+
+export const CreateDesignChangeProposalRequestSchema = z.object({
+  observation: z.string().trim().min(1).max(2000)
+}).strict();
+export const DesignChangeProposalParamsSchema = z.object({
+  projectId: z.string().min(1),
+  versionId: z.string().min(1)
+}).strict();
+export const DesignChangeProposalSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  versionId: z.string().min(1),
+  observation: z.string().min(1).max(2000),
+  author: z.object({
+    id: z.string().min(1),
+    name: z.string()
+  }).strict(),
+  createdAt: z.string().datetime()
+}).strict();
+export const CreateDesignChangeProposalResponseSchema = DesignChangeProposalSchema;
+export const ListDesignChangeProposalsResponseSchema = z.array(DesignChangeProposalSchema);
+export type CreateDesignChangeProposalRequest =
+  z.infer<typeof CreateDesignChangeProposalRequestSchema>;
+export type DesignChangeProposalParams =
+  z.infer<typeof DesignChangeProposalParamsSchema>;
+export type DesignChangeProposal =
+  z.infer<typeof DesignChangeProposalSchema>;
+export type CreateDesignChangeProposalResponse =
+  z.infer<typeof CreateDesignChangeProposalResponseSchema>;
+export type ListDesignChangeProposalsResponse =
+  z.infer<typeof ListDesignChangeProposalsResponseSchema>;
