@@ -21,6 +21,8 @@ export function collectManufacturingData(design: DesignDocument): ManufacturingD
   return { parts, countertops, hardware, machiningFeatures: structuredClone(design.machiningFeatures), edgeBanding: parts.map(part => ({ partId: part.id, edges: structuredClone(part.edgeBanding) })), summary: { partCount: parts.length, countertopCount: countertops.length, hardwareCount: hardware.reduce((count, item) => count + item.quantity, 0), machiningCount: design.machiningFeatures.length } };
 }
 
+
+
 export interface PartOrigin {
   partId: Id;
   assemblyPath: Id[];

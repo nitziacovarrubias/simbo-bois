@@ -2,7 +2,15 @@ import { readFile } from 'node:fs/promises';
 import { hashPassword } from '../apps/api/src/security.ts';
 import { Prisma, PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prismaClientSingleton = () => {
+  return new PrismaClient();
+};
+
+declare global {
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
+}
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
 async function main(): Promise<void> {
   const project = await prisma.project.upsert({
