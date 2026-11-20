@@ -655,3 +655,88 @@
   .app-shell .library-card,
   .app-shell .left-rail button { transition: none; }
 }
+
+.app-shell > .topbar .top-action.top-proposal {
+  background: #684c36;
+  border-color: #9c7048;
+}
+.app-shell > .topbar .top-action.top-proposal:hover {
+  background: #805c3d;
+}
+.proposal-panel {
+  position: absolute;
+  z-index: 80;
+  top: 14px;
+  right: 14px;
+  width: min(390px, calc(100% - 28px));
+  padding: 16px;
+  border: 1px solid #d5c6b3;
+  border-radius: 10px;
+  background: #fffdfa;
+  color: #382d24;
+  box-shadow: 0 10px 32px rgba(32, 24, 17, .24);
+}
+.proposal-panel-heading,
+.proposal-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.proposal-panel-heading { margin-bottom: 12px; }
+.proposal-panel-heading h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.proposal-panel-heading button {
+  border: 0;
+  background: transparent;
+  color: #5e4d3e;
+  font-size: 22px;
+  line-height: 1;
+}
+.proposal-panel form { display: grid; gap: 8px; }
+.proposal-panel label {
+  color: #56483c;
+  font-size: 12px;
+  font-weight: 700;
+}
+.proposal-panel textarea {
+  min-height: 96px;
+  resize: vertical;
+  border: 1px solid #cfc2b3;
+  border-radius: 6px;
+  padding: 9px;
+  color: #382d24;
+  font: inherit;
+}
+.proposal-panel-actions { justify-content: flex-end; margin-top: 4px; }
+.proposal-panel-actions button {
+  border: 1px solid #a46a24;
+  border-radius: 6px;
+  padding: 8px 11px;
+  background: #d98a20;
+  color: #fff;
+  font-weight: 700;
+}
+.proposal-panel-actions .proposal-cancel {
+  border-color: #cfc2b3;
+  background: #fff;
+  color: #57483b;
+}
+.proposal-panel-actions button:disabled { cursor: wait; opacity: .65; }
+.proposal-error {
+  margin: 0 0 10px;
+  color: #a52922;
+  font-size: 12px;
+}
+.proposal-confirmation {
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid #a8d1b3;
+  border-radius: 7px;
+  background: #e9f6ec;
+  color: #205d37;
+}
+.proposal-confirmation p { margin: 6px 0; overflow-wrap: anywhere; }
+.proposal-confirmation small { color: #477453; }

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react';import { createEmptyDesign } from '@simbo/design-domain';
 
-import type { CuttingListResponse } from '@simbo/shared-contracts';
+import type { CuttingListResponse, DesignChangeProposal } from '@simbo/shared-contracts';
 import { exportCuttingListXlsx } from './cuttingListExcel';
 
 import App from './App';
@@ -120,6 +120,11 @@ export default function ProjectWorkspace() {
   const [newProject,setNewProject]=useState(false);
 
   const [review,setReview]=useState<ProjectSummary|null>(null);const [versions,setVersions]=useState<VersionSummary[]>([]);
+  const [proposalHistory,setProposalHistory]=useState<Record<string,DesignChangeProposal[]>>({});
+  const [expandedProposalVersionId,setExpandedProposalVersionId]=useState<string>();
+  const [proposalLoadingVersionId,setProposalLoadingVersionId]=useState<string>();
+  const [proposalHistoryError,setProposalHistoryError]=useState('');
+  const proposalRequest=useRef(0);
 
   const remote=useEditor(state=>state.remoteProject);
 
@@ -230,15 +235,71 @@ const showVersions = async (project: ProjectSummary) => {
 
     clearCuttingList();
 
+    proposalRequest.current += 1;
+
     setReview(null);
 
     setVersions([]);
+
+    setProposalHistory({});
+
+    setExpandedProposalVersionId(undefined);
+
+    setProposalLoadingVersionId(undefined);
+
+    setProposalHistoryError('');
 
     const items = await apiClient.versions(project.id);
 
     setVersions(items);
 
     setReview(project);
+
+  };
+
+const toggleProposalHistory = async (version: VersionSummary) => {
+
+    if (!review) return;
+
+    if (expandedProposalVersionId === version.id) {
+
+      setExpandedProposalVersionId(undefined);
+
+      return;
+
+    }
+
+    setExpandedProposalVersionId(version.id);
+
+    setProposalHistoryError('');
+
+    if (Object.prototype.hasOwnProperty.call(proposalHistory, version.id)) return;
+
+    const requestId = ++proposalRequest.current;
+
+    const projectId = review.id;
+
+    setProposalLoadingVersionId(version.id);
+
+    try {
+
+      const items = await apiClient.listProposals(projectId, version.id);
+
+      if (requestId !== proposalRequest.current) return;
+
+      setProposalHistory(current => ({ ...current, [version.id]: items }));
+
+    } catch (error) {
+
+      if (requestId !== proposalRequest.current) return;
+
+      setProposalHistoryError(error instanceof Error ? error.message : 'No se pudieron cargar las propuestas');
+
+    } finally {
+
+      if (requestId === proposalRequest.current) setProposalLoadingVersionId(undefined);
+
+    }
 
   };
 
@@ -493,7 +554,40 @@ const generate = async (version: VersionSummary) => {
           {!projects.length&&<p className="project-empty">No hay proyectos disponibles. Crea el primero.</p>}
         </div>
 
-        {review&&<section className="project-versions"><h2>Versiones de {review.name}</h2><p>Revisa las versiones y aprueba la vigente.</p>{versions.map(version=><article key={version.id}><strong>Revisión {version.revision}</strong><span>{version.approvalStatus==='APPROVED'?'Aprobada':'Pendiente'} · {version.current?'Vigente':'Histórica'}</span>{version.approvedAt&&<small>Aprobada: {new Date(version.approvedAt).toLocaleString()}</small>}{user.role==='SUPERVISOR'&&version.current&&version.approvalStatus!=='APPROVED'&&<button disabled={busy || cuttingLoading} className="project-btn project-btn--approve" onClick={()=>void run(()=>approve(version))}><ActionIcon name="check" /> Aprobar diseño</button>}{user.role === 'SUPERVISOR' && (<button type="button" disabled={busy || cuttingLoading || !version.current || version.approvalStatus !== 'APPROVED'} className="project-btn project-btn--generate" onClick={() => void generate(version)}><ActionIcon name="download" /> Generar despiece</button>)}</article>)}{!versions.length&&<p>Guarda una versión desde el editor antes de solicitar aprobación.</p>}{cuttingLoading && (<p role="status">Generando despiece...</p>)}{cuttingError && (<p className="project-error" role="alert">{cuttingError}</p>)}{cuttingResult && cuttingResult.source.projectId === review.id && (<><p className="cutting-source" title={`Versión: ${cuttingResult.source.designVersionId}`}>Despiece · revisión {cuttingResult.source.revision}</p><CuttingListTable result={cuttingResult} projectName={review.name} /></>)}</section>}
+        {review&&<section className="project-versions">
+          <h2>Versiones de {review.name}</h2>
+          <p>Revisa las versiones y las propuestas registradas en cada una.</p>
+          {versions.map(version=><article className="project-version-card" key={version.id}>
+            <strong>Revisión {version.revision}</strong>
+            <span>{version.approvalStatus==='APPROVED'?'Aprobada':'Pendiente'} · {version.current?'Vigente':'Histórica'}</span>
+            {version.approvedAt&&<small>Aprobada: {new Date(version.approvedAt).toLocaleString()}</small>}
+            <button
+              type="button"
+              className="project-btn project-btn--proposals"
+              aria-expanded={expandedProposalVersionId===version.id}
+              aria-controls={`proposal-history-${version.id}`}
+              disabled={busy || (proposalLoadingVersionId!==undefined && proposalLoadingVersionId!==version.id)}
+              onClick={()=>void toggleProposalHistory(version)}
+            >
+              {proposalLoadingVersionId===version.id?'Cargando…':expandedProposalVersionId===version.id?'Ocultar propuestas':'Ver propuestas'}
+            </button>
+            {user.role==='SUPERVISOR'&&version.current&&version.approvalStatus!=='APPROVED'&&<button disabled={busy || cuttingLoading} className="project-btn project-btn--approve" onClick={()=>void run(()=>approve(version))}><ActionIcon name="check" /> Aprobar diseño</button>}
+            {user.role==='SUPERVISOR'&&<button type="button" disabled={busy || cuttingLoading || !version.current || version.approvalStatus!=='APPROVED'} className="project-btn project-btn--generate" onClick={()=>void generate(version)}><ActionIcon name="download" /> Generar despiece</button>}
+            {expandedProposalVersionId===version.id&&<section className="project-proposal-history" id={`proposal-history-${version.id}`} aria-label={`Propuestas de la revisión ${version.revision}`}>
+              {proposalHistoryError&&<p className="project-error" role="alert">{proposalHistoryError}</p>}
+              {proposalLoadingVersionId===version.id&&<p role="status">Cargando propuestas…</p>}
+              {proposalHistory[version.id]?.length===0&&<p>No hay propuestas registradas para esta versión.</p>}
+              {proposalHistory[version.id]?.map(proposal=><article className="project-proposal-entry" key={proposal.id}>
+                <p>{proposal.observation}</p>
+                <small>{proposal.author.name} · {new Date(proposal.createdAt).toLocaleString()}</small>
+              </article>)}
+            </section>}
+          </article>)}
+          {!versions.length&&<p>Guarda una versión desde el editor antes de solicitar aprobación.</p>}
+          {cuttingLoading&&<p role="status">Generando despiece...</p>}
+          {cuttingError&&<p className="project-error" role="alert">{cuttingError}</p>}
+          {cuttingResult&&cuttingResult.source.projectId===review.id&&(<><p className="cutting-source" title={`Versión: ${cuttingResult.source.designVersionId}`}>Despiece · revisión {cuttingResult.source.revision}</p><CuttingListTable result={cuttingResult} projectName={review.name}/></>)}
+        </section>}
       </section>
 
       <button className="project-local project-btn project-btn--local" type="button" disabled={busy || cuttingLoading} onClick={local}><ActionIcon name="monitor" /> Abrir editor local</button>

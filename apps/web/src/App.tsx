@@ -1,8 +1,8 @@
 import './App.css';
 import { DEMO_FOCUSED_UI } from './demoUiConfig';
 import './demo-ui-polish.css';
-import { useEffect, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
-import { Box, Camera, CircleDot, Cuboid, FolderPlus, History, Layers3, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench, ArrowLeft } from 'lucide-react';
+import { useEffect, useState, type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { Box, Camera, CircleDot, Cuboid, FolderPlus, History, Layers3, MessageSquarePlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench, ArrowLeft } from 'lucide-react';
 import Viewport from './components/Viewport';
 import Outliner from './components/Outliner';
 import Inspector from './components/Inspector';
@@ -24,7 +24,8 @@ import EntityContextMenu from './components/EntityContextMenu';
 import PresentationWorkspace from './components/PresentationWorkspace';
 import NewProjectDialog from './components/NewProjectDialog';
 import { autosaveNow, editorInput, useEditor } from './store';
-import type { SessionUser } from './apiClient';
+import { apiClient, type SessionUser } from './apiClient';
+import type { DesignChangeProposal } from '@simbo/shared-contracts';
 import { editorFacade } from './editorFacade';
 import './editor-surface.css';
 
@@ -37,6 +38,7 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
   const saveStatus=useEditor(state=>state.saveStatus);
   const saveError=useEditor(state=>state.saveError);
   const [notice,setNotice]=useState('');
+  const remoteProject=useEditor(state=>state.remoteProject);
   const workspace=useEditor(state=>state.workspace);
   const setPanelCollapsed=useEditor(state=>state.setPanelCollapsed);
   const setPanelWidth=useEditor(state=>state.setPanelWidth);
@@ -44,6 +46,45 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
   const createVersion=useEditor(state=>state.createVersion);
   const presentationMode=useEditor(state=>state.presentationMode);
   const [newProjectOpen,setNewProjectOpen]=useState(false);
+  const [proposalOpen,setProposalOpen]=useState(false);
+  const [proposalObservation,setProposalObservation]=useState('');
+  const [proposalSubmitting,setProposalSubmitting]=useState(false);
+  const [proposalError,setProposalError]=useState('');
+  const [createdProposal,setCreatedProposal]=useState<DesignChangeProposal>();
+
+  const submitProposal=async(event:FormEvent<HTMLFormElement>)=>{
+    event.preventDefault();
+    if(!remoteProject)return;
+    setProposalSubmitting(true);
+    setProposalError('');
+    setCreatedProposal(undefined);
+    try {
+      await autosaveNow();
+      if(useEditor.getState().remoteProject?.connectionId!==remoteProject.connectionId) {
+        throw new Error('El proyecto activo cambió; vuelve a intentarlo');
+      }
+      const versions=await apiClient.versions(remoteProject.projectId);
+      const currentVersion=versions.find(version=>version.current);
+      if(!currentVersion) {
+        throw new Error('Guarda una versión vigente del diseño antes de registrar una propuesta');
+      }
+      if(currentVersion.approvalStatus!=='DRAFT') {
+        throw new Error('La versión vigente ya está aprobada; crea una versión nueva antes de proponer cambios');
+      }
+      const proposal=await apiClient.createProposal(
+        remoteProject.projectId,
+        currentVersion.id,
+        proposalObservation.trim()
+      );
+      setCreatedProposal(proposal);
+      setProposalObservation('');
+      setNotice(`Propuesta registrada · revisión ${currentVersion.revision}`);
+    } catch(error) {
+      setProposalError(error instanceof Error?error.message:'No se pudo registrar la propuesta');
+    } finally {
+      setProposalSubmitting(false);
+    }
+  };
 
   useEffect(()=>{
     if(saveStatus!=='PENDIENTE')return;
@@ -101,6 +142,7 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
         <span className="topbar-sr-only" role="status">Estado de guardado: {saveStatus}</span>
         <button type="button" className="top-action top-save" onClick={()=>void autosaveNow().catch(()=>{})} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/></button>
         <button type="button" className="top-action secondary-dark" onClick={()=>{setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión'));}} title="Guardar nueva versión" aria-label="Guardar nueva versión"><History aria-hidden="true"/></button>
+        {user?.role==='ARCHITECT'&&remoteProject&&<button type="button" className="top-action top-proposal" onClick={()=>{setProposalError('');setCreatedProposal(undefined);setProposalObservation('');setProposalOpen(value=>!value);}} title="Registrar propuesta" aria-label="Registrar propuesta"><MessageSquarePlus aria-hidden="true"/></button>}
         {onProjects&&<button type="button" className="top-action top-back" onClick={onProjects} title="Volver a proyectos" aria-label="Volver a proyectos"><ArrowLeft aria-hidden="true"/><span>Volver a proyectos</span></button>}
       </div>
       {(saveError||notice)&&<span className="topbar-notice" role="status" title={saveError||notice}>{saveError||notice}</span>}
@@ -121,6 +163,36 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
     <aside className={`left-panel ${workspace.leftPanelCollapsed?'collapsed':''}`} aria-label="Panel de escena y habitación"><div className="panel-shell-heading"><span>Diseño y escena</span><button type="button" aria-label="Cerrar panel izquierdo" title="Cerrar panel" onClick={()=>setPanelCollapsed('left',true)}><PanelLeftClose aria-hidden="true"/></button></div><Outliner/><RoomPanel/></aside>
 
     <main className="viewport-area">
+      {proposalOpen&&<section className="proposal-panel" aria-labelledby="proposal-title">
+        <div className="proposal-panel-heading">
+          <h2 id="proposal-title">Registrar propuesta</h2>
+          <button type="button" aria-label="Cerrar formulario de propuesta" onClick={()=>setProposalOpen(false)}>×</button>
+        </div>
+        {proposalError&&<p className="proposal-error" role="alert">{proposalError}</p>}
+        {createdProposal&&<div className="proposal-confirmation" role="status">
+          <strong>Propuesta registrada</strong>
+          <p>{createdProposal.observation}</p>
+          <small>{createdProposal.author.name} · {new Date(createdProposal.createdAt).toLocaleString()}</small>
+        </div>}
+        <form onSubmit={submitProposal}>
+          <label htmlFor="proposal-observation">Observación</label>
+          <textarea
+            id="proposal-observation"
+            required
+            maxLength={2000}
+            rows={4}
+            value={proposalObservation}
+            onChange={event=>setProposalObservation(event.target.value)}
+            placeholder="Describe el cambio que propones"
+          />
+          <div className="proposal-panel-actions">
+            <button type="button" className="proposal-cancel" onClick={()=>setProposalOpen(false)}>Cerrar</button>
+            <button type="submit" disabled={proposalSubmitting}>
+              {proposalSubmitting?'Registrando…':'Registrar propuesta'}
+            </button>
+          </div>
+        </form>
+      </section>}
       {!workspace.leftPanelCollapsed&&<div className="panel-resizer panel-resizer-left" onPointerDown={event=>startResize('left',event)}/>} 
       {!workspace.rightPanelCollapsed&&<div className="panel-resizer panel-resizer-right" onPointerDown={event=>startResize('right',event)}/>} 
       <button className="panel-toggle panel-toggle-left" aria-label={workspace.leftPanelCollapsed?'Mostrar panel izquierdo':'Ocultar panel izquierdo'} title={workspace.leftPanelCollapsed?'Mostrar panel izquierdo':'Ocultar panel izquierdo'} onClick={()=>setPanelCollapsed('left',!workspace.leftPanelCollapsed)}>{workspace.leftPanelCollapsed?<PanelLeftOpen/>:<PanelLeftClose/>}</button>
