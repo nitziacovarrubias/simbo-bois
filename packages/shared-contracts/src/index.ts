@@ -194,3 +194,34 @@ export type CreateDesignChangeProposalResponse =
   z.infer<typeof CreateDesignChangeProposalResponseSchema>;
 export type ListDesignChangeProposalsResponse =
   z.infer<typeof ListDesignChangeProposalsResponseSchema>;
+ export const CuttingListAuthorizationResponseSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  versionId: z.string().min(1),
+  revision: z.number().int().nonnegative(),
+  authorizedById: z.string().min(1),
+  authorizedAt: z.string().datetime(),
+  cuttingList: CuttingListResponseSchema
+}).strict();
+
+export type CuttingListAuthorizationResponse = z.infer<
+  typeof CuttingListAuthorizationResponseSchema
+>;
+
+export const CuttingListAuthorizationStatusResponseSchema = z.discriminatedUnion(
+  "authorized",
+  [
+    z.object({
+      authorized: z.literal(false),
+      authorization: z.null()
+    }).strict(),
+    z.object({
+      authorized: z.literal(true),
+      authorization: CuttingListAuthorizationResponseSchema
+    }).strict()
+  ]
+);
+
+export type CuttingListAuthorizationStatusResponse = z.infer<
+  typeof CuttingListAuthorizationStatusResponseSchema
+>;

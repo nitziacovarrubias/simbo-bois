@@ -2,6 +2,12 @@ import { ConflictException, Inject, Injectable, NotFoundException, ForbiddenExce
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
 import { CreateDesignChangeProposalResponseSchema, DesignDocumentSchema, ListDesignChangeProposalsResponseSchema, type CreateDesignChangeProposalRequest } from '@simbo/shared-contracts';
+import {
+  CuttingListAuthorizationResponseSchema,
+  CuttingListAuthorizationStatusResponseSchema,
+  CuttingListResponseSchema,
+  DesignDocumentSchema
+} from '@simbo/shared-contracts';
 import { generateCuttingList, validateCuttingListInput } from '@simbo/manufacturing-engine';
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
@@ -163,6 +169,80 @@ export class ProjectsService {
       ...proposal,
       createdAt:proposal.createdAt.toISOString()
     })));
+  private async validateCurrentApprovedVersion(
+    tx: Transaction,
+    projectId: string,
+    versionId: string,
+    expectedRevision?: number
+  ) {
+    const version = await tx.designVersion.findFirst({
+      where: { id: versionId, projectId }
+    });
+    if (!version) throw new NotFoundException('Versión no encontrada');
+    if (version.approvalStatus !== 'APPROVED') {
+      throw new ConflictException('Aprueba el diseño antes de generar o autorizar despiece');
+    }
+    const draft = await tx.designDraft.findUnique({ where: { projectId } });
+    if (expectedRevision !== undefined && (!draft || draft.revision !== expectedRevision)) {
+      throw new ConflictException('Revisión desactualizada');
+    }
+    const design = this.document(version.designJson, projectId);
+    if (
+      !draft ||
+      version.revision !== draft.revision ||
+      !isDeepStrictEqual(design, this.document(draft.designJson, projectId))
+    ) {
+      throw new ConflictException('La versión aprobada ya no es vigente');
+    }
+    return { version, design };
+  }
+
+  private buildCuttingList(
+    design: DesignDocument,
+    projectId: string,
+    versionId: string,
+    revision: number
+  ) {
+    const issues = validateCuttingListInput(design);
+    if (issues.length > 0) {
+      throw new UnprocessableEntityException({
+        message: issues.map(issue => issue.message).join('; '),
+        issues
+      });
+    }
+    const generated = generateCuttingList(design, {
+      projectId,
+      designVersionId: versionId,
+      revision
+    });
+    const parsed = CuttingListResponseSchema.safeParse(generated);
+    if (!parsed.success) {
+      throw new UnprocessableEntityException({
+        message: 'El despiece generado no contiene piezas fabricables válidas',
+        issues: parsed.error.issues
+      });
+    }
+    return parsed.data;
+  }
+
+  private formatAuthorization(record: {
+    id: string;
+    projectId: string;
+    versionId: string;
+    revision: number;
+    authorizedById: string;
+    authorizedAt: Date;
+    cuttingListJson: Prisma.JsonValue;
+  }) {
+    return CuttingListAuthorizationResponseSchema.parse({
+      id: record.id,
+      projectId: record.projectId,
+      versionId: record.versionId,
+      revision: record.revision,
+      authorizedById: record.authorizedById,
+      authorizedAt: record.authorizedAt.toISOString(),
+      cuttingList: record.cuttingListJson
+    });
   }
 
   async cuttingList(actor: Actor, id: string, versionId: string) {
@@ -170,28 +250,107 @@ export class ProjectsService {
       throw new ForbiddenException('Sólo el Supervisor puede generar despiece');
     }
     return this.locked(actor, id, async tx => {
-      const version = await tx.designVersion.findFirst({
-        where: { id: versionId, projectId: id }
+      const { version, design } = await this.validateCurrentApprovedVersion(
+        tx,
+        id,
+        versionId
+      );
+      return this.buildCuttingList(design, id, version.id, version.revision);
+    });
+  }
+
+  /**
+   * @pre
+   * - El usuario tiene rol Supervisor.
+   * - El proyecto y la versión existen.
+   * - La versión pertenece al proyecto.
+   * - La versión está aprobada y vigente.
+   * - La revisión solicitada coincide con el borrador.
+   * - El diseño contiene datos de manufactura válidos.
+   * @post
+   * - Existe una autorización asociada a la versión.
+   * - La autorización conserva su responsable y fecha.
+   * - El despiece autorizado está almacenado en PostgreSQL.
+   * - El resultado puede recuperarse mediante la API.
+   * @inv
+   * - No se modifica DesignDocument.
+   * - No cambia la aprobación del diseño.
+   * - Una versión tiene como máximo una autorización.
+   * - El despiece guardado conserva su información de origen.
+   * - Una autorización existente no se sobrescribe mediante solicitudes repetidas.
+   */
+  async authorizeCuttingList(
+    actor: Actor,
+    projectId: string,
+    versionId: string,
+    expectedRevision: number
+  ) {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException('Sólo el Supervisor puede autorizar el despiece');
+    }
+    return this.locked(actor, projectId, async tx => {
+      const { version, design } = await this.validateCurrentApprovedVersion(
+        tx,
+        projectId,
+        versionId,
+        expectedRevision
+      );
+
+      const existing = await tx.cuttingListAuthorization.findUnique({
+        where: { versionId: version.id }
       });
-      if (!version) throw new NotFoundException('Versión no encontrada');
-      if (version.approvalStatus !== 'APPROVED') {
-        throw new ConflictException('Aprueba el diseño antes de generar despiece');
+      if (existing) {
+        return this.formatAuthorization(existing);
       }
-      const draft = await tx.designDraft.findUnique({ where: { projectId: id } });
-      const design = this.document(version.designJson, id);
-      if (!draft || version.revision !== draft.revision
-        || !isDeepStrictEqual(design, this.document(draft.designJson, id))) {
-        throw new ConflictException('La versión aprobada ya no es vigente');
-      }
-      const issues = validateCuttingListInput(design);
-      if (issues.length > 0) {
-        throw new UnprocessableEntityException({
-          message: issues.map(issue => issue.message).join('; '), issues
-        });
-      }
-      return generateCuttingList(design, {
-        projectId: id, designVersionId: version.id, revision: version.revision
+
+      const cuttingList = this.buildCuttingList(
+        design,
+        projectId,
+        version.id,
+        version.revision
+      );
+
+      const created = await tx.cuttingListAuthorization.create({
+        data: {
+          projectId,
+          versionId: version.id,
+          revision: version.revision,
+          authorizedById: actor.id,
+          cuttingListJson: json(cuttingList)
+        }
       });
+
+      return this.formatAuthorization(created);
+    });
+  }
+
+  async getCuttingListAuthorization(
+    actor: Actor,
+    projectId: string,
+    versionId: string
+  ) {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException('Sólo el Supervisor puede consultar la autorización de despiece');
+    }
+    await this.access(this.prisma, actor, projectId);
+    const version = await this.prisma.designVersion.findFirst({
+      where: { id: versionId, projectId }
+    });
+    if (!version) {
+      throw new NotFoundException('Versión no encontrada');
+    }
+    const existing = await this.prisma.cuttingListAuthorization.findUnique({
+      where: { versionId: version.id }
+    });
+    if (!existing) {
+      return CuttingListAuthorizationStatusResponseSchema.parse({
+        authorized: false,
+        authorization: null
+      });
+    }
+    return CuttingListAuthorizationStatusResponseSchema.parse({
+      authorized: true,
+      authorization: this.formatAuthorization(existing)
     });
   }
 }
