@@ -2,7 +2,12 @@ import type { DesignDocument } from '@simbo/design-domain';
 import {
   GenerateCuttingListParamsSchema,
   CuttingListResponseSchema,
-  type CuttingListResponse
+  CuttingListAuthorizationResponseSchema,
+  CuttingListAuthorizationStatusResponseSchema,
+  RevisionRequestSchema,
+  type CuttingListResponse,
+  type CuttingListAuthorizationResponse,
+  type CuttingListAuthorizationStatusResponse
 } from '@simbo/shared-contracts';
 
 export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'; }
@@ -52,5 +57,33 @@ export const apiClient={
       + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list`;
     const response = await request<unknown>(path, {});
     return CuttingListResponseSchema.parse(response);
+  },
+  async authorizeCuttingList(
+    projectId: string,
+    designVersionId: string,
+    expectedRevision: number
+  ): Promise<CuttingListAuthorizationResponse> {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId,
+      designVersionId
+    });
+    const body = RevisionRequestSchema.parse({ expectedRevision });
+    const path = `/projects/${encodeURIComponent(params.projectId)}`
+      + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list/authorize`;
+    const response = await request<unknown>(path, body);
+    return CuttingListAuthorizationResponseSchema.parse(response);
+  },
+  async getCuttingListAuthorization(
+    projectId: string,
+    designVersionId: string
+  ): Promise<CuttingListAuthorizationStatusResponse> {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId,
+      designVersionId
+    });
+    const path = `/projects/${encodeURIComponent(params.projectId)}`
+      + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list/authorization`;
+    const response = await request<unknown>(path);
+    return CuttingListAuthorizationStatusResponseSchema.parse(response);
   }
 };

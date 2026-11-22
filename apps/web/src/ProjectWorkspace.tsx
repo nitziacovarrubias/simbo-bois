@@ -7,6 +7,8 @@ import App from './App';
 
 import NewProjectDialog from './components/NewProjectDialog';
 
+import CuttingListAuthorizationPanel from './components/CuttingListAuthorizationPanel';
+
 import { apiClient, type ProjectSummary, type SessionUser, type VersionSummary } from './apiClient';
 
 import { editorFacade } from './editorFacade';
@@ -129,25 +131,19 @@ export default function ProjectWorkspace() {
 
   const [cuttingLoading, setCuttingLoading] = useState(false);
 
-  const [cuttingError, setCuttingError] = useState('');
-
+const [cuttingError, setCuttingError] = useState('');
+  const [authVersion, setAuthVersion] = useState<VersionSummary | null>(null);
   const cuttingRequest = useRef(0);
-
   const cuttingPending = useRef(false);
 
   const clearCuttingList = () => {
-
-  cuttingRequest.current += 1;
-
-  cuttingPending.current = false;
-
-  setCuttingResult(null);
-
-  setCuttingError('');
-
-  setCuttingLoading(false);
-
-};
+    cuttingRequest.current += 1;
+    cuttingPending.current = false;
+    setCuttingResult(null);
+    setCuttingError('');
+    setCuttingLoading(false);
+    setAuthVersion(null);
+  };
 
 useEffect(() => () => { cuttingRequest.current += 1; }, []);
 
@@ -299,6 +295,7 @@ const generate = async (version: VersionSummary) => {
       }
 
       setCuttingResult(result);
+      setAuthVersion(version);
 
     } catch (error) {
 
@@ -493,8 +490,84 @@ const generate = async (version: VersionSummary) => {
           {!projects.length&&<p className="project-empty">No hay proyectos disponibles. Crea el primero.</p>}
         </div>
 
-        {review&&<section className="project-versions"><h2>Versiones de {review.name}</h2><p>Revisa las versiones y aprueba la vigente.</p>{versions.map(version=><article key={version.id}><strong>Revisión {version.revision}</strong><span>{version.approvalStatus==='APPROVED'?'Aprobada':'Pendiente'} · {version.current?'Vigente':'Histórica'}</span>{version.approvedAt&&<small>Aprobada: {new Date(version.approvedAt).toLocaleString()}</small>}{user.role==='SUPERVISOR'&&version.current&&version.approvalStatus!=='APPROVED'&&<button disabled={busy || cuttingLoading} className="project-btn project-btn--approve" onClick={()=>void run(()=>approve(version))}><ActionIcon name="check" /> Aprobar diseño</button>}{user.role === 'SUPERVISOR' && (<button type="button" disabled={busy || cuttingLoading || !version.current || version.approvalStatus !== 'APPROVED'} className="project-btn project-btn--generate" onClick={() => void generate(version)}><ActionIcon name="download" /> Generar despiece</button>)}</article>)}{!versions.length&&<p>Guarda una versión desde el editor antes de solicitar aprobación.</p>}{cuttingLoading && (<p role="status">Generando despiece...</p>)}{cuttingError && (<p className="project-error" role="alert">{cuttingError}</p>)}{cuttingResult && cuttingResult.source.projectId === review.id && (<><p className="cutting-source" title={`Versión: ${cuttingResult.source.designVersionId}`}>Despiece · revisión {cuttingResult.source.revision}</p><CuttingListTable result={cuttingResult} projectName={review.name} /></>)}</section>}
-      </section>
+{review && (
+          <section className="project-versions">
+            <h2>Versiones de {review.name}</h2>
+            <p>Revisa las versiones y aprueba la vigente.</p>
+            {versions.map((version) => (
+              <article key={version.id}>
+                <strong>Revisión {version.revision}</strong>
+                <span>
+                  {version.approvalStatus === 'APPROVED' ? 'Aprobada' : 'Pendiente'} ·{' '}
+                  {version.current ? 'Vigente' : 'Histórica'}
+                </span>
+                {version.approvedAt && (
+                  <small>Aprobada: {new Date(version.approvedAt).toLocaleString()}</small>
+                )}
+                {user.role === 'SUPERVISOR' && version.current && version.approvalStatus !== 'APPROVED' && (
+                  <button
+                    disabled={busy || cuttingLoading}
+                    className="project-btn project-btn--approve"
+                    onClick={() => void run(() => approve(version))}
+                  >
+                    <ActionIcon name="check" /> Aprobar diseño
+                  </button>
+                )}
+                {user.role === 'SUPERVISOR' && (
+                  <button
+                    type="button"
+                    disabled={busy || cuttingLoading || !version.current || version.approvalStatus !== 'APPROVED'}
+                    className="project-btn project-btn--generate"
+                    onClick={() => void generate(version)}
+                  >
+                    <ActionIcon name="download" /> Generar despiece
+                  </button>
+                )}
+                {user.role === 'SUPERVISOR' && version.approvalStatus === 'APPROVED' && (
+                  <button
+                    type="button"
+                    disabled={busy || cuttingLoading}
+                    className="project-btn project-btn--review"
+                    onClick={() => setAuthVersion(version)}
+                  >
+                    <ActionIcon name="search" /> Ver autorización
+                  </button>
+                )}
+              </article>
+            ))}
+            {!versions.length && (
+              <p>Guarda una versión desde el editor antes de solicitar aprobación.</p>
+            )}
+            {cuttingLoading && <p role="status">Generando despiece...</p>}
+            {cuttingError && (
+              <p className="project-error" role="alert">
+                {cuttingError}
+              </p>
+            )}
+            {cuttingResult && cuttingResult.source.projectId === review.id && (
+              <>
+                <p
+                  className="cutting-source"
+                  title={`Versión: ${cuttingResult.source.designVersionId}`}
+                >
+                  Despiece · revisión {cuttingResult.source.revision}
+                </p>
+                <CuttingListTable result={cuttingResult} projectName={review.name} />
+              </>
+            )}
+            {user.role === 'SUPERVISOR' && authVersion && (
+              <CuttingListAuthorizationPanel
+                key={`${review.id}-${authVersion.id}`}
+                projectId={review.id}
+                projectName={review.name}
+                version={authVersion}
+                cuttingResult={cuttingResult}
+                canAuthorize={user.role === 'SUPERVISOR'}
+                onRefreshVersions={() => void run(() => showVersions(review))}
+              />
+            )}
+          </section>
+        )}      </section>
 
       <button className="project-local project-btn project-btn--local" type="button" disabled={busy || cuttingLoading} onClick={local}><ActionIcon name="monitor" /> Abrir editor local</button>
     </div>
