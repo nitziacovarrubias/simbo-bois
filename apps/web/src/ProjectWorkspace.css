@@ -447,6 +447,7 @@
 .project-versions > p { color: #6d6d6d; }
 .project-versions article {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
@@ -456,6 +457,31 @@
   border-radius: 6px;
 }
 .project-versions article > span { color: #666; }
+.project-versions .project-btn--proposals {
+  margin-left: auto;
+  border-color: #9c7048;
+  background: #684c36;
+  color: #fff;
+}
+.project-versions .project-btn--proposals:hover:not(:disabled) { background: #805c3d; }
+.project-versions .project-proposal-history {
+  flex: 1 0 100%;
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e8ded4;
+}
+.project-versions .project-proposal-history > p { margin: 0; color: #6d6d6d; }
+.project-versions .project-proposal-entry {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid #e8ded4;
+  border-radius: 6px;
+  background: #fffdfa;
+}
+.project-versions .project-proposal-entry > p { margin: 0; overflow-wrap: anywhere; }
+.project-versions .project-proposal-entry > small { color: #6d6d6d; }
 .project-versions table {
   border-collapse: collapse;
   width: 100%;

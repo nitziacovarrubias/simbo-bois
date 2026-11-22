@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
+import { CreateDesignChangeProposalResponseSchema, DesignDocumentSchema, ListDesignChangeProposalsResponseSchema, type CreateDesignChangeProposalRequest } from '@simbo/shared-contracts';
 import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
@@ -114,6 +115,76 @@ export class ProjectsService {
     });
   }
 
+  /**
+   * Registra una propuesta de cambio sobre una versión del diseño.
+   *
+   * @pre El usuario debe tener el rol ARCHITECT y acceso al proyecto.
+   * @pre La versión debe existir, pertenecer al proyecto y estar en estado DRAFT.
+   * @pre La versión debe coincidir con el borrador vigente en revisión y contenido.
+   * @pre La observación debe cumplir el contrato de entrada validado.
+   *
+   * @post Se registra una propuesta asociada al proyecto, versión y autor.
+   * @post Se devuelve la propuesta con su identificador, observación,
+   *       fecha de creación y datos del autor.
+   *
+   * @inv No se modifica el contenido de DesignDocument.
+   * @inv No se modifica el estado de aprobación de la versión.
+   * @inv Se conservan las referencias al proyecto, versión y autor.
+  */
+  async createProposal(actor:Actor,id:string,versionId:string,input:CreateDesignChangeProposalRequest) {
+    if(actor.role!=='ARCHITECT') throw new ForbiddenException('Sólo el Arquitecto puede registrar propuestas');
+    return this.locked(actor,id,async tx=>{
+      const version=await tx.designVersion.findFirst({where:{id:versionId,projectId:id}});
+      if(!version) throw new NotFoundException('Versión no encontrada');
+      if(version.approvalStatus!=='DRAFT') throw new ConflictException('No se pueden registrar propuestas sobre una versión aprobada');
+      const draft=await tx.designDraft.findUnique({where:{projectId:id}});
+      if(!draft || version.revision!==draft.revision
+        || !isDeepStrictEqual(this.document(version.designJson,id),this.document(draft.designJson,id))) {
+        throw new ConflictException('No se pueden registrar propuestas sobre una versión desactualizada');
+      }
+      const proposal=await tx.designChangeProposal.create({
+        data:{
+          projectId:id,
+          versionId,
+          authorId:actor.id,
+          observation:input.observation
+        },
+        select:{
+          id:true,
+          projectId:true,
+          versionId:true,
+          observation:true,
+          createdAt:true,
+          author:{select:{id:true,name:true}}
+        }
+      });
+      return CreateDesignChangeProposalResponseSchema.parse({
+        ...proposal,
+        createdAt:proposal.createdAt.toISOString()
+      });
+    });
+  }
+
+  async listProposals(actor:Actor,id:string,versionId:string) {
+    await this.access(this.prisma,actor,id);
+    const version=await this.prisma.designVersion.findFirst({where:{id:versionId,projectId:id},select:{id:true}});
+    if(!version) throw new NotFoundException('Versión no encontrada');
+    const proposals=await this.prisma.designChangeProposal.findMany({
+      where:{projectId:id,versionId},
+      orderBy:{createdAt:'desc'},
+      select:{
+        id:true,
+        projectId:true,
+        versionId:true,
+        observation:true,
+        createdAt:true,
+        author:{select:{id:true,name:true}}
+      }
+    });
+    return ListDesignChangeProposalsResponseSchema.parse(proposals.map(proposal=>({
+      ...proposal,
+      createdAt:proposal.createdAt.toISOString()
+    })));
   private async validateCurrentApprovedVersion(
     tx: Transaction,
     projectId: string,
