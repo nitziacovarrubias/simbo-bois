@@ -10,6 +10,12 @@ datasource db {
 model Project {
   id        String          @id @default(cuid())
   name      String
+  projectType String? @db.VarChar(24)
+  clientName String? @db.VarChar(160)
+  location String? @db.VarChar(240)
+  description String? @db.VarChar(1000)
+  responsibleId String?
+  responsible User? @relation("ProjectResponsibility", fields: [responsibleId], references: [id], onDelete: SetNull)
   createdAt DateTime        @default(now())
   updatedAt DateTime        @default(now()) @updatedAt
   draft     DesignDraft?
@@ -20,6 +26,7 @@ model Project {
   cuttingListAuthorizations CuttingListAuthorization[]
 
   @@index([ownerId])
+  @@index([responsibleId])
 }
 
 model DesignDraft {
@@ -97,6 +104,7 @@ model User {
   createdAt    DateTime @default(now())
   sessions     Session[]
   projects     Project[]
+  responsibleProjects Project[] @relation("ProjectResponsibility")
   approvals    DesignVersion[]
   proposals    DesignChangeProposal[]
   cuttingListAuthorizations CuttingListAuthorization[]

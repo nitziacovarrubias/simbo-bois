@@ -1,4 +1,5 @@
 import type { DesignDocument } from '@simbo/design-domain';
+import type { CreateProjectRequest, ProjectType } from '@simbo/shared-contracts';
 import {
   CreateDesignChangeProposalRequestSchema,
   CreateDesignChangeProposalResponseSchema,
@@ -12,7 +13,12 @@ import {
 } from '@simbo/shared-contracts';
 
 export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'; }
-export interface ProjectSummary { id:string;name:string;ownerId:string|null;updatedAt:string; }
+export interface AssignableUser { id:string;name:string;role:'ARCHITECT'|'SUPERVISOR'; }
+export interface ProjectSummary {
+  id:string;name:string;ownerId:string|null;updatedAt:string;createdAt:string;
+  projectType:ProjectType|null;clientName:string|null;location:string|null;
+  description:string|null;responsibleId:string|null;responsible:AssignableUser|null;
+}
 export interface DesignResponse { design:DesignDocument;revision:number;persisted:boolean;approvedVersionId:string|null; }
 export interface VersionSummary { id:string;revision:number;approvalStatus:'DRAFT'|'APPROVED';approvedAt:string|null;approvedById:string|null;current:boolean;createdAt:string; }
 export class ApiError extends Error { constructor(public readonly status:number,message:string){super(message);} }
@@ -20,9 +26,9 @@ const KEY='simbo.session.pre-cu07';
 let token:string|undefined;
 try { token=sessionStorage.getItem(KEY)??undefined; } catch { /* Sesión sólo en memoria si almacenamiento no está disponible. */ }
 function clearSession():void { token=undefined;try{sessionStorage.removeItem(KEY);}catch{/* sesión en memoria */} }
-async function request<T>(path:string,body?:unknown):Promise<T> {
+async function request<T>(path:string,body?:unknown,method:'POST'|'PATCH'='POST'):Promise<T> {
   let response:Response;
-  try {response=await fetch(`${import.meta.env.VITE_API_URL??'http://localhost:3001/api'}${path}`,{method:body===undefined?'GET':'POST',headers:{'content-type':'application/json',...(token?{authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});}
+  try {response=await fetch(`${import.meta.env.VITE_API_URL??'http://localhost:3001/api'}${path}`,{method:body===undefined?'GET':method,headers:{'content-type':'application/json',...(token?{authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});}
   catch {throw new ApiError(0,'No se pudo conectar con el servidor');}
   const data=await response.json().catch(()=>({}));
   if(!response.ok) {
@@ -41,7 +47,9 @@ export const apiClient={
   me:()=>request<SessionUser>('/auth/me'),
   async logout():Promise<void>{try{await request('/auth/logout',{});}finally{clearSession();}},
   projects:()=>request<ProjectSummary[]>('/projects'),
-  createProject:(name:string)=>request<ProjectSummary>('/projects',{name}),
+  assignees:()=>request<AssignableUser[]>('/projects/assignees'),
+  createProject:(input:CreateProjectRequest)=>request<ProjectSummary>('/projects',input),
+  updateProject:(id:string,input:CreateProjectRequest)=>request<ProjectSummary>(`/projects/${encodeURIComponent(id)}`,input,'PATCH'),
   design:(id:string)=>request<DesignResponse>(`/projects/${encodeURIComponent(id)}/design`),
   saveDesign:(id:string,design:DesignDocument,expectedRevision:number)=>request<{revision:number}>(`/projects/${encodeURIComponent(id)}/design`,{design,expectedRevision}),
   versions:(id:string)=>request<VersionSummary[]>(`/projects/${encodeURIComponent(id)}/versions`),

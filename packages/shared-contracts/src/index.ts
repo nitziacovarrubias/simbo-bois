@@ -108,7 +108,24 @@ export const DesignDocumentSchema = z.object({
 }).passthrough();
 export const RevisionRequestSchema=z.object({expectedRevision:z.number().int().nonnegative()}).strict();
 export const SaveDesignRequestSchema=z.object({design:DesignDocumentSchema,expectedRevision:z.number().int().nonnegative()}).strict();
-export const CreateProjectRequestSchema=z.object({name:z.string().trim().min(1).max(120)});
+// Los campos nuevos son opcionales en creación para mantener clientes anteriores.
+export const ProjectTypeSchema=z.enum(['KITCHEN','CLOSET','MIXED','OTHER']);
+const optionalProjectText=(max:number)=>z.string().trim().max(max).nullable().optional();
+export const CreateProjectRequestSchema=z.object({
+  name:z.string().trim().min(1).max(120),
+  projectType:ProjectTypeSchema.optional(),
+  clientName:optionalProjectText(160),
+  location:optionalProjectText(240),
+  description:optionalProjectText(1000),
+  responsibleId:z.string().min(1).nullable().optional()
+}).strict();
+export const UpdateProjectRequestSchema=CreateProjectRequestSchema.partial().refine(
+  input=>Object.keys(input).length>0,
+  {message:'Selecciona al menos un campo para actualizar'}
+);
+export type CreateProjectRequest=z.infer<typeof CreateProjectRequestSchema>;
+export type UpdateProjectRequest=z.infer<typeof UpdateProjectRequestSchema>;
+export type ProjectType=z.infer<typeof ProjectTypeSchema>;
 export type SaveDesignRequest=z.infer<typeof SaveDesignRequestSchema>;
 
 export const GenerateCuttingListParamsSchema = z.object({

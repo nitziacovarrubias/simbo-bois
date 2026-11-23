@@ -5,9 +5,13 @@ import { exportCuttingListXlsx } from './cuttingListExcel';
 
 import App from './App';
 
-import NewProjectDialog from './components/NewProjectDialog';
+import NewProjectDialog, { PROJECT_TYPE_LABELS } from './components/NewProjectDialog';
+import ProjectDetailsDialog from './components/ProjectDetailsDialog';
+import FeedbackToast from './components/FeedbackToast';
+import { Info, MapPin, Pencil, UserRound } from 'lucide-react';
+import type { CreateProjectRequest } from '@simbo/shared-contracts';
 
-import { apiClient, type ProjectSummary, type SessionUser, type VersionSummary } from './apiClient';
+import { apiClient, type AssignableUser, type ProjectSummary, type SessionUser, type VersionSummary } from './apiClient';
 
 import { editorFacade } from './editorFacade';
 
@@ -110,6 +114,7 @@ export default function ProjectWorkspace() {
   const [user,setUser]=useState<SessionUser|null>(null);
 
   const [screen,setScreen]=useState<'PROJECTS'|'EDITOR'>('PROJECTS');
+  const [activeProjectName,setActiveProjectName]=useState<string>();
 
   const [loading,setLoading]=useState(true);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
 
@@ -118,6 +123,10 @@ export default function ProjectWorkspace() {
   const [projects,setProjects]=useState<ProjectSummary[]>([]);
 
   const [newProject,setNewProject]=useState(false);
+  const [assignees,setAssignees]=useState<AssignableUser[]>([]);
+  const [details,setDetails]=useState<ProjectSummary|null>(null);
+  const [editing,setEditing]=useState<ProjectSummary|null>(null);
+  const [success,setSuccess]=useState('');
 
   const [review,setReview]=useState<ProjectSummary|null>(null);const [versions,setVersions]=useState<VersionSummary[]>([]);
   const [proposalHistory,setProposalHistory]=useState<Record<string,DesignChangeProposal[]>>({});
@@ -160,7 +169,10 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
 
 
 
-  const list=async()=>setProjects(await apiClient.projects());
+  const list=async()=>{
+    const [items, people]=await Promise.all([apiClient.projects(),apiClient.assignees()]);
+    setProjects(items);setAssignees(people);
+  };
 
   const run=async(action:()=>Promise<void>)=>{setBusy(true);setError('');try{await action();}catch(error){setError(error instanceof Error?error.message:'No se pudo completar la operación');}finally{setBusy(false);}};
 
@@ -170,7 +182,9 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
 
     let active=true;
 
-    if(apiClient.hasSession())apiClient.me().then(async actor=>{if(!active)return;setUser(actor);const items=await apiClient.projects();if(active)setProjects(items);}).catch(error=>{if(active)setError(error instanceof Error?error.message:'No se pudo recuperar la sesión');}).finally(()=>{if(active)setLoading(false);});
+    if(apiClient.hasSession())apiClient.me().then(async actor=>{if(!active)return;setUser(actor);
+      const [items,people]=await Promise.all([apiClient.projects(),apiClient.assignees()]);
+      if(active){setProjects(items);setAssignees(people);}}).catch(error=>{if(active)setError(error instanceof Error?error.message:'No se pudo recuperar la sesión');}).finally(()=>{if(active)setLoading(false);});
 
     else setLoading(false);
 
@@ -205,11 +219,27 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
     if (!user) throw new Error('Inicia sesión');
     const response = await apiClient.design(project.id);
     editorFacade.loadProject(project.id, user.id, response);
+    setActiveProjectName(project.name);
     setReview(null);
     setScreen('EDITOR');
   };
 
-  const create=async(name:string)=>{const project=await apiClient.createProject(name);await open(project);setNewProject(false);};
+  const create=async(input:CreateProjectRequest)=>{
+    const project=await apiClient.createProject(input);
+    setProjects(current=>[project,...current]);
+    setNewProject(false);
+    // Si la carga del editor falla, conservar el proyecto creado en el listado.
+    try { await open(project); }
+    catch(cause) { setError(`Proyecto creado, pero no se pudo abrir: ${cause instanceof Error ? cause.message : 'Error desconocido'}`); }
+  };
+  const updateProject=async(input:CreateProjectRequest)=>{
+    if(!editing)return;
+    const project=await apiClient.updateProject(editing.id,input);
+    setProjects(current=>current.map(item=>item.id===project.id?project:item));
+    setReview(current=>current?.id===project.id?project:current);
+    setEditing(null);
+    setSuccess('Datos del proyecto actualizados');
+  };
 
 
 
@@ -224,6 +254,7 @@ const local = () => {
     clearCuttingList();
 
     useEditor.setState({ remoteProject: undefined, projectId: undefined });
+    setActiveProjectName(undefined);
 
     const raw = localStorage.getItem('simbo.design.v1'); editorFacade.loadDesign(raw ?? createEmptyDesign('Proyecto local')); setScreen('EDITOR'); setError('');
 
@@ -389,7 +420,7 @@ const generate = async (version: VersionSummary) => {
 
   if(loading)return <main className="project-workspace"><p role="status">Cargando sesión…</p></main>;
 
-  if(screen==='EDITOR')return <App user={remote?user??undefined:undefined} onProjects={back} onCreateProject={remote?create:undefined}/>;
+  if(screen==='EDITOR')return <App user={remote?user??undefined:undefined} onProjects={back} onCreateProject={remote?create:undefined} projectAssignees={assignees} projectName={activeProjectName}/>;
 
 
 
@@ -517,6 +548,7 @@ const generate = async (version: VersionSummary) => {
 
     <div className="project-workspace-content">
       {error&&<p className="project-error" role="alert">{error}</p>}
+      <FeedbackToast message={success} onDismiss={()=>setSuccess('')} />
 
       <section className="project-board" aria-labelledby="project-board-title">
         <div className="project-board-intro">
@@ -543,12 +575,23 @@ const generate = async (version: VersionSummary) => {
               <span className="project-card-visual-caption">SIMBO · DISEÑO</span>
             </div>
             <div className="project-card-details">
-              <h2>{project.name}</h2>
-              <p>Actualizado: {new Date(project.updatedAt).toLocaleString()}</p>
+              <div className="project-card-title-row"><h2>{project.name}</h2>
+                <span className="project-card-type">{project.projectType ? PROJECT_TYPE_LABELS[project.projectType] : 'Sin tipo'}</span>
+              </div>
+              <div className="project-card-meta">
+                <p><UserRound size={15} aria-hidden="true"/>{project.responsible?.name || 'Sin responsable'}</p>
+                {project.clientName&&<p className="project-card-client">Cliente: {project.clientName}</p>}
+                {project.location&&<p><MapPin size={15} aria-hidden="true"/>{project.location}</p>}
+                <small>Actualizado: {new Date(project.updatedAt).toLocaleString('es-MX')}</small>
+              </div>
             </div>
             <div className="project-card-actions">
               <button disabled={busy || cuttingLoading} className="project-btn project-btn--open" onClick={()=>void run(()=>open(project))}><ActionIcon name="open" /> Abrir diseño</button>
               <button disabled={busy || cuttingLoading} className="project-btn project-btn--review" onClick={()=>void run(()=>showVersions(project))}><ActionIcon name="search" /> Revisar versiones</button>
+              <div className="project-card-secondary-actions">
+                <button type="button" disabled={busy || cuttingLoading} className="project-card-detail-button" onClick={()=>setDetails(project)}><Info size={15}/> Detalles</button>
+                <button type="button" disabled={busy || cuttingLoading} className="project-card-detail-button" onClick={()=>setEditing(project)}><Pencil size={15}/> Editar</button>
+              </div>
             </div>
           </article>)}
           {!projects.length&&<p className="project-empty">No hay proyectos disponibles. Crea el primero.</p>}
@@ -592,6 +635,8 @@ const generate = async (version: VersionSummary) => {
 
       <button className="project-local project-btn project-btn--local" type="button" disabled={busy || cuttingLoading} onClick={local}><ActionIcon name="monitor" /> Abrir editor local</button>
     </div>
-    {newProject&&<NewProjectDialog onCancel={()=>setNewProject(false)} onCreate={create}/>}
+    {newProject&&<NewProjectDialog assignees={assignees} currentUserId={user.id} onCancel={()=>setNewProject(false)} onSave={create}/>}
+    {details&&<ProjectDetailsDialog project={details} onClose={()=>setDetails(null)} onEdit={()=>{setEditing(details);setDetails(null);}}/>}
+    {editing&&<NewProjectDialog initial={editing} assignees={assignees} currentUserId={user.id} onCancel={()=>setEditing(null)} onSave={updateProject}/>}
   </main>;
 }

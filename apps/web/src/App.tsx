@@ -23,15 +23,22 @@ import CommandPalette from './components/CommandPalette';
 import EntityContextMenu from './components/EntityContextMenu';
 import PresentationWorkspace from './components/PresentationWorkspace';
 import NewProjectDialog from './components/NewProjectDialog';
+import ConfirmDialog from './components/ConfirmDialog';
 import { autosaveNow, editorInput, useEditor } from './store';
-import { apiClient, type SessionUser } from './apiClient';
+import { apiClient, type AssignableUser, type SessionUser } from './apiClient';
+import type { CreateProjectRequest } from '@simbo/shared-contracts';
 import type { DesignChangeProposal } from '@simbo/shared-contracts';
 import { editorFacade } from './editorFacade';
 import './editor-surface.css';
 
 type ActivePanel = ReturnType<typeof useEditor.getState>['activePanel'];
 
-export default function App({user,onProjects,onCreateProject}:{user?:SessionUser;onProjects?:()=>void;onCreateProject?:(name:string)=>Promise<void>}) {
+export default function App({user,onProjects,onCreateProject,projectAssignees=[],projectName}:{
+  user?:SessionUser;onProjects?:()=>void;
+  onCreateProject?:(input:CreateProjectRequest)=>Promise<void>;
+  projectAssignees?:AssignableUser[];
+  projectName?:string;
+}) {
   const design=useEditor(state=>state.design);
   const panel=useEditor(state=>state.activePanel);
   const setPanel=useEditor(state=>state.setActivePanel);
@@ -39,6 +46,7 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
   const saveError=useEditor(state=>state.saveError);
   const [notice,setNotice]=useState('');
   const remoteProject=useEditor(state=>state.remoteProject);
+  const displayedProjectName=(remoteProject && projectName) || design.metadata.name;
   const workspace=useEditor(state=>state.workspace);
   const setPanelCollapsed=useEditor(state=>state.setPanelCollapsed);
   const setPanelWidth=useEditor(state=>state.setPanelWidth);
@@ -46,6 +54,19 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
   const createVersion=useEditor(state=>state.createVersion);
   const presentationMode=useEditor(state=>state.presentationMode);
   const [newProjectOpen,setNewProjectOpen]=useState(false);
+  const [demoConfirmOpen,setDemoConfirmOpen]=useState(false);
+  const [demoLoading,setDemoLoading]=useState(false);
+  const [demoError,setDemoError]=useState('');
+  const openDemo=async()=>{
+    setDemoLoading(true);setDemoError('');
+    try {
+      await autosaveNow();
+      editorFacade.loadDemo();
+      setDemoConfirmOpen(false);
+      setNotice('Demostración cargada en modo local');
+    } catch(error) { setDemoError(error instanceof Error?error.message:'No se pudo guardar el diseño actual'); }
+    finally {setDemoLoading(false);}
+  };
   const [proposalOpen,setProposalOpen]=useState(false);
   const [proposalObservation,setProposalObservation]=useState('');
   const [proposalSubmitting,setProposalSubmitting]=useState(false);
@@ -96,6 +117,7 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
     const onKeyDown=(event:KeyboardEvent)=>{
       const element=event.target instanceof HTMLElement?event.target:undefined;
       const tag=element?.tagName;
+      if(document.querySelector('[data-simbo-modal="true"]'))return;
       if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA'||element?.isContentEditable)return;
       const key=event.key.toLowerCase();
       if(event.ctrlKey||event.metaKey||['arrowright','arrowup','arrowleft','escape','enter','backspace','delete'].includes(key))event.preventDefault();
@@ -135,8 +157,8 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
         </span>
         <div className="brand-copy"><strong>SIMBO</strong></div>
       </div>
-      <div className="project-name" title={`${design.metadata.name} · Revisión ${design.metadata.draftRevision}`}>
-        <span>{design.metadata.name}</span>
+      <div className="project-name" title={`${displayedProjectName} · Revisión ${design.metadata.draftRevision}`}>
+        <span>{displayedProjectName}</span>
       </div>
       <div className="topbar-actions">
         <span className="topbar-sr-only" role="status">Estado de guardado: {saveStatus}</span>
@@ -150,7 +172,7 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
 
     <aside className="left-rail" aria-label="Áreas del editor">
       {!DEMO_FOCUSED_UI && <button title="Nuevo proyecto" aria-label="Nuevo proyecto" onClick={()=>setNewProjectOpen(true)}><FolderPlus/></button>}
-      <button title="Abrir demo oficial" aria-label="Abrir demo oficial" onClick={()=>editorFacade.loadDemo()}><Layers3/></button>
+      <button title="Abrir demo oficial" aria-label="Abrir demo oficial" onClick={()=>{setDemoError('');setDemoConfirmOpen(true);}}><Layers3/></button>
       <button className={panel==='INSPECTOR'?'active':''} title="Propiedades" aria-label="Propiedades" onClick={()=>openPanel('INSPECTOR')}><Settings2/></button>
       <button className={panel==='LIBRARY'?'active':''} title="Biblioteca" aria-label="Biblioteca" onClick={()=>openPanel('LIBRARY')}><Box/></button>
       {!DEMO_FOCUSED_UI && <button className={panel==='MODULE'?'active':''} title="Constructor de módulos" aria-label="Constructor de módulos" onClick={()=>openPanel('MODULE')}><Cuboid/></button>}
@@ -218,6 +240,15 @@ export default function App({user,onProjects,onCreateProject}:{user?:SessionUser
       {panel==='LIBRARY'&&<LibraryPanel/>}
     </aside>
     <StatusBar/>
-    {newProjectOpen && <NewProjectDialog onCancel={()=>setNewProjectOpen(false)} onCreate={async name=>{if(onCreateProject)await onCreateProject(name);else createProject(name);setNewProjectOpen(false);}}/>}
+    {newProjectOpen && <NewProjectDialog assignees={projectAssignees} currentUserId={user?.id} localOnly={!onCreateProject}
+      onCancel={()=>setNewProjectOpen(false)} onSave={async input=>{
+        if(onCreateProject)await onCreateProject(input);else createProject(input.name);
+        setNewProjectOpen(false);
+      }}/>}
+    {demoConfirmOpen && <ConfirmDialog title="Abrir demostración" confirmLabel={remoteProject ? "Guardar y abrir" : "Abrir demostración"}
+      message={remoteProject
+        ? 'Se guardarán los cambios del proyecto antes de cambiar al diseño de demostración en modo local.'
+        : 'La demostración reemplazará el diseño local visible. Exporta una copia del diseño actual si deseas conservarlo.'}
+      onCancel={()=>setDemoConfirmOpen(false)} onConfirm={openDemo} busy={demoLoading} error={demoError}/> }
   </div>;
 }

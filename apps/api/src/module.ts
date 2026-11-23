@@ -1,5 +1,10 @@
-import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
-import { CreateProjectRequestSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
+import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Patch, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
+import {
+  CreateProjectRequestSchema, UpdateProjectRequestSchema,
+  CreateDesignChangeProposalRequestSchema, DesignChangeProposalParamsSchema,
+  GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema,
+  RevisionRequestSchema, SaveDesignRequestSchema
+} from '@simbo/shared-contracts';
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
@@ -17,7 +22,13 @@ class HealthController {
 class ProjectsController {
   constructor(@Inject(ProjectsService) private readonly projects: ProjectsService) { }
   @Get() list(@CurrentUser() actor: Actor) { return this.projects.list(actor); }
-  @Post() create(@CurrentUser() actor: Actor, @Body() body: unknown) { return this.projects.create(actor, CreateProjectRequestSchema.parse(body).name); }
+  @Get('assignees') assignees(@CurrentUser() actor: Actor) { return this.projects.assignees(actor); }
+  @Post() create(@CurrentUser() actor: Actor, @Body() body: unknown) {
+    return this.projects.create(actor, CreateProjectRequestSchema.parse(body));
+  }
+  @Patch(':id') update(@CurrentUser() actor: Actor, @Param('id') id: string, @Body() body: unknown) {
+    return this.projects.update(actor, id, UpdateProjectRequestSchema.parse(body));
+  }
   @Get(':id/design') design(@CurrentUser() actor: Actor, @Param('id') id: string) { return this.projects.getDesign(actor, id); }
   @Post(':id/design') save(@CurrentUser() actor: Actor, @Param('id') id: string, @Body() body: unknown) {
     const parsed = SaveDesignRequestSchema.parse(body); return this.projects.save(actor, id, parsed.design as unknown as DesignDocument, parsed.expectedRevision);

@@ -1,7 +1,10 @@
 import { ConflictException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
-import { CreateDesignChangeProposalResponseSchema, DesignDocumentSchema, ListDesignChangeProposalsResponseSchema, type CreateDesignChangeProposalRequest } from '@simbo/shared-contracts';
+import {
+  CreateDesignChangeProposalResponseSchema, ListDesignChangeProposalsResponseSchema,
+  type CreateDesignChangeProposalRequest, type CreateProjectRequest, type UpdateProjectRequest
+} from '@simbo/shared-contracts';
 import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
@@ -21,7 +24,7 @@ export class ProjectsService {
   constructor(@Inject(PrismaService) private readonly prisma:PrismaService) {}
   private async access(db:Transaction,actor:Actor,id:string) {
     const project=await db.project.findUnique({where:{id}});
-    if (!project || (actor.role!=='SUPERVISOR' && project.ownerId!==actor.id)) throw new NotFoundException('Proyecto no encontrado');
+    if (!project || (actor.role!=='SUPERVISOR' && project.ownerId!==actor.id && project.responsibleId!==actor.id)) throw new NotFoundException('Proyecto no encontrado');
     return project;
   }
   private async locked<T>(actor:Actor,id:string,work:(tx:Transaction)=>Promise<T>):Promise<T> {
@@ -46,15 +49,68 @@ export class ProjectsService {
     if (errors.length) throw new UnprocessableEntityException({message:'Diseño estructuralmente inválido',issues:errors});
     return design;
   }
-  async list(actor:Actor) {
-    return this.prisma.project.findMany({where:actor.role==='SUPERVISOR'?{}:{ownerId:actor.id},orderBy:{updatedAt:'desc'}});
+  private readonly projectRelations = {responsible:{select:{id:true,name:true,role:true}}} as const;
+
+  async assignees(actor:Actor) {
+    return this.prisma.user.findMany({
+      where:{active:true,role:{in:['ARCHITECT','SUPERVISOR']},...(actor.role==='SUPERVISOR'?{}:{id:actor.id})},
+      select:{id:true,name:true,role:true},orderBy:[{name:'asc'},{id:'asc'}]
+    });
   }
-  async create(actor:Actor,name:string) {
+
+  private async responsibleFor(
+    tx:Transaction,actor:Actor,responsibleId:string|null|undefined
+  ):Promise<string> {
+    const id=responsibleId || actor.id;
+    if (actor.role!=='SUPERVISOR' && id!==actor.id) {
+      throw new ForbiddenException('Sólo el Supervisor puede asignar a otro responsable');
+    }
+    const person=await tx.user.findFirst({where:{id,active:true,role:{in:['ARCHITECT','SUPERVISOR']}},select:{id:true}});
+    if (!person) throw new UnprocessableEntityException('Selecciona un responsable activo');
+    return person.id;
+  }
+
+  async list(actor:Actor) {
+    return this.prisma.project.findMany({
+      where:actor.role==='SUPERVISOR'?{}:{OR:[{ownerId:actor.id},{responsibleId:actor.id}]},
+      include:this.projectRelations,
+      orderBy:{updatedAt:'desc'}
+    });
+  }
+  async create(actor:Actor,input:CreateProjectRequest) {
     return this.prisma.$transaction(async tx=>{
-      const project=await tx.project.create({data:{name,ownerId:actor.id}});
-      const design=createEmptyDesign(name);design.metadata.projectId=project.id;
+      const responsibleId=await this.responsibleFor(tx,actor,input.responsibleId);
+      const project=await tx.project.create({
+        data:{
+          name:input.name,ownerId:actor.id,responsibleId,
+          projectType:input.projectType??null,
+          clientName:input.clientName||null,
+          location:input.location||null,
+          description:input.description||null
+        },
+        include:this.projectRelations
+      });
+      const design=createEmptyDesign(input.name);design.metadata.projectId=project.id;
       await tx.designDraft.create({data:{projectId:project.id,schemaVersion:design.schemaVersion,revision:0,designJson:json(design)}});
       return project;
+    });
+  }
+  async update(actor:Actor,id:string,input:UpdateProjectRequest) {
+    return this.locked(actor,id,async tx=>{
+      const responsibleId=input.responsibleId!==undefined
+        ?await this.responsibleFor(tx,actor,input.responsibleId):undefined;
+      return tx.project.update({
+        where:{id},
+        data:{
+          ...(input.name!==undefined?{name:input.name}:{}),
+          ...(input.projectType!==undefined?{projectType:input.projectType}:{}),
+          ...(input.clientName!==undefined?{clientName:input.clientName||null}:{}),
+          ...(input.location!==undefined?{location:input.location||null}:{}),
+          ...(input.description!==undefined?{description:input.description||null}:{}),
+          ...(responsibleId!==undefined?{responsibleId}:{})
+        },
+        include:this.projectRelations
+      });
     });
   }
   async getDesign(actor:Actor,id:string) {
@@ -185,6 +241,8 @@ export class ProjectsService {
       ...proposal,
       createdAt:proposal.createdAt.toISOString()
     })));
+  }
+
   private async validateCurrentApprovedVersion(
     tx: Transaction,
     projectId: string,
