@@ -1,5 +1,5 @@
-import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
-import { CreateProjectRequestSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
+import { CreateDesignChangeProposalRequestSchema, CreateProjectRequestSchema, DesignChangeProposalParamsSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema, QuotationGenerationRequestSchema } from '@simbo/shared-contracts';
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
@@ -87,6 +87,41 @@ class ProjectsController {
       params.designVersionId
     );
   }
+
+  @Post(':id/versions/:versionId/quotations')
+  @HttpCode(201)
+  createQuotation(
+    @CurrentUser() user: Actor,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() body: unknown
+  ){
+    const parsed = QuotationGenerationRequestSchema.safeParse(body)
+    if (!parsed.success){
+      throw new BadRequestException(parsed.error.flatten())
+    }
+
+    return this.projects.createQuotation(user, id, versionId, parsed.data)
+  }
+
+@Get(':id/quotations')
+  listQuotations(
+    @CurrentUser() user: Actor,
+    @Param('id') id: string
+  ) {
+    return this.projects.listQuotations(user, id);
+  }
+
+  @Get(':id/quotations/:quotationId')
+  getQuotation(
+    @CurrentUser() user: Actor,
+    @Param('id') id: string,
+    @Param('quotationId') quotationId: string
+  ) {
+    return this.projects.getQuotation(user, id, quotationId);
+  }
+
+
 }
 @UseGuards(AuthGuard)
 @Controller('modules')
