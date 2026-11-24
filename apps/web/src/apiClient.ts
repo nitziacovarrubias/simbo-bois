@@ -5,6 +5,12 @@ import {
   DesignChangeProposalParamsSchema,
   GenerateCuttingListParamsSchema,
   CuttingListResponseSchema,
+  CuttingListAuthorizationResponseSchema,
+  CuttingListAuthorizationStatusResponseSchema,
+  RevisionRequestSchema,
+  type CuttingListResponse,
+  type CuttingListAuthorizationResponse,
+  type CuttingListAuthorizationStatusResponse
   ListDesignChangeProposalsResponseSchema,
   type CuttingListResponse,
   type CreateDesignChangeProposalResponse,
@@ -74,5 +80,33 @@ export const apiClient={
       + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list`;
     const response = await request<unknown>(path, {});
     return CuttingListResponseSchema.parse(response);
+  },
+  async authorizeCuttingList(
+    projectId: string,
+    designVersionId: string,
+    expectedRevision: number
+  ): Promise<CuttingListAuthorizationResponse> {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId,
+      designVersionId
+    });
+    const body = RevisionRequestSchema.parse({ expectedRevision });
+    const path = `/projects/${encodeURIComponent(params.projectId)}`
+      + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list/authorize`;
+    const response = await request<unknown>(path, body);
+    return CuttingListAuthorizationResponseSchema.parse(response);
+  },
+  async getCuttingListAuthorization(
+    projectId: string,
+    designVersionId: string
+  ): Promise<CuttingListAuthorizationStatusResponse> {
+    const params = GenerateCuttingListParamsSchema.parse({
+      projectId,
+      designVersionId
+    });
+    const path = `/projects/${encodeURIComponent(params.projectId)}`
+      + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list/authorization`;
+    const response = await request<unknown>(path);
+    return CuttingListAuthorizationStatusResponseSchema.parse(response);
   }
 };
