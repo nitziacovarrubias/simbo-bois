@@ -980,3 +980,7 @@
 /* Sección 4: vista previa del último borrador, no decoración genérica. */
 .project-card-visual .simbo-thumbnail {position:absolute;inset:0;height:100%;border-radius:0;}
 .project-card-visual-caption{z-index:2;display:inline-block;bottom:9px;left:11px;border-radius:6px;background:#423225db;color:#fff4df;padding:5px 8px;font-size:9px;letter-spacing:.04em;text-shadow:none;}
+
+/* Acción remota: indicador accesible que no oculta los controles ni duplica diálogos. */
+.simbo-global-progress{display:flex;align-items:center;gap:9px;max-width:max-content;min-height:40px;padding:9px 13px;margin:4px 0 12px;border:1px solid #d3b990;border-radius:10px;background:#f9f0e2;color:#5b4024;font-size:13px;font-weight:700;}
+.simbo-global-progress .simbo-spinner{width:17px;height:17px;}

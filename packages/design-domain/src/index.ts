@@ -851,3 +851,42 @@ export {
   worldToLocal,
   worldTransformToPartLocal
 } from './spatial.ts';
+
+/** Appearance is visual metadata on the Part; manufacturing keeps the original material ID. */
+const APPEARANCE_META_KEYS = ['textureDataUrl','textureScaleMm','textureRotationDeg'] as const;
+export function partAppearanceMaterial(part: Part | undefined, source: MaterialDefinition | undefined): MaterialDefinition | undefined {
+  if (!source) return undefined;
+  const data = part?.metadata.appearanceOverride;
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return source;
+  const override=data as Record<string,unknown>;
+  const material=structuredClone(source);
+  if (typeof override.colorHex === 'string') material.colorHex=normalizeHex(override.colorHex,source.colorHex);
+  if (typeof override.roughness === 'number') material.roughness=override.roughness;
+  if (typeof override.metalness === 'number') material.metalness=override.metalness;
+  for (const key of APPEARANCE_META_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(override,key)) continue;
+    const value=override[key];
+    if (typeof value === 'string' || typeof value === 'number') material.metadata[key]=value;
+    else delete material.metadata[key];
+  }
+  return material;
+}
+
+export function updatePartAppearance(
+  design: DesignDocument,
+  partId: string,
+  update: (material: MaterialDefinition) => void
+): void {
+  const part = design.parts.find(item => item.id === partId);
+  if (!part) throw new Error('La pieza seleccionada ya no existe.');
+  const base = design.materials.find(item => item.id === part.materialId);
+  if (!base) throw new Error('Asigna un material a la pieza antes de editar su apariencia.');
+  const effective = structuredClone(partAppearanceMaterial(part,base)!);
+  update(effective);
+  part.metadata.appearanceOverride = {
+    colorHex:effective.colorHex,
+    roughness:effective.roughness,
+    metalness:effective.metalness,
+    ...Object.fromEntries(APPEARANCE_META_KEYS.map(key=>[key,effective.metadata[key]??null]))
+  };
+}

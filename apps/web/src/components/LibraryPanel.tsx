@@ -1,6 +1,6 @@
 import './LibraryPanel.css';
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Search, Boxes, Microwave, Palette, Wrench, Plus, RefreshCw } from 'lucide-react';
+import { Box, Search, Boxes, Microwave, Palette, Wrench, Plus, RefreshCw, Pencil, LoaderCircle } from 'lucide-react';
 import { createMaterial, type ApplianceCategory } from '@simbo/design-domain';
 import { installPortableModule, instantiateModule } from '@simbo/module-engine';
 import { apiClient, type SharedModuleEntry } from '../apiClient';
@@ -13,7 +13,7 @@ import SharedDialog from './SharedDialog';
 type Tab = 'MODULES' | 'APPLIANCES' | 'MATERIALS' | 'HARDWARE';
 const tabLabel: Record<Tab, string> = { MODULES:'Módulos', APPLIANCES:'Electrodomésticos', MATERIALS:'Materiales', HARDWARE:'Herrajes' };
 
-export default function LibraryPanel({ onCreateModule }: { onCreateModule?: () => void }) {
+export default function LibraryPanel({ onCreateModule, onEditModule }: { onCreateModule?: () => void; onEditModule?: (definition: import('@simbo/design-domain').ModuleDefinition,version: import('@simbo/design-domain').ModuleVersion, shared: boolean, updatedAt?: string) => void }) {
   const design = useEditor(state => state.design);
   const mutate = useEditor(state => state.mutate);
   const insertAppliance = useEditor(state => state.insertApplianceDefinition);
@@ -58,7 +58,7 @@ export default function LibraryPanel({ onCreateModule }: { onCreateModule?: () =
     {tab === 'MODULES' && <>
       <div className="library-actions">
         {onCreateModule&&<button type="button" className="library-create" onClick={onCreateModule}><Plus size={16}/> Crear módulo</button>}
-        <button type="button" className="library-refresh" onClick={()=>void fetchShared()} disabled={loadingShared} title="Actualizar biblioteca compartida" aria-label="Actualizar biblioteca"><RefreshCw size={16}/></button>
+        <button type="button" className="library-refresh" onClick={()=>void fetchShared()} disabled={loadingShared} title="Actualizar biblioteca compartida" aria-label="Actualizar biblioteca">{loadingShared?<LoaderCircle size={16} className="simbo-spin-icon"/>:<RefreshCw size={16}/>}</button>
       </div>
       <div className="library-list library-module-list">
         {local.map(definition=>{
@@ -66,14 +66,19 @@ export default function LibraryPanel({ onCreateModule }: { onCreateModule?: () =
           return <article className="library-module-card" key={definition.id}>
             <div className="library-module-preview"><DesignThumbnail parts={version?modulePreviewParts(version):[]} label={`Vista previa del módulo ${definition.name}`} empty="Sin vista previa" /></div>
             <div className="library-module-content"><b title={definition.name}>{definition.name}</b><small>{version?.snapshot.parts.length??0} piezas · Módulo del proyecto</small>
-              <button type="button" onClick={()=>{try{setError('');insertModule(definition.id);}catch(reason){setError(reason instanceof Error?reason.message:'No se pudo insertar el módulo.');}}}><Plus size={15}/> Insertar</button>
+              <div className="library-module-actions">
+                <button type="button" onClick={()=>{try{setError('');insertModule(definition.id);}catch(reason){setError(reason instanceof Error?reason.message:'No se pudo insertar el módulo.');}}}><Plus size={15}/> Insertar</button>
+                {onEditModule&&version&&definition.tags.includes('WORKSHOP')&&<button type="button" className="library-edit" onClick={()=>onEditModule(definition,version,Boolean(shared.find(entry=>entry.definitionId===definition.id)),shared.find(entry=>entry.definitionId===definition.id)?.updatedAt)}><Pencil size={14}/> Editar</button>}
+              </div>
             </div>
           </article>;
         })}
         {external.map(entry=><article className="library-module-card" key={entry.id}>
           <div className="library-module-preview"><DesignThumbnail parts={modulePreviewParts(entry.versionJson)} label={`Vista previa del módulo ${entry.name}`} empty="Sin vista previa"/></div>
           <div className="library-module-content"><b title={entry.name}>{entry.name}</b><small>{entry.versionJson.snapshot.parts.length} piezas · Biblioteca compartida</small>
-            <button type="button" onClick={()=>insertShared(entry)}><Plus size={15}/> Insertar</button>
+            <div className="library-module-actions"><button type="button" onClick={()=>insertShared(entry)}><Plus size={15}/> Insertar</button>
+              {onEditModule&&entry.definitionJson.tags.includes('WORKSHOP')&&<button type="button" className="library-edit" onClick={()=>onEditModule(entry.definitionJson,entry.versionJson,true,entry.updatedAt)}><Pencil size={14}/> Editar</button>}
+            </div>
           </div>
         </article>)}
         {!local.length&&!external.length&&<p className="library-empty">Todavía no hay módulos. Selecciona «Crear módulo» para diseñar uno en un plano independiente.</p>}
@@ -87,9 +92,9 @@ export default function LibraryPanel({ onCreateModule }: { onCreateModule?: () =
       <div className="library-actions"><button type="button" className="library-create" onClick={()=>setNewMaterial(true)}><Plus size={16}/> Nuevo material</button></div>
       <div className="library-list">{design.materials.filter(value => !q || value.name.toLowerCase().includes(q)).map(material => <article className="library-material-card" key={material.id}>
         <div className="library-material-summary"><span className="library-swatch" style={{ background:material.colorHex }}/><div><b>{material.name}</b><small>{material.thicknessMm?`${material.thicknessMm} mm`:'Acabado personalizado'}</small></div></div>
-        <details><summary>Color y textura</summary>
+        <details><summary>Color y textura (material compartido)</summary>
           <label className="library-material-color">Color base<input type="color" value={material.colorHex} onChange={event=>mutate(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target)target.colorHex=event.target.value.toUpperCase();})}/></label>
-          <MaterialTextureField material={material} onChange={dataUrl=>mutate(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target){if(dataUrl)target.metadata.textureDataUrl=dataUrl;else delete target.metadata.textureDataUrl;}})}/>
+          <MaterialTextureField material={material} onChange={dataUrl=>{mutate(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target){if(dataUrl)target.metadata.textureDataUrl=dataUrl;else delete target.metadata.textureDataUrl;}});if(dataUrl)useEditor.getState().setDisplayMode('SHADED');}}/>
         </details>
       </article>)}</div>
     </>}

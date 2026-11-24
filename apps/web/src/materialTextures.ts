@@ -34,10 +34,12 @@ export async function prepareTexture(file: File): Promise<string> {
     const context = canvas.getContext('2d');
     if (!context) throw new Error('No se pudo procesar la textura en este navegador.');
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    // Lossy compression keeps DesignDocument/revisions reasonably small.
-    for (const quality of [.85, .7, .55, .4]) {
-      const data = canvas.toDataURL('image/webp', quality);
-      if (data.startsWith('data:image/webp;') && data.length <= MAX_TEXTURE_DATA_CHARS) return data;
+    // Some browsers cannot encode WebP; use JPEG as a compatible fallback.
+    for (const mime of ['image/webp', 'image/jpeg'] as const) {
+      for (const quality of [.85, .7, .55, .4]) {
+        const data = canvas.toDataURL(mime, quality);
+        if (data.startsWith(`data:${mime};`) && data.length <= MAX_TEXTURE_DATA_CHARS) return data;
+      }
     }
     throw new Error('La textura sigue siendo demasiado grande; utiliza una imagen más sencilla.');
   } finally {

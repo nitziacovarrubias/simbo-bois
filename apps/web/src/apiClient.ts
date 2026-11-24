@@ -55,6 +55,7 @@ export const apiClient={
   projects:()=>request<ProjectSummary[]>('/projects'),
   modules:()=>request<SharedModuleEntry[]>('/modules'),
   publishModule:(definition:ModuleDefinition,version:ModuleVersion)=>request<SharedModuleEntry>('/modules',{definitionId:definition.id,name:definition.name,definitionJson:definition,versionJson:version}),
+  updateSharedModule:(definition:ModuleDefinition,version:ModuleVersion,expectedUpdatedAt:string)=>request<SharedModuleEntry>(`/modules/${encodeURIComponent(definition.id)}`,{definitionId:definition.id,name:definition.name,definitionJson:definition,versionJson:version,expectedUpdatedAt},'PATCH'),
   assignees:()=>request<AssignableUser[]>('/projects/assignees'),
   availableCollaborators:()=>request<CollaboratorUser[]>('/projects/available-collaborators'),
   setCollaborators:(id:string,collaboratorIds:string[])=>request<ProjectSummary>(`/projects/${encodeURIComponent(id)}/collaborators`,{collaboratorIds},'PATCH'),

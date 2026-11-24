@@ -444,7 +444,7 @@ const generate = async (version: VersionSummary) => {
 
 
 
-  if(loading)return <main className="project-workspace"><p role="status">Cargando sesión…</p></main>;
+  if(loading)return <main className="project-workspace"><p role="status" className="simbo-global-progress"><span className="simbo-spinner" aria-hidden="true"/> Cargando sesión…</p></main>;
 
   if(screen==='VIEWER'&&readonlyProject)return <CollaboratorViewer project={readonlyProject.project} response={readonlyProject.response} user={user!} onBack={back}/>;
 
@@ -546,7 +546,7 @@ const generate = async (version: VersionSummary) => {
 
         <div className="simbo-login-submit-row">
 
-          <button disabled={busy} type="submit"><ActionIcon name="login" /> {busy?'Ingresando…':'Iniciar sesión'}</button>
+          <button disabled={busy} type="submit"><ActionIcon name="login" /> {busy?<span className="simbo-spinner" aria-hidden="true"/>:null}{busy?'Ingresando…':'Iniciar sesión'}</button>
 
         </div>
 
@@ -575,6 +575,7 @@ const generate = async (version: VersionSummary) => {
     </header>
 
     <div className="project-workspace-content">
+      {(busy||cuttingLoading)&&<div role="status" aria-live="polite" className="simbo-global-progress"><span className="simbo-spinner" aria-hidden="true"/>{cuttingLoading?'Generando despiece…':'Procesando solicitud…'}</div>}
       {error&&<p className="project-error" role="alert">{error}</p>}
       <FeedbackToast message={success} onDismiss={()=>setSuccess('')} />
 

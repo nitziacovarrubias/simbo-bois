@@ -15,7 +15,7 @@ import { generateCuttingList, validateCuttingListInput } from '@simbo/manufactur
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
 import { projectPreviewParts } from './project-preview.js';
-import { assertMaterialTextures } from './material-texture.guard.js';
+import { assertMaterialTextures, assertPartAppearanceTextures } from './material-texture.guard.js';
 import { PrismaService } from './prisma.service.js';
 import { canCreateProject, canEditDesign, canEditProject, canManageCollaborators, canReadProject } from './project-permissions.js';
 
@@ -55,7 +55,11 @@ export class ProjectsService {
     if (design.metadata.projectId && design.metadata.projectId!==projectId) throw new UnprocessableEntityException('DesignDocument pertenece a otro proyecto');
     design.metadata.projectId=projectId;
     assertMaterialTextures(design.materials);
-    for (const version of design.moduleVersions) assertMaterialTextures(version.snapshot.materials);
+    assertPartAppearanceTextures(design.parts);
+    for (const version of design.moduleVersions) {
+      assertMaterialTextures(version.snapshot.materials);
+      assertPartAppearanceTextures(version.snapshot.parts);
+    }
     const errors=validateDesignStructural(design).filter(issue=>issue.severity==='ERROR');
     if (errors.length) throw new UnprocessableEntityException({message:'Diseño estructuralmente inválido',issues:errors});
     return design;

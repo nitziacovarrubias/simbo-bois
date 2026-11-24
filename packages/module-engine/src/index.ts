@@ -201,6 +201,13 @@ export function duplicateModuleInstance(design: DesignDocument, instanceId: Id, 
   if (source.detached) throw new Error('Una instancia detached debe duplicarse como Assembly');
   const sourceWorld = getModuleInstanceWorldTransform(design, source.id);
   const duplicated = duplicateAssemblyTree(design, source.rootAssemblyId, `${source.name} copia`);
+  // Preserve the module-definition source IDs, not the previous instance's part IDs.
+  for (const [oldId, newId] of duplicated.idMap) {
+    const original = design.parts.find(part => part.id === oldId);
+    const cloned = design.parts.find(part => part.id === newId);
+    if (original && cloned && typeof original.metadata.sourceModuleEntityId === 'string')
+      cloned.metadata.sourceModuleEntityId = original.metadata.sourceModuleEntityId;
+  }
   const copy: ModuleInstance = {
     ...structuredClone(source),
     id: createId('moduleinst'),
@@ -650,4 +657,103 @@ export function createParameterDefinition(input: {
     unit: input.unit ?? 'none', min: input.min, max: input.max, step: input.step, options: input.options,
     ui: input.ui ?? (type === 'COLOR' ? 'COLOR' : type === 'BOOLEAN' ? 'TOGGLE' : input.options ? 'SELECT' : 'INPUT')
   };
+}
+
+/** Publish a new immutable workshop version and refresh only matching linked instances.
+ * Individual material overrides (made in the inspector) remain instance-local.
+ * Existing world transforms and instance identity are preserved.
+ */
+export function updateWorkshopModule(
+  design: DesignDocument,
+  updated: ModuleDefinition,
+  incoming: ModuleVersion
+): void {
+  const current = design.moduleDefinitions.find(item => item.id === updated.id);
+  if (!current || !current.tags.includes('WORKSHOP')) throw new Error('Solo se pueden editar módulos creados en el taller.');
+  if (incoming.definitionId !== current.id || design.moduleVersions.some(v => v.id === incoming.id)) throw new Error('Versión del módulo inválida.');
+  const next = structuredClone(incoming);
+  if (next.snapshot.assemblies.length !== 1) throw new Error('Esta definición requiere el editor avanzado de ensamblajes.');
+  const newRoot = next.snapshot.assemblies[0]!;
+  if (newRoot.id !== next.snapshot.rootAssemblyId || newRoot.children.some(child => child.kind !== 'PART')) throw new Error('Estructura del módulo no compatible con el taller.');
+  if (next.snapshot.joints.length || next.snapshot.constraints.length || next.snapshot.bindings.length
+    || next.snapshot.hardwareInstances.length || next.snapshot.machiningFeatures.length || next.snapshot.kinematics.length)
+    throw new Error('Esta definición incluye relaciones técnicas que requieren edición avanzada.');
+  // Never reuse IDs for changed material data: older immutable versions must remain reproducible.
+  const materialIds = new Map<string,string>();
+  for (const material of next.snapshot.materials) {
+    const original = material.id;
+    if (design.materials.some(existing => existing.id === original)) {
+      material.id = createId('material');
+      materialIds.set(original, material.id);
+    }
+  }
+  for (const part of next.snapshot.parts) {
+    if (part.materialId && materialIds.has(part.materialId)) part.materialId = materialIds.get(part.materialId);
+  }
+  const linked = design.moduleInstances.filter(instance => instance.definitionId === current.id && !instance.detached);
+  for (const instance of linked) {
+    const root = design.assemblies.find(assembly => assembly.id === instance.rootAssemblyId);
+    if (!root || root.children.some(child => child.kind !== 'PART')) throw new Error('La instancia tiene una estructura distinta. Usa Hacer independiente antes de editar la definición.');
+    const sourceIds = new Set(next.snapshot.parts.map(part => part.id));
+    for (const child of root.children) {
+      const old = design.parts.find(part => part.id === child.id);
+      if (!old) throw new Error('Hay una referencia rota en la instancia del módulo.');
+      const from = old.metadata.sourceModuleEntityId;
+      if (typeof from !== 'string') throw new Error('La instancia no conserva sus referencias de origen.');
+      if (sourceIds.has(from)) continue;
+      if (design.joints.some(j => j.partAId === old.id || j.partBId === old.id)
+        || design.constraints.some(c => c.entityIds.includes(old.id))
+        || design.machiningFeatures.some(feature => feature.partId === old.id)
+        || design.hardwareInstances.some(hardware => hardware.connectedPartIds.includes(old.id))
+        || design.kinematics.some(k => k.movingEntityId === old.id || k.referenceEntityId === old.id)) {
+        throw new Error(`La pieza «${old.name}» tiene relaciones externas. Desvincula la instancia antes de eliminarla de la definición.`);
+      }
+    }
+  }
+  // Validation above is complete; mutations below occur as one editor history action.
+  design.materials.push(...structuredClone(next.snapshot.materials));
+  for (const instance of linked) {
+    const root = design.assemblies.find(assembly => assembly.id === instance.rootAssemblyId)!;
+    const oldParts = root.children.map(child => design.parts.find(part => part.id === child.id)!).filter(Boolean);
+    const previous = new Map(oldParts.map(part => [String(part.metadata.sourceModuleEntityId),part]));
+    const children: typeof root.children = [];
+    for (const source of next.snapshot.parts) {
+      const prior = previous.get(source.id);
+      const localAppearance = prior?.metadata.appearanceOverride;
+      const part: Part = {
+        ...structuredClone(source),
+        id: prior?.id ?? createId('part'),
+        materialId: source.materialId,
+        hidden: prior?.hidden ?? source.hidden,
+        locked: prior?.locked ?? source.locked,
+        metadata: { ...structuredClone(source.metadata), ...(localAppearance?{appearanceOverride:structuredClone(localAppearance)}:{}),sourceModuleEntityId: source.id }
+      };
+      if (prior) {
+        const index = design.parts.findIndex(p => p.id === prior.id);
+        design.parts[index] = part;
+      } else design.parts.push(part);
+      children.push({kind:'PART',id:part.id});
+    }
+    const retained = new Set(children.map(child => child.id));
+    design.parts = design.parts.filter(part => !oldParts.some(old => old.id === part.id) || retained.has(part.id));
+    root.children = children;
+    instance.versionId = next.id;
+  }
+  current.name = updated.name;
+  current.description = updated.description;
+  current.currentVersionId = next.id;
+  current.versionIds = [...current.versionIds, next.id];
+  design.moduleVersions.push(next);
+  touchDesign(design);
+}
+
+/** Prepares new snapshot finishes for persistence and publication without mutating older versions. */
+export function prepareWorkshopModuleVersion(version: ModuleVersion): ModuleVersion {
+  const copy=structuredClone(version);
+  const map=new Map(copy.snapshot.materials.map(item=>[item.id,createId('material')]));
+  for(const material of copy.snapshot.materials) material.id=map.get(material.id)!;
+  for(const part of copy.snapshot.parts) {
+    if(part.materialId&&map.has(part.materialId)) part.materialId=map.get(part.materialId);
+  }
+  return copy;
 }

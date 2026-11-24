@@ -1,7 +1,7 @@
 import './Inspector.css';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ChevronDown, Layers3, Palette, Ruler, Settings2, Wrench } from 'lucide-react';
-import { getPartWorldTransform, normalizeHex, type GrainDirection, type SemanticRole } from '@simbo/design-domain';
+import { getPartWorldTransform, normalizeHex, partAppearanceMaterial, updatePartAppearance, type GrainDirection, type SemanticRole } from '@simbo/design-domain';
 import { useEditor } from '../store';
 import { editorCommands } from '../commands';
 import CADNumericField from './CADNumericField';
@@ -35,7 +35,7 @@ export default function Inspector() {
   const cutout=design.cutouts.find(candidate=>candidate.id===ids[0]);
   const service=design.servicePoints.find(candidate=>candidate.id===ids[0]);
   const clearance=design.clearanceZones.find(candidate=>candidate.id===ids[0]);
-  const material = useMemo(() => part?.materialId ? design.materials.find(candidate => candidate.id === part.materialId) : undefined, [design.materials, part?.materialId]);
+  const material = useMemo(() => partAppearanceMaterial(part,design.materials.find(candidate => candidate.id === part?.materialId)), [design.materials, part]);
   const [hexDraft, setHexDraft] = useState(material?.colorHex ?? '#B58A63');
   useEffect(() => setHexDraft(material?.colorHex ?? '#B58A63'), [material?.id, material?.colorHex]);
   const section=design.sectionPlanes.find(candidate=>candidate.id===selectedSectionId);
@@ -99,7 +99,7 @@ export default function Inspector() {
     if (!material) return;
     const normalized = normalizeHex(hexDraft, material.colorHex);
     setHexDraft(normalized);
-    mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.colorHex = normalized; });
+    mutate(doc => updatePartAppearance(doc, part.id, target => { target.colorHex = normalized; }));
   };
 
   return <section className="inspector">
@@ -130,11 +130,15 @@ export default function Inspector() {
     </Section>
 
     <Section title="Apariencia" icon={<Palette />}>
-      <label className="cad-select-field"><span>Material</span><select value={part.materialId ?? ''} onChange={event => mutate(doc => { const target=doc.parts.find(candidate => candidate.id === part.id); if(target)target.materialId = event.target.value; })}>{design.materials.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+      <label className="cad-select-field"><span>Material</span><select value={part.materialId ?? ''} onChange={event => mutate(doc => { const target=doc.parts.find(candidate => candidate.id === part.id); if(target){target.materialId = event.target.value;delete target.metadata.appearanceOverride;} })}>{design.materials.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
       {material && <>
-        <div className="color-control"><input className="color-swatch" aria-label="Selector de color" type="color" value={material.colorHex} onChange={event => { const value = event.target.value.toUpperCase(); setHexDraft(value); mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.colorHex = value; }); }} /><label><span>HEX</span><input value={hexDraft} onChange={event => setHexDraft(event.target.value)} onBlur={commitHex} onKeyDown={event => { if (event.key === 'Enter') { commitHex(); event.currentTarget.blur(); } if (event.key === 'Escape') { setHexDraft(material.colorHex); event.currentTarget.blur(); } }} /></label></div>
-        <MaterialTextureField key={material.id} material={material} onChange={dataUrl=>mutate(doc=>{const target=doc.materials.find(m=>m.id===material.id);if(target){if(dataUrl)target.metadata.textureDataUrl=dataUrl;else delete target.metadata.textureDataUrl;}})}/>
-        <div className="vector-grid vector-grid-2"><CADNumericField label="Rugosidad" value={material.roughness ?? .6} unit="none" step={.05} min={0} max={1} onCommit={value => mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.roughness = value; })} /><CADNumericField label="Metalizado" value={material.metalness ?? 0} unit="none" step={.05} min={0} max={1} onCommit={value => mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.metalness = value; })} /></div>
+        <div className="color-control"><input className="color-swatch" aria-label="Selector de color" type="color" value={material.colorHex} onChange={event => { const value = event.target.value.toUpperCase(); setHexDraft(value); mutate(doc => updatePartAppearance(doc, part.id, target => { target.colorHex = value; })); }} /><label><span>HEX</span><input value={hexDraft} onChange={event => setHexDraft(event.target.value)} onBlur={commitHex} onKeyDown={event => { if (event.key === 'Enter') { commitHex(); event.currentTarget.blur(); } if (event.key === 'Escape') { setHexDraft(material.colorHex); event.currentTarget.blur(); } }} /></label></div>
+        <p className="appearance-hint">Los cambios de apariencia afectan únicamente a esta pieza. Edita el módulo en Biblioteca para actualizar sus instancias.</p><MaterialTextureField key={material.id} material={material} onChange={dataUrl=>{mutate(doc=>updatePartAppearance(doc,part.id,target=>{if(dataUrl)target.metadata.textureDataUrl=dataUrl;else delete target.metadata.textureDataUrl;}));if(dataUrl)useEditor.getState().setDisplayMode('SHADED');}}/>
+        {material.metadata.textureDataUrl && <div className="vector-grid vector-grid-2">
+          <CADNumericField label="Escala de veta" value={Number(material.metadata.textureScaleMm)||600} unit="mm" min={100} max={2000} step={50} onCommit={value=>mutate(doc=>updatePartAppearance(doc,part.id,target=>{target.metadata.textureScaleMm=value;}))}/>
+          <CADNumericField label="Giro de veta" value={Number(material.metadata.textureRotationDeg)||0} unit="deg" min={-180} max={180} step={15} onCommit={value=>mutate(doc=>updatePartAppearance(doc,part.id,target=>{target.metadata.textureRotationDeg=value;}))}/>
+        </div>}
+        <div className="vector-grid vector-grid-2"><CADNumericField label="Rugosidad" value={material.roughness ?? .6} unit="none" step={.05} min={0} max={1} onCommit={value => mutate(doc => updatePartAppearance(doc, part.id, target => { target.roughness = value; }))} /><CADNumericField label="Metalizado" value={material.metalness ?? 0} unit="none" step={.05} min={0} max={1} onCommit={value => mutate(doc => updatePartAppearance(doc, part.id, target => { target.metalness = value; }))} /></div>
       </>}
     </Section>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UsersRound } from 'lucide-react';
+import { LoaderCircle, UsersRound } from 'lucide-react';
 import type { CollaboratorUser, ProjectSummary } from '../apiClient';
 import SharedDialog from './SharedDialog';
 import './CollaboratorsDialog.css';
@@ -32,7 +32,7 @@ export default function CollaboratorsDialog({ project, available, onSave, onClos
     footer={<>
       <button type="button" className="simbo-dialog-button" onClick={onClose} disabled={busy}>Cancelar</button>
       <button type="button" className="simbo-dialog-button simbo-dialog-button--primary" disabled={!changed || busy} onClick={() => void save()}>
-        {busy ? 'Guardando…' : 'Guardar asignaciones'}
+        {busy && <LoaderCircle size={15} className="simbo-spin-icon" aria-hidden="true"/>}{busy ? 'Guardando…' : 'Guardar asignaciones'}
       </button>
     </>}>
     <div className="simbo-collaborators-body">

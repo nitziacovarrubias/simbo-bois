@@ -2,7 +2,7 @@ import './App.css';
 import { DEMO_FOCUSED_UI } from './demoUiConfig';
 import './demo-ui-polish.css';
 import { useEffect, useState, type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react';
-import { Box, Camera, CircleDot, Cuboid, FolderPlus, History, Layers3, MessageSquarePlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench, ArrowLeft } from 'lucide-react';
+import { Box, Camera, ChevronDown, CircleCheck, Cuboid, DoorOpen, FolderTree, FolderPlus, History, Layers3, MessageSquarePlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench, ArrowLeft } from 'lucide-react';
 import Viewport from './components/Viewport';
 import EditorCommandNotices from './components/EditorCommandNotices';
 import { isEditorShortcut, isEditorControlTarget } from './editorShortcutPolicy';
@@ -13,10 +13,11 @@ import JoineryPanel from './components/JoineryPanel';
 import ManufacturingPanel from './components/ManufacturingPanel';
 import ScenesPanel from './components/ScenesPanel';
 import HealthPanel from './components/HealthPanel';
+import SharedDialog from './components/SharedDialog';
 import RoomPanel from './components/RoomPanel';
 import LibraryPanel from './components/LibraryPanel';
 import ModuleWorkshop from './components/ModuleWorkshop';
-import { installPortableModule } from '@simbo/module-engine';
+import { installPortableModule, prepareWorkshopModuleVersion, updateWorkshopModule } from '@simbo/module-engine';
 import type { ModuleDefinition, ModuleVersion } from '@simbo/design-domain';
 import EditorToolbar from './components/EditorToolbar';
 import ViewControls from './components/ViewControls';
@@ -35,6 +36,7 @@ import type { CreateProjectRequest } from '@simbo/shared-contracts';
 import type { DesignChangeProposal } from '@simbo/shared-contracts';
 import { editorFacade } from './editorFacade';
 import './editor-surface.css';
+import './editor-usability.css';
 
 type ActivePanel = ReturnType<typeof useEditor.getState>['activePanel'];
 
@@ -60,6 +62,10 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
   const presentationMode=useEditor(state=>state.presentationMode);
   const [newProjectOpen,setNewProjectOpen]=useState(false);
   const [moduleWorkshopOpen,setModuleWorkshopOpen]=useState(false);
+  const [editingModule,setEditingModule]=useState<{definition:ModuleDefinition;version:ModuleVersion;shared?:boolean;updatedAt?:string}>();
+  const [validationOpen,setValidationOpen]=useState(false);
+  const [saveBusy,setSaveBusy]=useState(false);
+  const [versionBusy,setVersionBusy]=useState(false);
   const [demoConfirmOpen,setDemoConfirmOpen]=useState(false);
   const [demoLoading,setDemoLoading]=useState(false);
   const [demoError,setDemoError]=useState('');
@@ -147,13 +153,35 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
   const leftWidth=workspace.leftPanelCollapsed?0:workspace.leftPanelWidth;
   const rightWidth=workspace.rightPanelCollapsed?0:workspace.rightPanelWidth;
 
-  if(moduleWorkshopOpen)return <ModuleWorkshop canPublish={user?.role==='SUPERVISOR'||user?.role==='ARCHITECT'}
-    onClose={()=>setModuleWorkshopOpen(false)}
+  if(moduleWorkshopOpen)return <ModuleWorkshop
+    key={editingModule?.definition.id??'new'}
+    editing={editingModule}
+    canPublish={user?.role==='SUPERVISOR'||(user?.role==='ARCHITECT'&&!editingModule?.shared)}
+    onClose={()=>{setModuleWorkshopOpen(false);setEditingModule(undefined);}}
     onSave={async(definition:ModuleDefinition,version:ModuleVersion,publish:boolean)=>{
-      if(publish) await apiClient.publishModule(definition,version);
-      useEditor.getState().mutate(doc=>installPortableModule(doc,definition,version));
-      setModuleWorkshopOpen(false);
-      setNotice(`Módulo «${definition.name}» guardado en la biblioteca`);
+      const existing=useEditor.getState().design.moduleDefinitions.some(item=>item.id===definition.id);
+      const prepared=editingModule?prepareWorkshopModuleVersion(version):version;
+      // First validate the full local mutation before a remote publication.
+      if(editingModule) {
+        const check=structuredClone(useEditor.getState().design);
+        if(!existing) installPortableModule(check,editingModule.definition,editingModule.version);
+        updateWorkshopModule(check,definition,prepared);
+      }
+      if(publish) {
+        if(editingModule?.shared){
+          if(user?.role!=='SUPERVISOR'||!editingModule.updatedAt)throw new Error('Solo el Supervisor puede actualizar un módulo compartido.');
+          await apiClient.updateSharedModule(definition,prepared,editingModule.updatedAt);
+        } else await apiClient.publishModule(definition,prepared);
+      }
+      useEditor.getState().mutate(doc=>{
+        if(editingModule&&existing) updateWorkshopModule(doc,definition,prepared);
+        else if(editingModule) {
+          installPortableModule(doc,editingModule.definition,editingModule.version);
+          updateWorkshopModule(doc,definition,prepared);
+        } else installPortableModule(doc,definition,prepared);
+      });
+      setModuleWorkshopOpen(false);setEditingModule(undefined);
+      setNotice(`Módulo «${definition.name}» ${editingModule?'actualizado':'guardado'} en la biblioteca`);
       setPanel('LIBRARY');setPanelCollapsed('right',false);
     }}/>;
 
@@ -179,8 +207,9 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
       <div className="topbar-actions">
         {user && <span className="topbar-role" title={user.email}>{user.name} · {user.role==='SUPERVISOR'?'Supervisor':user.role==='ARCHITECT'?'Arquitecto':'Colaborador'}</span>}
         <span className="topbar-sr-only" role="status">Estado de guardado: {saveStatus}</span>
-        <button type="button" className="top-action top-save" onClick={()=>void autosaveNow().catch(()=>{})} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/></button>
-        <button type="button" className="top-action secondary-dark" onClick={()=>{setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión'));}} title="Guardar nueva versión" aria-label="Guardar nueva versión"><History aria-hidden="true"/></button>
+        <button type="button" className="top-action top-save" disabled={saveBusy||saveStatus==='GUARDANDO'} onClick={()=>{setSaveBusy(true);void autosaveNow().catch(error=>setNotice(error instanceof Error?error.message:'No se pudo guardar')).finally(()=>setSaveBusy(false));}} aria-label="Guardar diseño" title="Guardar diseño">{saveBusy||saveStatus==='GUARDANDO'?<span className="simbo-spinner simbo-spinner-inline" aria-hidden="true"/>:<Save aria-hidden="true"/>}</button>
+        <button type="button" className="top-action secondary-dark" disabled={versionBusy} onClick={()=>{setVersionBusy(true);setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión')).finally(()=>setVersionBusy(false));}} title="Guardar nueva versión" aria-label="Guardar nueva versión">{versionBusy?<span className="simbo-spinner simbo-spinner-inline" aria-hidden="true"/>:<History aria-hidden="true"/>}</button>
+        <button type="button" className="top-action top-validate" onClick={()=>setValidationOpen(true)} title="Validar diseño" aria-label="Validar diseño"><CircleCheck aria-hidden="true"/><span>Validar diseño</span></button>
         {user?.role==='ARCHITECT'&&remoteProject&&<button type="button" className="top-action top-proposal" onClick={()=>{setProposalError('');setCreatedProposal(undefined);setProposalObservation('');setProposalOpen(value=>!value);}} title="Registrar propuesta" aria-label="Registrar propuesta"><MessageSquarePlus aria-hidden="true"/></button>}
         {onProjects&&<button type="button" className="top-action top-back" onClick={onProjects} title="Volver a proyectos" aria-label="Volver a proyectos"><ArrowLeft aria-hidden="true"/><span>Volver a proyectos</span></button>}
       </div>
@@ -196,10 +225,15 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
       {!DEMO_FOCUSED_UI && <button className={panel==='JOINERY'?'active':''} title="Uniones" aria-label="Uniones" onClick={()=>openPanel('JOINERY')}><Wrench/></button>}
       <button className={panel==='MANUFACTURING'?'active':''} title="Manufactura" aria-label="Manufactura" onClick={()=>openPanel('MANUFACTURING')}><Scissors/></button>
       <button className={panel==='SCENES'?'active':''} title="Escenas y secciones" aria-label="Escenas y secciones" onClick={()=>openPanel('SCENES')}><Camera/></button>
-      <button className={panel==='HEALTH'?'active':''} title="Validar diseño" aria-label="Validar diseño" onClick={()=>openPanel('HEALTH')}><CircleDot/></button>
     </aside>
 
-    <aside className={`left-panel ${workspace.leftPanelCollapsed?'collapsed':''}`} aria-label="Panel de escena y habitación"><div className="panel-shell-heading"><span>Diseño y escena</span><button type="button" aria-label="Cerrar panel izquierdo" title="Cerrar panel" onClick={()=>setPanelCollapsed('left',true)}><PanelLeftClose aria-hidden="true"/></button></div><Outliner/><RoomPanel/></aside>
+    <aside className={`left-panel ${workspace.leftPanelCollapsed?'collapsed':''}`} aria-label="Panel de escena y habitación">
+      <div className="panel-shell-heading"><span>Diseño y escena</span><button type="button" aria-label="Cerrar panel izquierdo" title="Cerrar panel" onClick={()=>setPanelCollapsed('left',true)}><PanelLeftClose aria-hidden="true"/></button></div>
+      <nav className="scene-tree" aria-label="Estructura del diseño">
+        <details open className="scene-tree-group"><summary><ChevronDown className="tree-chevron" size={16}/><FolderTree size={17}/><span>Elementos del diseño</span><small>{design.parts.length}</small></summary><div className="scene-tree-content"><Outliner/></div></details>
+        <details open className="scene-tree-group"><summary><ChevronDown className="tree-chevron" size={16}/><DoorOpen size={17}/><span>Habitación</span><small>{design.room.openings.length}</small></summary><div className="scene-tree-content"><RoomPanel/></div></details>
+      </nav>
+    </aside>
 
     <main className="viewport-area">
       {proposalOpen&&<section className="proposal-panel" aria-labelledby="proposal-title">
@@ -255,9 +289,12 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
       {panel==='MANUFACTURING'&&<ManufacturingPanel/>}
       {panel==='SCENES'&&<ScenesPanel/>}
       {panel==='HEALTH'&&<HealthPanel/>}
-      {panel==='LIBRARY'&&<LibraryPanel onCreateModule={()=>setModuleWorkshopOpen(true)}/>}
+      {panel==='LIBRARY'&&<LibraryPanel onCreateModule={()=>{setEditingModule(undefined);setModuleWorkshopOpen(true);}} onEditModule={(definition,version,shared,updatedAt)=>{setEditingModule({definition,version,shared,updatedAt});setModuleWorkshopOpen(true);}}/>}
     </aside>
     <StatusBar/>
+    {validationOpen&&<SharedDialog title="Validación del diseño" description="Incidencias detectadas en el modelo actual." width="wide" onClose={()=>setValidationOpen(false)} footer={<button type="button" className="simbo-dialog-button simbo-dialog-button--primary" onClick={()=>setValidationOpen(false)}>Cerrar</button>}>
+      <HealthPanel expandAll onIssueSelect={()=>{setValidationOpen(false);setPanel('INSPECTOR');setPanelCollapsed('right',false);}} />
+    </SharedDialog>}
     {newProjectOpen && <NewProjectDialog assignees={projectAssignees} currentUserId={user?.id} localOnly={!onCreateProject}
       onCancel={()=>setNewProjectOpen(false)} onSave={async input=>{
         if(onCreateProject)await onCreateProject(input);else createProject(input.name);

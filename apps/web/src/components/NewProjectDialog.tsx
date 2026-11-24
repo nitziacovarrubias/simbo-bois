@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { FolderPlus, Save } from 'lucide-react';
+import { FolderPlus, LoaderCircle, Save } from 'lucide-react';
 import type { CreateProjectRequest, ProjectType } from '@simbo/shared-contracts';
 import type { AssignableUser, ProjectSummary } from '../apiClient';
 import Field from './Field';
@@ -61,7 +61,7 @@ export default function NewProjectDialog({ onCancel, onSave, assignees = [], ini
     footer={<>
       <button type="button" className="simbo-dialog-button" onClick={onCancel} disabled={busy}>Cancelar</button>
       <button type="submit" form="simbo-project-form" className="simbo-dialog-button simbo-dialog-button--primary" disabled={busy}>
-        {initial ? <Save /> : <FolderPlus />}{busy ? 'Guardando…' : initial ? 'Guardar cambios' : 'Crear proyecto'}
+        {busy ? <LoaderCircle className="simbo-spin-icon" aria-hidden="true"/> : initial ? <Save /> : <FolderPlus />}{busy ? 'Guardando…' : initial ? 'Guardar cambios' : 'Crear proyecto'}
       </button>
     </>}>
     <form className="simbo-project-form" id="simbo-project-form" onSubmit={event => void submit(event)} noValidate>

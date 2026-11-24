@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Grid, OrbitControls, Edges } from '@react-three/drei';
-import { ArrowLeft, Copy, Layers3, Plus, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Copy, Layers3, LoaderCircle, Plus, Save, Trash2 } from 'lucide-react';
 import { addPartToAssembly, createEmptyDesign, createId, createPanel, getPartWorldTransform,
   validateDesignStructural, type DesignDocument, type ModuleDefinition, type ModuleVersion, type Part } from '@simbo/design-domain';
 import { createModuleDefinitionFromAssembly } from '@simbo/module-engine';
@@ -12,6 +12,7 @@ import './ModuleWorkshop.css';
 
 interface Props {
   canPublish: boolean;
+  editing?: { definition: ModuleDefinition; version: ModuleVersion; shared?: boolean };
   onClose: () => void;
   onSave: (definition: ModuleDefinition, version: ModuleVersion, publish: boolean) => Promise<void>;
 }
@@ -21,7 +22,6 @@ function PieceInput({label,value,onChange,min=-10000,max=10000}: {label:string;v
 }
 
 function Preview({draft,selected,onSelect,top}:{draft:DesignDocument;selected?:string;onSelect:(id:string)=>void;top:boolean}){
-  const material=draft.materials[0];
   return <Canvas key={top?'top':'perspective'} shadows camera={{position:top?([0,3000,0.01] as [number,number,number]):([1650,1300,1800] as [number,number,number]),fov:45,near:1,far:20000,up:top?([0,0,-1] as [number,number,number]):([0,1,0] as [number,number,number])}}
     gl={{antialias:true,powerPreference:'high-performance'}}>
     <color attach="background" args={['#ece8df']}/>
@@ -30,10 +30,11 @@ function Preview({draft,selected,onSelect,top}:{draft:DesignDocument;selected?:s
     <Grid args={[6000,6000]} sectionSize={500} cellSize={100} cellColor="#b6aea2" sectionColor="#8a7661" fadeDistance={7000} fadeStrength={1.2} position={[0,-1,0]}/>
     {draft.parts.map(part=>{
       const t=getPartWorldTransform(draft,part.id);
+      const material=draft.materials.find(item=>item.id===part.materialId)??draft.materials[0];
       return <mesh key={part.id} position={[t.position.x,t.position.y,t.position.z]} rotation={[t.rotation.x,t.rotation.y,t.rotation.z]}
         castShadow receiveShadow onPointerDown={event=>{event.stopPropagation();onSelect(part.id);}}>
         <boxGeometry args={[part.dimensions.widthMm,part.dimensions.heightMm,part.dimensions.thicknessMm]}/>
-        <MaterialSurface material={material} color={material?.colorHex??'#bd9b73'}/>
+        <MaterialSurface material={material} dimensionsMm={part.dimensions} color={material?.colorHex??'#bd9b73'}/>
         <Edges color={selected===part.id?'#f0a321':'#6c5141'} threshold={22}/>
       </mesh>;
     })}
@@ -41,24 +42,39 @@ function Preview({draft,selected,onSelect,top}:{draft:DesignDocument;selected?:s
   </Canvas>;
 }
 
-export default function ModuleWorkshop({canPublish,onClose,onSave}:Props){
+export default function ModuleWorkshop({canPublish,onClose,onSave,editing}:Props){
   const [draft,setDraft]=useState(()=>{
-    const doc=createEmptyDesign('Nuevo módulo');
-    doc.materials[0]!.name='Material del módulo';
-    doc.materials[0]!.colorHex='#BD9B73';
+    const doc=createEmptyDesign(editing?.definition.name ?? 'Nuevo módulo');
+    if (editing) {
+      const snapshot=structuredClone(editing.version.snapshot);
+      doc.rootAssemblyId=snapshot.rootAssemblyId;
+      doc.assemblies=snapshot.assemblies;
+      doc.parts=snapshot.parts;
+      doc.materials=snapshot.materials;
+      doc.constraints=snapshot.constraints;
+      doc.bindings=snapshot.bindings;
+      doc.joints=snapshot.joints;
+      doc.hardwareDefinitions=snapshot.hardwareDefinitions;
+      doc.hardwareInstances=snapshot.hardwareInstances;
+      doc.machiningFeatures=snapshot.machiningFeatures;
+      doc.kinematics=snapshot.kinematics;
+    } else {
+      doc.materials[0]!.name='Material del módulo';
+      doc.materials[0]!.colorHex='#BD9B73';
+    }
     return doc;
   });
-  const [name,setName]=useState('');
-  const [description,setDescription]=useState('');
+  const [name,setName]=useState(editing?.definition.name??'');
+  const [description,setDescription]=useState(editing?.definition.description??'');
   const [selected,setSelected]=useState<string>();
   const [top,setTop]=useState(false);
-  const [publish,setPublish]=useState(false);
+  const [publish,setPublish]=useState(Boolean(editing?.shared && canPublish));
   const [dirty,setDirty]=useState(false);
   const [confirmDiscard,setConfirmDiscard]=useState(false);
   const [error,setError]=useState('');
   const [busy,setBusy]=useState(false);
   const part=useMemo(()=>draft.parts.find(item=>item.id===selected),[draft,selected]);
-  const material=draft.materials[0]!;
+  const material=draft.materials.find(item=>item.id===part?.materialId)??draft.materials[0]!;
   const change=(fn:(doc:DesignDocument)=>void)=>{setDraft(previous=>{const next=structuredClone(previous);fn(next);return next;});setDirty(true);setError('');};
   const edit=(fn:(part:Part)=>void)=>change(doc=>{const target=doc.parts.find(item=>item.id===selected);if(target)fn(target);});
   const add=()=>{
@@ -85,9 +101,17 @@ export default function ModuleWorkshop({canPublish,onClose,onSave}:Props){
     setBusy(true);setError('');
     try {
       const standalone=structuredClone(draft);
-      const {definition,version}=createModuleDefinitionFromAssembly(standalone,standalone.rootAssemblyId,{
+      const created=createModuleDefinitionFromAssembly(standalone,standalone.rootAssemblyId,{
         name:validName,description:description.trim(),tags:['USER','WORKSHOP']
       });
+      const definition=editing?{
+        ...structuredClone(editing.definition), name:validName, description:description.trim(),
+        currentVersionId:created.version.id, versionIds:[...editing.definition.versionIds,created.version.id]
+      }:created.definition;
+      const version=editing?{
+        ...created.version, definitionId:editing.definition.id,
+        version:editing.version.version+1, notes:'Actualización desde el taller'
+      }:created.version;
       await onSave(definition,version,canPublish&&publish);
     }catch(reason){setError(reason instanceof Error?reason.message:'No se pudo guardar el módulo.');}
     finally{setBusy(false);}
@@ -96,12 +120,12 @@ export default function ModuleWorkshop({canPublish,onClose,onSave}:Props){
   return <main className="module-workshop" data-simbo-modal="true">
     <header className="module-workshop-header">
       <button type="button" onClick={cancel} className="module-workshop-back"><ArrowLeft size={18}/> Volver al proyecto</button>
-      <div className="module-workshop-brand"><Layers3 size={22}/><div><strong>Constructor de módulos</strong><span>Área de trabajo temporal · No modifica el proyecto hasta guardar</span></div></div>
-      <button type="button" className="module-workshop-save" onClick={()=>void save()} disabled={busy}><Save size={17}/>{busy?'Guardando…':'Guardar módulo'}</button>
+      <div className="module-workshop-brand"><Layers3 size={22}/><div><strong>{editing?'Editar módulo':'Constructor de módulos'}</strong><span>Área temporal · El proyecto no cambia hasta guardar</span></div></div>
+      <button type="button" className="module-workshop-save" onClick={()=>void save()} disabled={busy}>{busy?<LoaderCircle size={17} className="simbo-spin-icon"/>:<Save size={17}/>}{busy?'Guardando…':editing?'Guardar nueva versión':'Guardar módulo'}</button>
     </header>
     <div className="module-workshop-body">
       <aside className="module-workshop-sidebar">
-        <h2>Nuevo módulo</h2>
+        <h2>{editing?'Editar definición':'Nuevo módulo'}</h2>
         <label>Nombre<input maxLength={160} value={name} onChange={e=>{setName(e.target.value);setDirty(true);}} placeholder="Ej. Gabinete bajo 60"/></label>
         <label>Descripción<textarea rows={2} maxLength={500} value={description} onChange={e=>{setDescription(e.target.value);setDirty(true);}} placeholder="Descripción opcional"/></label>
         <div className="module-workshop-section-heading"><strong>Piezas ({draft.parts.length})</strong><button type="button" onClick={add}><Plus size={15}/> Panel</button></div>
@@ -111,8 +135,8 @@ export default function ModuleWorkshop({canPublish,onClose,onSave}:Props){
           </button>)}
           {!draft.parts.length&&<p className="module-workshop-empty">Agrega un panel para comenzar a diseñar.</p>}
         </div>
-        {canPublish&&<label className="module-workshop-share"><input type="checkbox" checked={publish} onChange={e=>setPublish(e.target.checked)}/> Publicar también en biblioteca compartida</label>}
-        <small className="module-workshop-help">Los módulos guardados en el proyecto se pueden insertar desde Biblioteca. Los compartidos quedan disponibles en otros proyectos.</small>
+        {canPublish&&<label className="module-workshop-share"><input type="checkbox" checked={publish} onChange={e=>setPublish(e.target.checked)}/> {editing?.shared?'Actualizar biblioteca compartida':'Publicar también en biblioteca compartida'}</label>}
+        <small className="module-workshop-help">{editing?'Se creará una nueva versión. Las instancias vinculadas de este proyecto se actualizarán; los acabados individuales se conservarán.':'El módulo quedará disponible en la biblioteca. Puedes compartirlo con otros proyectos.'}</small>
       </aside>
       <section className="module-workshop-scene" aria-label="Plano temporal del módulo">
         <div className="module-workshop-scene-tools"><span>{top?'Vista superior':'Vista 3D'}</span><div><button type="button" className={!top?'active':''} onClick={()=>setTop(false)}>3D</button><button type="button" className={top?'active':''} onClick={()=>setTop(true)}>Planta</button></div></div>
@@ -136,8 +160,15 @@ export default function ModuleWorkshop({canPublish,onClose,onSave}:Props){
           <PieceInput label="Rotación Y (°)" min={-360} max={360} value={Math.round(part.transform.rotation.y*180/Math.PI)} onChange={v=>edit(p=>{p.transform.rotation.y=v*Math.PI/180;})}/>
           <div className="module-workshop-actions"><button type="button" onClick={duplicate}><Copy size={15}/> Duplicar</button><button type="button" onClick={remove} className="danger"><Trash2 size={15}/> Eliminar</button></div>
         </>:<p className="module-workshop-empty">Selecciona un panel para ajustar medidas y posición.</p>}
-        <details className="module-workshop-material"><summary>Material y textura</summary><label>Color<input type="color" value={material.colorHex} onChange={e=>change(doc=>{doc.materials[0]!.colorHex=e.target.value.toUpperCase();})}/></label>
-          <MaterialTextureField material={material} onChange={url=>change(doc=>{if(url)doc.materials[0]!.metadata.textureDataUrl=url;else delete doc.materials[0]!.metadata.textureDataUrl;})}/>
+        <details className="module-workshop-material"><summary>Material y textura del módulo</summary>
+          <p className="module-workshop-material-hint">El acabado se aplica a las piezas que usan este material en todas las instancias vinculadas al guardar una nueva versión.</p>
+          {part&&<label>Material de «{part.name}»<select value={part.materialId??''} onChange={e=>edit(p=>{p.materialId=e.target.value;})}>{draft.materials.map(item=><option value={item.id} key={item.id}>{item.name}</option>)}</select></label>}
+          <label>Color de {material.name}<input type="color" value={material.colorHex} onChange={e=>change(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target)target.colorHex=e.target.value.toUpperCase();})}/></label>
+          <MaterialTextureField key={material.id} material={material} onChange={url=>change(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target){if(url)target.metadata.textureDataUrl=url;else delete target.metadata.textureDataUrl;}})}/>
+          {material.metadata.textureDataUrl&&<div className="module-workshop-material-options">
+            <PieceInput label="Escala (mm)" min={100} max={2000} value={Number(material.metadata.textureScaleMm)||600} onChange={value=>change(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target)target.metadata.textureScaleMm=value;})}/>
+            <PieceInput label="Rotación (°)" min={-180} max={180} value={Number(material.metadata.textureRotationDeg)||0} onChange={value=>change(doc=>{const target=doc.materials.find(item=>item.id===material.id);if(target)target.metadata.textureRotationDeg=value;})}/>
+          </div>}
         </details>
         {error&&<p role="alert" className="module-workshop-error">{error}</p>}
       </aside>

@@ -1,3 +1,4 @@
+import { partAppearanceMaterial } from '@simbo/design-domain';
 import MaterialSurface from './MaterialSurface';
 import './Viewport.css';
 import { useEffect, useMemo, useRef, useState, type ElementRef } from 'react';
@@ -216,7 +217,7 @@ function PartObject({ part, index, clippingPlanes=[] }: { part: Part; index: num
     return instance ? isAssemblyAncestor(design, instance.rootAssemblyId, part.id) : false;
   });
   const previewing = Boolean(preview && previewEntityId && (previewEntityId === part.id || (design.assemblies.some(a => a.id === previewEntityId) && isAssemblyAncestor(design, previewEntityId, part.id)) || (design.moduleInstances.some(i => i.id === previewEntityId) && isAssemblyAncestor(design, design.moduleInstances.find(i => i.id === previewEntityId)!.rootAssemblyId, part.id))));
-  const material = design.materials.find(candidate => candidate.id === part.materialId);
+  const material = partAppearanceMaterial(part,design.materials.find(candidate => candidate.id === part.materialId));
   const relation = design.kinematics.find(candidate => candidate.movingEntityId === part.id);
   const value = relation ? (kinematicValues[relation.id] ?? relation.currentValue) : 0;
   const base: Transform = relation ? animatedTransform(design, relation, value) : getPartWorldTransform(design, part.id);
@@ -287,6 +288,7 @@ function PartObject({ part, index, clippingPlanes=[] }: { part: Part; index: num
       <boxGeometry args={[part.dimensions.widthMm, part.dimensions.heightMm, part.dimensions.thicknessMm]} />
       <MaterialSurface
         material={!wireframe && !hiddenLine && !xray && !config.faceOverride ? material : undefined}
+        dimensionsMm={part.dimensions}
         color={color}
         roughness={hiddenLine ? 1 : material?.roughness ?? .62}
         metalness={hiddenLine ? 0 : material?.metalness ?? 0}

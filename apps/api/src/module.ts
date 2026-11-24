@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Patch, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
+import { Body, Controller, ConflictException, ForbiddenException, Get, NotFoundException, HttpCode, Inject, Module, Param, Patch, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
 import {
   CreateProjectRequestSchema, UpdateProjectRequestSchema, SetProjectCollaboratorsRequestSchema,
   CreateDesignChangeProposalRequestSchema, DesignChangeProposalParamsSchema,
@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
 import { PrismaService } from './prisma.service.js';
 import { ProjectsService } from './projects.service.js';
-import { assertMaterialTextures } from './material-texture.guard.js';
+import { assertMaterialTextures, assertPartAppearanceTextures } from './material-texture.guard.js';
 
 const ModuleCatalogRequestSchema = z.object({ definitionId: z.string().min(1), name: z.string().min(1).max(160), definitionJson: ModuleDefinitionSchema, versionJson: ModuleVersionSchema }).strict();
 function json(value: unknown): Prisma.InputJsonValue { return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue; }
@@ -111,11 +111,28 @@ class ProjectsController {
 class ModulesController {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) { }
   @Get() list() { return this.prisma.moduleCatalogEntry.findMany({ orderBy: { updatedAt: 'desc' } }); }
+  @Patch(':definitionId') async update(@CurrentUser() actor: Actor, @Param('definitionId') definitionId:string, @Body() body:unknown) {
+    if(actor.role!=='SUPERVISOR')throw new ForbiddenException('Solo el Supervisor puede actualizar módulos compartidos');
+    const parsed=ModuleCatalogRequestSchema.extend({expectedUpdatedAt:z.string().datetime()}).parse(body);
+    if(parsed.definitionId!==definitionId || parsed.definitionJson.id!==definitionId || parsed.versionJson.definitionId!==definitionId || parsed.definitionJson.currentVersionId!==parsed.versionJson.id)
+      throw new UnprocessableEntityException('Definición y versión incoherentes');
+    assertMaterialTextures(parsed.versionJson.snapshot.materials);
+    assertPartAppearanceTextures(parsed.versionJson.snapshot.parts);
+    const existing=await this.prisma.moduleCatalogEntry.findUnique({where:{definitionId}});
+    if(!existing)throw new NotFoundException('Módulo compartido no encontrado');
+    if(existing.updatedAt.toISOString()!==parsed.expectedUpdatedAt)throw new ConflictException('El módulo se modificó en otra sesión. Actualiza la biblioteca.');
+    const previous=(existing.versionJson as {version?:number}).version;
+    if(!Number.isFinite(previous)||parsed.versionJson.version!==previous!+1)throw new ConflictException('La nueva versión debe continuar la versión publicada.');
+    const result=await this.prisma.moduleCatalogEntry.updateMany({where:{definitionId,updatedAt:existing.updatedAt},data:{name:parsed.name,definitionJson:json(parsed.definitionJson),versionJson:json(parsed.versionJson)}});
+    if(!result.count)throw new ConflictException('El módulo se modificó durante la operación.');
+    return this.prisma.moduleCatalogEntry.findUnique({where:{definitionId}});
+  }
   @Post() create(@CurrentUser() actor: Actor, @Body() body: unknown) {
     if (actor.role === 'COLLABORATOR') throw new ForbiddenException('El Colaborador no puede crear módulos compartidos');
     const parsed = ModuleCatalogRequestSchema.parse(body);
     if (parsed.definitionId !== parsed.definitionJson.id || parsed.versionJson.definitionId !== parsed.definitionId || parsed.definitionJson.currentVersionId !== parsed.versionJson.id) throw new UnprocessableEntityException('Definition/Version de catálogo incoherentes');
     assertMaterialTextures(parsed.versionJson.snapshot.materials);
+    assertPartAppearanceTextures(parsed.versionJson.snapshot.parts);
     const data = { name: parsed.name, definitionJson: json(parsed.definitionJson), versionJson: json(parsed.versionJson) };
     if (actor.role === 'ARCHITECT') return this.prisma.moduleCatalogEntry.create({ data: { definitionId: parsed.definitionId, ...data } });
     return this.prisma.moduleCatalogEntry.upsert({ where: { definitionId: parsed.definitionId }, create: { definitionId: parsed.definitionId, ...data }, update: data });

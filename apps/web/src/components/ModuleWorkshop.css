@@ -21,3 +21,8 @@
 .module-workshop-actions{display:flex;gap:8px}.module-workshop-actions .danger{background:#934f42}.module-workshop-material{border:1px solid #cab79d;border-radius:9px;padding:11px;background:#faf5ed}.module-workshop-material summary{cursor:pointer;font-size:12px;font-weight:800}.module-workshop-material>label{margin:12px 0}.module-workshop-error{color:#983a30;background:#fce9e4;padding:10px;border-radius:8px;font-size:12px}
 @media(max-width:950px){.module-workshop-body{grid-template-columns:230px minmax(280px,1fr)}.module-workshop-properties{grid-column:1/-1;max-height:300px;display:block}.module-workshop-fields{max-width:440px;margin:8px 0}}
 @media(max-width:600px){.module-workshop-header{padding:8px 11px}.module-workshop-brand span{display:none}.module-workshop-brand strong{font-size:13px}.module-workshop-back{font-size:0!important}.module-workshop-body{display:flex;flex-direction:column;overflow:auto}.module-workshop-sidebar{max-height:360px}.module-workshop-scene{height:380px;flex:none}}
+
+.module-workshop-material-hint{font-size:11px;font-weight:500;line-height:1.45;color:#6c5439;margin:10px 0;padding:9px 10px;background:#f3e6d4;border-radius:7px}
+.module-workshop-material select{width:100%;min-height:38px;padding:8px 10px;border:1px solid #c7b59c;border-radius:8px;background:#fff;color:#302419;font:inherit}
+.module-workshop-material-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.module-workshop-material select:focus-visible{outline:2px solid #b78946;outline-offset:2px}
