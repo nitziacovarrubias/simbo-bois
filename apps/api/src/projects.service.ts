@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException, UnauthorizedException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
 import { CreateDesignChangeProposalResponseSchema, DesignDocumentSchema, ListDesignChangeProposalsResponseSchema, type CreateDesignChangeProposalRequest } from '@simbo/shared-contracts';
@@ -6,9 +6,15 @@ import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
   CuttingListResponseSchema,
-  DesignDocumentSchema
+  QuotationCalculationSchema,
+  QuotationResponseSchema,
+  QuotationListResponseSchema,
+  type QuotationGenerationRequest,
+  type QuotationResponse,
+  type QuotationListResponse,
 } from '@simbo/shared-contracts';
 import { generateCuttingList, validateCuttingListInput } from '@simbo/manufacturing-engine';
+import { calculateQuotation } from '@simbo/quotation-engine';
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
 import { PrismaService } from './prisma.service.js';
@@ -169,6 +175,7 @@ export class ProjectsService {
       ...proposal,
       createdAt:proposal.createdAt.toISOString()
     })));
+  }
   private async validateCurrentApprovedVersion(
     tx: Transaction,
     projectId: string,
@@ -351,6 +358,141 @@ export class ProjectsService {
     return CuttingListAuthorizationStatusResponseSchema.parse({
       authorized: true,
       authorization: this.formatAuthorization(existing)
+    });
+  }
+
+  /**
+ * Genera y almacena una cotización desde una versión aprobada vigente.
+ *
+ * @pre El actor tiene permisos y acceso al proyecto.
+ * @pre La versión está aprobada y coincide con el borrador vigente.
+ * @pre El despiece y las tarifas cumplen sus contratos.
+ * @post Se almacena una cotización recuperable con su desglose y total.
+ * @inv No se modifica el DesignDocument ni una versión histórica.
+ * @inv Los importes se mantienen en centavos enteros no negativos.
+ */
+async createQuotation(
+    actor: Actor,
+    id: string,
+    versionId: string,
+    input: QuotationGenerationRequest
+  ): Promise<QuotationResponse> {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException('Sólo el Supervisor puede generar cotizaciones');
+    }
+
+    return this.locked(actor, id, async tx => {
+      const { version, design } = await this.validateCurrentApprovedVersion(
+        tx,
+        id,
+        versionId
+      );
+
+      const cuttingList = this.buildCuttingList(
+        design,
+        id,
+        version.id,
+        version.revision
+      );
+
+      let calculated;
+      try {
+        calculated = calculateQuotation({
+          cuttingList,
+          rates: input.rates,
+          laborCostCents: input.laborCostCents
+        });
+      } catch (error) {
+        throw new BadRequestException(
+          error instanceof Error ? error.message : 'Error al calcular la cotización'
+        );
+      }
+
+      const validatedCalculation = QuotationCalculationSchema.parse(calculated);
+
+      const saved = await tx.quotation.create({
+        data: {
+          projectId: id,
+          versionId: version.id,
+          revision: version.revision,
+          createdById: actor.id,
+          materialSubtotalCents: validatedCalculation.materialSubtotalCents,
+          laborCostCents: validatedCalculation.laborCostCents,
+          totalCents: validatedCalculation.totalCents,
+          calculationJson: validatedCalculation
+        }
+      });
+
+      return QuotationResponseSchema.parse({
+        id: saved.id,
+        projectId: saved.projectId,
+        versionId: saved.versionId,
+        revision: saved.revision,
+        materialSubtotalCents: saved.materialSubtotalCents,
+        laborCostCents: saved.laborCostCents,
+        totalCents: saved.totalCents,
+        createdAt: saved.createdAt.toISOString(),
+        createdById: saved.createdById,
+        calculation: validatedCalculation
+      });
+    });
+  }
+
+  async listQuotations(
+    actor: Actor,
+    id: string
+  ): Promise<QuotationListResponse> {
+    await this.access(this.prisma, actor, id);
+
+    const quotations = await this.prisma.quotation.findMany({
+      where: { projectId: id },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+    });
+
+    return QuotationListResponseSchema.parse(
+      quotations.map(q => ({
+        id: q.id,
+        projectId: q.projectId,
+        versionId: q.versionId,
+        revision: q.revision,
+        materialSubtotalCents: q.materialSubtotalCents,
+        laborCostCents: q.laborCostCents,
+        totalCents: q.totalCents,
+        createdAt: q.createdAt.toISOString(),
+        createdById: q.createdById
+      }))
+    );
+  }
+
+  async getQuotation(
+    actor: Actor,
+    id: string,
+    quotationId: string
+  ): Promise<QuotationResponse> {
+    await this.access(this.prisma, actor, id);
+
+    const quotation = await this.prisma.quotation.findFirst({
+      where: {
+        id: quotationId,
+        projectId: id
+      }
+    });
+
+    if (!quotation) {
+      throw new NotFoundException('Cotización no encontrada');
+    }
+
+    return QuotationResponseSchema.parse({
+      id: quotation.id,
+      projectId: quotation.projectId,
+      versionId: quotation.versionId,
+      revision: quotation.revision,
+      materialSubtotalCents: quotation.materialSubtotalCents,
+      laborCostCents: quotation.laborCostCents,
+      totalCents: quotation.totalCents,
+      createdAt: quotation.createdAt.toISOString(),
+      createdById: quotation.createdById,
+      calculation: QuotationCalculationSchema.parse(quotation.calculationJson)
     });
   }
 }
