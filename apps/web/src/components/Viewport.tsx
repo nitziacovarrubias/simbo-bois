@@ -1,3 +1,4 @@
+import MaterialSurface from './MaterialSurface';
 import './Viewport.css';
 import { useEffect, useMemo, useRef, useState, type ElementRef } from 'react';
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
@@ -284,7 +285,8 @@ function PartObject({ part, index, clippingPlanes=[] }: { part: Part; index: num
   >
     <mesh castShadow={quality.shadows && presentation} receiveShadow={quality.shadows && presentation}>
       <boxGeometry args={[part.dimensions.widthMm, part.dimensions.heightMm, part.dimensions.thicknessMm]} />
-      <meshStandardMaterial
+      <MaterialSurface
+        material={!wireframe && !hiddenLine && !xray && !config.faceOverride ? material : undefined}
         color={color}
         roughness={hiddenLine ? 1 : material?.roughness ?? .62}
         metalness={hiddenLine ? 0 : material?.metalness ?? 0}

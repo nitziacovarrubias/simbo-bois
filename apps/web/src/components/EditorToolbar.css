@@ -225,3 +225,17 @@
    .editor-command-dock .tool-strip .toolbar-overflow > summary {width:38px}
  }
 }
+
+/* Sección CAD UX: estados, menú y agrupación legibles. */
+.tool-strip .tool-button:disabled {opacity:.38;cursor:not-allowed;background:transparent;box-shadow:none;}
+.tool-strip .tool-button[aria-pressed="true"] {background:#624530;color:#f9d494;box-shadow:inset 0 -2px #e7b36a;}
+.tool-strip .tool-button:focus-visible,.tool-strip .toolbar-overflow>summary:focus-visible {outline:2px solid #f3c275;outline-offset:2px;}
+.tool-strip .toolbar-menu {min-width:240px;max-height:min(70vh,520px);overflow-y:auto;}
+.tool-strip .toolbar-menu button {width:100%;gap:10px;min-height:37px;padding:8px 10px;font-size:12px;}
+.tool-strip .toolbar-menu button svg {flex:0 0 17px;width:17px;height:17px;}
+.tool-strip .toolbar-menu button:disabled {opacity:.38;cursor:not-allowed;}
+.tool-strip .toolbar-menu button:disabled:hover {background:transparent;}
+.tool-strip .toolbar-menu-section-title {color:#805630;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:9px 10px 4px;}
+.tool-strip .toolbar-menu-section-title:not(:first-child) {margin-top:5px;border-top:1px solid #ffffff20;}
+.tool-strip .toolbar-menu-footer {padding:8px 10px;color:#82684f;font-size:10px;border-top:1px solid #ffffff20;}
+@media (max-width:1100px){.app-shell .editor-command-dock .tool-strip .tool-button {width:39px;min-width:39px;}.app-shell .editor-command-dock .tool-strip .toolbar-overflow>summary {width:38px;}}

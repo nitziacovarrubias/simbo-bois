@@ -89,3 +89,13 @@
 @media(max-width:950px){.context-tool-panel {left:60px;right:10px;bottom:10px;transform:none;width:auto;max-width:none;max-height:24vh;overflow-y:auto}.context-group{border:0}}
 
 }
+
+/* Panel de opciones contextual: las acciones complejas permanecen plegadas. */
+.context-tool-panel .cad-tool-extra {position:relative;flex:0 0 auto;}
+.context-tool-panel .cad-tool-extra>summary {cursor:pointer;list-style:none;border:1px solid #e3cfb8;background:#fff8ed;color:#75522e;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;white-space:nowrap;}
+.context-tool-panel .cad-tool-extra>summary::-webkit-details-marker {display:none;}
+.context-tool-panel .cad-tool-extra[open]>summary {background:#f2ddbb;border-color:#cba26a;}
+.context-tool-panel .cad-tool-extra>.context-group {position:absolute;left:0;bottom:calc(100% + 9px);width:max-content;max-width:min(480px,65vw);padding:12px;flex-wrap:wrap;border:1px solid #dbc3a8;border-radius:12px;background:#fffaf3;box-shadow:0 12px 35px #33231538;z-index:85;}
+.context-tool-panel .cad-tool-extra .mini-popover>div {width:max-content;max-width:min(290px,70vw);}
+.context-tool-panel .context-group>button:disabled {opacity:.4;cursor:not-allowed;}
+@media(max-width:850px){.context-tool-panel .cad-tool-extra>.context-group{position:static;width:100%;max-width:none;margin-top:8px;box-shadow:none;}}

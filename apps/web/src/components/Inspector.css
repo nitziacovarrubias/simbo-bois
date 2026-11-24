@@ -108,3 +108,14 @@
 .inspector-contextual .muted {margin:4px 0}
 
 }
+
+/* Sección 4: inspector con detalles progresivos, no todo expandido. */
+@layer pro {
+  .inspector { background: transparent; }
+  .inspector-section { background: #f6f0e7; border-color: #d3c4af; }
+  .inspector-section > summary { font-size: 12px; letter-spacing: .03em; min-height: 44px; background: #eee5d9; }
+  .inspector-section > summary:hover { background: #e7d6bf; }
+  .inspector-section > summary:focus-visible { outline: 2px solid #ad762b; outline-offset: -2px; }
+  .inspector-section[open] > summary { background: #e6d4b9; color: #4b301b; }
+  .inspector-section-body { background: #f9f6f0; }
+}

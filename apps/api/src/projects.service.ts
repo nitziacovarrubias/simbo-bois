@@ -14,6 +14,8 @@ import {
 import { generateCuttingList, validateCuttingListInput } from '@simbo/manufacturing-engine';
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
+import { projectPreviewParts } from './project-preview.js';
+import { assertMaterialTextures } from './material-texture.guard.js';
 import { PrismaService } from './prisma.service.js';
 import { canCreateProject, canEditDesign, canEditProject, canManageCollaborators, canReadProject } from './project-permissions.js';
 
@@ -52,6 +54,8 @@ export class ProjectsService {
     }
     if (design.metadata.projectId && design.metadata.projectId!==projectId) throw new UnprocessableEntityException('DesignDocument pertenece a otro proyecto');
     design.metadata.projectId=projectId;
+    assertMaterialTextures(design.materials);
+    for (const version of design.moduleVersions) assertMaterialTextures(version.snapshot.materials);
     const errors=validateDesignStructural(design).filter(issue=>issue.severity==='ERROR');
     if (errors.length) throw new UnprocessableEntityException({message:'Diseño estructuralmente inválido',issues:errors});
     return design;
@@ -115,13 +119,14 @@ export class ProjectsService {
   }
 
   async list(actor:Actor) {
-    return this.prisma.project.findMany({
+    const projects = await this.prisma.project.findMany({
       where:actor.role==='SUPERVISOR'?{}
         :actor.role==='COLLABORATOR'?{collaborators:{some:{userId:actor.id}}}
         :{OR:[{ownerId:actor.id},{responsibleId:actor.id}]},
-      include:this.projectRelations,
+      include:{...this.projectRelations,draft:{select:{designJson:true}}},
       orderBy:{updatedAt:'desc'}
     });
+    return projects.map(({draft,...project})=>({...project,previewParts:projectPreviewParts(draft?.designJson)}));
   }
   async create(actor:Actor,input:CreateProjectRequest) {
     if (!canCreateProject(actor.role)) throw new ForbiddenException('No puedes crear proyectos');

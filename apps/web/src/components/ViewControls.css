@@ -234,3 +234,11 @@
    .viewport-head-controls select.display-mode-select {min-width:88px;width:90px;}
  }
 }
+
+/* Controles del editor: estado y prioridad de la cámara. */
+.viewport-head-controls button:disabled {opacity:.36;cursor:not-allowed;}
+.viewport-head-controls button[aria-pressed="true"] {background:#f6dfba;border-color:#ddab5b;color:#684520;}
+.viewport-head-controls :where(.view-menu-popover,.view-settings-popover) {box-shadow:0 15px 44px #2b20163d;}
+.viewport-head-controls .view-menu-popover {min-width:205px;}
+.viewport-head-controls .view-menu-popover button {min-height:36px;}
+@media(max-width:1220px){.viewport-head-controls{gap:3px;padding:4px;}.viewport-head-controls button{padding:4px 6px;}.viewport-head-controls .display-mode-select{max-width:116px;}}

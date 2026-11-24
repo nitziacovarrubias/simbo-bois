@@ -56,3 +56,13 @@
 .entity-context-menu button:hover {background:#fff1db;color:#80500e}
 
 }
+
+/* Menú CAD contextual: jerarquía clara y acciones no disponibles visibles. */
+.entity-context-menu {min-width:230px;width:252px;max-width:calc(100vw - 20px);max-height:min(70vh,500px);overflow-y:auto;padding:7px;background:#fffdf8;border:1px solid #dcc8b3;border-radius:12px;box-shadow:0 14px 44px #28190f42;}
+.entity-context-menu .entity-menu-heading {font-size:11px;font-weight:800;color:#6a4b2b;padding:9px 10px 10px;border-bottom:1px solid #e8d7c1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.entity-context-menu .entity-menu-group-label {font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.08em;color:#a35b44;padding:11px 10px 4px;border-top:1px solid #eadacf;margin-top:5px;}
+.entity-context-menu button {display:flex;align-items:center;gap:10px;width:100%;min-height:37px;border-radius:7px;padding:7px 9px;font-size:12px;color:#503d2c;}
+.entity-context-menu button svg {width:17px;height:17px;flex:0 0 17px;color:#937457;}
+.entity-context-menu button:hover:not(:disabled) {background:#f6ebdc;}
+.entity-context-menu button:disabled {opacity:.42;cursor:not-allowed;}
+.entity-context-menu button:focus-visible {outline:2px solid #b87c36;outline-offset:-2px;}

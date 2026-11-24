@@ -118,6 +118,7 @@ import { modelHealth, planningIssues } from '@simbo/validation-engine';
 import { DEFAULT_VISIBILITY_TAGS, DEFAULT_WORKSPACE_PREFERENCES, normalizeVisibilityTags, normalizeWorkspacePreferences, type QualityPreset, type WallsMode, type WorkspacePreferences } from './cadVisualSystem';
 import { editorCommands, SHORTCUT_ACTION_COMMAND } from './commands';
 import { editorEvents } from './editorEvents';
+import { commandUnavailableReason, publishEditorFeedback } from './editorCommandFeedback';
 
 const STORAGE = 'simbo.design.v1';
 const WORKSPACE_STORAGE = 'simbo.workspace.sprint2.v1';
@@ -700,7 +701,10 @@ export const useEditor = create<EditorState>((set, get) => ({
       return;
     }
     const commandId=SHORTCUT_ACTION_COMMAND[action];
-    if(commandId&&editorCommands.canExecute(commandId,get())) editorCommands.execute(commandId,get());
+    if(commandId){
+      if(editorCommands.canExecute(commandId,get())) editorCommands.execute(commandId,get());
+      else publishEditorFeedback(commandUnavailableReason(commandId,get().selectedIds.length,get().undoStack.length,get().redoStack.length));
+    }
   },
 
   handlePointerDown: event => {

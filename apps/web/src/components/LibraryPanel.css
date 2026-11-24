@@ -99,3 +99,21 @@
 .panel .library-card>button:hover {background:#ffdfaf;color:#5e3600}
 
 }
+
+/* Sección 4: biblioteca visual con imágenes derivadas de geometría real. */
+.library-actions{display:flex;align-items:center;gap:8px;margin:8px 0 12px}
+.library-actions .library-create{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:38px;border:0;border-radius:9px;background:#39755a!important;color:white!important;font-size:12px!important;font-weight:750}
+.library-actions .library-refresh{min-height:38px;width:38px;padding:8px;border:1px solid #d0bda5;border-radius:9px;background:#fff9f0!important;color:#644b35!important}
+.library-module-list{display:grid;gap:12px}
+.library-module-card{display:grid;grid-template-columns:minmax(0,1fr);background:#fdfbf7;border:1px solid #cbb9a1;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px #3d271311}
+.library-module-preview{height:126px;border-bottom:1px solid #e0d4c1}
+.library-module-content{display:grid;gap:6px;padding:11px}
+.library-module-content b{font-size:13px;color:#4a3423;overflow-wrap:anywhere}
+.library-module-content small{font-size:11px;color:#796751}
+.library-module-content button{justify-self:end;display:flex;align-items:center;gap:5px;border:0;border-radius:7px;padding:7px 11px;background:#5a4636!important;color:#fff!important;font-size:11px;font-weight:700}
+.library-empty{padding:14px;font-size:12px;color:#715d4b;line-height:1.5;background:#f8f2e7;border-radius:10px}
+.library-error{padding:9px;font-size:12px;color:#9e3831;background:#fff0e9;border:1px solid #e9c1b0;border-radius:8px}
+.library-material-card{display:grid;gap:8px;padding:10px;background:#fdfbf6;border:1px solid #d2c3b0;border-radius:10px}
+.library-material-summary{display:flex;align-items:center;gap:9px}.library-material-summary>.library-swatch{flex:none;width:32px;height:32px}.library-material-summary>div{display:grid;gap:2px}.library-material-summary b{font-size:13px;color:#4f3725}.library-material-summary small{font-size:11px;color:#826c55}
+.library-material-card details>summary{padding:8px;border-radius:6px;background:#f1e8dc;color:#5f4b36;font-size:12px;font-weight:700;cursor:pointer}.library-material-card details[open]>summary{margin-bottom:8px}.library-material-color{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;margin:6px 0 12px}.library-material-color input{width:50px;height:30px;padding:2px}
+.library-new-material{display:grid;gap:7px;margin-bottom:14px;color:#5d4734;font-size:12px;font-weight:700}.library-new-material input{padding:9px;border-radius:8px;border:1px solid #c9b69a}

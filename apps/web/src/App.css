@@ -726,3 +726,13 @@
 /* Identidad de la sesión en el editor */
 .topbar-role{display:inline-flex;align-items:center;white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis;padding:7px 12px;border:1px solid #a98a5970;border-radius:18px;color:#f1dab0;font-size:11px;font-weight:650;letter-spacing:.015em}
 @media(max-width:1000px){.topbar-role{max-width:130px;padding:6px 8px}}
+
+/* Sección 4: planos laterales distinguibles de la superficie de modelado. */
+@layer pro {
+  .app-shell > .right-panel { background: #e8e0d4; color: #352a20; border-left-color: #b9a88f; }
+  .app-shell > .right-panel .panel-shell-heading { background: #d6c8b5; color: #352a20; border-bottom: 1px solid #bbaa92; font-size: 14px; }
+  .app-shell > .right-panel .panel { background: transparent; }
+  .app-shell > .right-panel .panel-title { font-size: 16px; }
+  .app-shell > .right-panel .muted { font-size: 12px; line-height: 1.45; }
+  .app-shell > .right-panel label { font-size: 12px; }
+}

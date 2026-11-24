@@ -5,6 +5,8 @@ import type { Id } from '@simbo/design-domain';
 export interface EditorCommandContext {
   activeTool: ToolId;
   selectedIds: Id[];
+  undoStack?: string[];
+  redoStack?: string[];
   selectedGuideId?: Id;
   selectedSectionId?: Id;
   activeSceneId?: Id;
@@ -45,6 +47,7 @@ export interface EditorCommandContext {
   exitPresentation():void;
   setCommandPaletteOpen(open:boolean):void;
   setActivePanel(panel:'INSPECTOR'|'MODULE'|'JOINERY'|'MANUFACTURING'|'SCENES'|'HEALTH'|'LIBRARY'):void;
+  setPanelCollapsed?(side:'left'|'right',collapsed:boolean):void;
   setSelectedGuide(id?:Id):void;
   deleteSelectedGuide():void;
   setVisibilityTag(tag:'GUIDES',visible:boolean):void;
@@ -91,10 +94,10 @@ tool('camera.look','Mirar alrededor','LOOK',CAD_SHORTCUTS.LOOK,['look','orientar
 tool('camera.zoomWindow','Zoom por ventana','ZOOM_WINDOW',undefined,['zoom ventana','encuadrar región']);
 
 editorCommands
-  .register({id:'editor.edit',label:'Editar propiedades',keywords:['editar','inspector'],canExecute:ctx=>{const id=commandTarget(ctx);return Boolean(id&&ctx.design.parts.some(v=>v.id===id));},execute:ctx=>ctx.setActivePanel('INSPECTOR')})
+  .register({id:'editor.edit',label:'Editar propiedades',keywords:['editar','inspector'],canExecute:ctx=>{const id=commandTarget(ctx);return Boolean(id&&[...ctx.design.parts,...ctx.design.applianceInstances,...ctx.design.countertops,...ctx.design.cutouts,...ctx.design.servicePoints,...ctx.design.assemblies,...ctx.design.moduleInstances].some(v=>v.id===id));},execute:ctx=>{prepareTarget(ctx);ctx.setActivePanel('INSPECTOR');ctx.setPanelCollapsed?.('right',false);}})
   .register({id:'editor.enterContext',label:'Editar contexto',keywords:['contexto','edit context'],canExecute:ctx=>{const id=commandTarget(ctx);return Boolean(id&&(ctx.design.assemblies.some(v=>v.id===id&&v.id!==ctx.design.rootAssemblyId)||ctx.design.moduleInstances.some(v=>v.id===id)));},execute:ctx=>{const id=commandTarget(ctx);if(id)ctx.enterEditContext(id);}})
   .register({id:'editor.setAxes',label:'Definir ejes locales',keywords:['set axes','ejes locales'],canExecute:ctx=>{const id=commandTarget(ctx);return Boolean(id&&(ctx.design.assemblies.some(v=>v.id===id&&v.id!==ctx.design.rootAssemblyId)||ctx.design.moduleInstances.some(v=>v.id===id)));},execute:ctx=>{prepareTarget(ctx);ctx.setTool('AXES');}})
-  .register({id:'editor.material',label:'Material / Apariencia',keywords:['material','apariencia'],canExecute:ctx=>{const id=commandTarget(ctx);return Boolean(id&&ctx.design.parts.some(v=>v.id===id));},execute:ctx=>ctx.setActivePanel('INSPECTOR')});
+  .register({id:'editor.material',label:'Material / Apariencia',keywords:['material','apariencia'],canExecute:ctx=>{const id=commandTarget(ctx);return Boolean(id&&ctx.design.parts.some(v=>v.id===id));},execute:ctx=>{prepareTarget(ctx);ctx.setActivePanel('INSPECTOR');ctx.setPanelCollapsed?.('right',false);}});
 
 editorCommands
   .register({id:'editor.addPart',label:'Agregar panel',shortcut:CAD_SHORTCUTS.PART,keywords:['part','panel'],execute:ctx=>ctx.addPanel()})
@@ -102,8 +105,8 @@ editorCommands
   .register({id:'editor.group',label:'Crear conjunto',keywords:['agrupar','group'],canExecute:ctx=>targetSelection(ctx).some(id=>ctx.design.parts.some(part=>part.id===id)),execute:ctx=>{prepareTarget(ctx);ctx.groupSelected();}})
   .register({id:'editor.ungroup',label:'Desagrupar',keywords:['ungroup','separar conjunto'],canExecute:ctx=>targetSelection(ctx).some(id=>ctx.design.assemblies.some(v=>v.id===id&&v.id!==ctx.design.rootAssemblyId)),execute:ctx=>{prepareTarget(ctx);ctx.ungroupSelected();}})
   .register({id:'editor.delete',label:'Eliminar selección',shortcut:CAD_SHORTCUTS.DELETE,canExecute:ctx=>targetSelection(ctx).length>0,execute:ctx=>{prepareTarget(ctx);ctx.deleteSelected();}})
-  .register({id:'editor.undo',label:'Deshacer',shortcut:CAD_SHORTCUTS.UNDO,execute:ctx=>ctx.undo()})
-  .register({id:'editor.redo',label:'Rehacer',shortcut:CAD_SHORTCUTS.REDO,execute:ctx=>ctx.redo()})
+  .register({id:'editor.undo',label:'Deshacer',shortcut:CAD_SHORTCUTS.UNDO,canExecute:ctx=>(ctx.undoStack?.length??0)>0,execute:ctx=>ctx.undo()})
+  .register({id:'editor.redo',label:'Rehacer',shortcut:CAD_SHORTCUTS.REDO,canExecute:ctx=>(ctx.redoStack?.length??0)>0,execute:ctx=>ctx.redo()})
   .register({id:'view.alignFace',label:'Alinear vista a cara',keywords:['face','perpendicular','ortho'],execute:ctx=>ctx.alignViewToInferenceFace(true)})
   .register({id:'camera.pivot',label:'Fijar pivote de órbita',keywords:['pivot','órbita'],canExecute:ctx=>Boolean(ctx.inferenceCandidate),execute:ctx=>{if(ctx.inferenceCandidate)ctx.setOrbitPivot(ctx.inferenceCandidate.point);}})
   .register({id:'camera.focus',label:'Enfocar selección',shortcut:CAD_SHORTCUTS.FOCUS,canExecute:ctx=>ctx.selectedIds.length>0,keywords:['focus'],execute:ctx=>ctx.focusSelected()})

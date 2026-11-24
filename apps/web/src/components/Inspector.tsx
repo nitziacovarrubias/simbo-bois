@@ -5,13 +5,14 @@ import { getPartWorldTransform, normalizeHex, type GrainDirection, type Semantic
 import { useEditor } from '../store';
 import { editorCommands } from '../commands';
 import CADNumericField from './CADNumericField';
+import MaterialTextureField from './MaterialTextureField';
 import { uiLabel } from '../uiLabels';
 
 const roles: SemanticRole[] = ['GENERIC_PANEL','LEFT_SIDE','RIGHT_SIDE','BOTTOM','TOP','SHELF','BACK','DOOR','DRAWER_FRONT','DRAWER_SIDE','DRAWER_BACK','DRAWER_BOTTOM','FILLER','END_PANEL','TOE_KICK','COUNTERTOP','BACKSPLASH','DECORATIVE_PANEL'];
 const grains: GrainDirection[] = ['NONE','HORIZONTAL','VERTICAL','CUSTOM'];
 
-function Section({ title, icon, children, defaultOpen = true }: { title: string; icon?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
-  return <details className="inspector-section" open={defaultOpen}>
+function Section({ title, icon, children, defaultOpen = false }: { title: string; icon?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
+  return <details className="inspector-section" defaultOpen={defaultOpen}>
     <summary>{icon}<span>{title}</span><ChevronDown className="section-chevron" /></summary>
     <div className="inspector-section-body">{children}</div>
   </details>;
@@ -120,7 +121,7 @@ export default function Inspector() {
       </div>
     </Section>
 
-    <Section title="Dimensiones" icon={<Ruler />}>
+    <Section title="Dimensiones" icon={<Ruler />} defaultOpen>
       <div className="vector-grid vector-grid-3">
         <CADNumericField label="Ancho" value={part.dimensions.widthMm} unit="mm" min={1} onCommit={value => setDims(part.id,value,part.dimensions.heightMm,part.dimensions.thicknessMm)} />
         <CADNumericField label="Alto" value={part.dimensions.heightMm} unit="mm" min={1} onCommit={value => setDims(part.id,part.dimensions.widthMm,value,part.dimensions.thicknessMm)} />
@@ -132,6 +133,7 @@ export default function Inspector() {
       <label className="cad-select-field"><span>Material</span><select value={part.materialId ?? ''} onChange={event => mutate(doc => { const target=doc.parts.find(candidate => candidate.id === part.id); if(target)target.materialId = event.target.value; })}>{design.materials.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
       {material && <>
         <div className="color-control"><input className="color-swatch" aria-label="Selector de color" type="color" value={material.colorHex} onChange={event => { const value = event.target.value.toUpperCase(); setHexDraft(value); mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.colorHex = value; }); }} /><label><span>HEX</span><input value={hexDraft} onChange={event => setHexDraft(event.target.value)} onBlur={commitHex} onKeyDown={event => { if (event.key === 'Enter') { commitHex(); event.currentTarget.blur(); } if (event.key === 'Escape') { setHexDraft(material.colorHex); event.currentTarget.blur(); } }} /></label></div>
+        <MaterialTextureField key={material.id} material={material} onChange={dataUrl=>mutate(doc=>{const target=doc.materials.find(m=>m.id===material.id);if(target){if(dataUrl)target.metadata.textureDataUrl=dataUrl;else delete target.metadata.textureDataUrl;}})}/>
         <div className="vector-grid vector-grid-2"><CADNumericField label="Rugosidad" value={material.roughness ?? .6} unit="none" step={.05} min={0} max={1} onCommit={value => mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.roughness = value; })} /><CADNumericField label="Metalizado" value={material.metalness ?? 0} unit="none" step={.05} min={0} max={1} onCommit={value => mutate(doc => { const target=doc.materials.find(candidate => candidate.id === material.id); if(target)target.metalness = value; })} /></div>
       </>}
     </Section>

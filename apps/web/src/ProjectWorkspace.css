@@ -976,3 +976,7 @@
 @media(prefers-reduced-motion:reduce){.project-workspace .project-card{transition:none}.project-workspace .project-card:hover{transform:none}}
 
 .project-card-access{display:inline-block;width:max-content;border:1px solid #c8a876;border-radius:13px;background:#fff1d7;color:#65482b;padding:3px 9px;font-size:11px;font-weight:700}
+
+/* Sección 4: vista previa del último borrador, no decoración genérica. */
+.project-card-visual .simbo-thumbnail {position:absolute;inset:0;height:100%;border-radius:0;}
+.project-card-visual-caption{z-index:2;display:inline-block;bottom:9px;left:11px;border-radius:6px;background:#423225db;color:#fff4df;padding:5px 8px;font-size:9px;letter-spacing:.04em;text-shadow:none;}

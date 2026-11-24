@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
 import { PrismaService } from './prisma.service.js';
 import { ProjectsService } from './projects.service.js';
+import { assertMaterialTextures } from './material-texture.guard.js';
 
 const ModuleCatalogRequestSchema = z.object({ definitionId: z.string().min(1), name: z.string().min(1).max(160), definitionJson: ModuleDefinitionSchema, versionJson: ModuleVersionSchema }).strict();
 function json(value: unknown): Prisma.InputJsonValue { return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue; }
@@ -111,10 +112,12 @@ class ModulesController {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) { }
   @Get() list() { return this.prisma.moduleCatalogEntry.findMany({ orderBy: { updatedAt: 'desc' } }); }
   @Post() create(@CurrentUser() actor: Actor, @Body() body: unknown) {
-    if (actor.role !== 'SUPERVISOR') throw new ForbiddenException('Sólo el Supervisor puede modificar el catálogo compartido');
+    if (actor.role === 'COLLABORATOR') throw new ForbiddenException('El Colaborador no puede crear módulos compartidos');
     const parsed = ModuleCatalogRequestSchema.parse(body);
     if (parsed.definitionId !== parsed.definitionJson.id || parsed.versionJson.definitionId !== parsed.definitionId || parsed.definitionJson.currentVersionId !== parsed.versionJson.id) throw new UnprocessableEntityException('Definition/Version de catálogo incoherentes');
+    assertMaterialTextures(parsed.versionJson.snapshot.materials);
     const data = { name: parsed.name, definitionJson: json(parsed.definitionJson), versionJson: json(parsed.versionJson) };
+    if (actor.role === 'ARCHITECT') return this.prisma.moduleCatalogEntry.create({ data: { definitionId: parsed.definitionId, ...data } });
     return this.prisma.moduleCatalogEntry.upsert({ where: { definitionId: parsed.definitionId }, create: { definitionId: parsed.definitionId, ...data }, update: data });
   }
 }

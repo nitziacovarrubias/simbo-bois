@@ -258,3 +258,20 @@
    color:#20603f;
  }
 }
+
+/* Sección 4: barra de estado legible y con fondo separado del canvas. */
+@layer pro {
+  .app-shell > .viewbar {
+    background: #ddd4c5;
+    color: #34271e;
+    border-top: 1px solid #b7a690;
+    backdrop-filter: none;
+    box-shadow: 0 -3px 12px #30201416;
+    min-height: 46px;
+  }
+  .viewbar .status-context b { font-size: 14px; color: #35261b; }
+  .viewbar .status-context span { font-size: 12px; color: #4d3b2c; }
+  .viewbar .status-signals span { font-size: 11px; }
+  .viewbar .status-measurement > span { font-size: 14px; }
+  .viewbar .status-measurement button { font-size: 12px; min-height: 32px; }
+}

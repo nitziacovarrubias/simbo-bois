@@ -1,4 +1,4 @@
-import type { DesignDocument } from '@simbo/design-domain';
+import type { DesignDocument, ModuleDefinition, ModuleVersion } from '@simbo/design-domain';
 import type { CreateProjectRequest, ProjectType } from '@simbo/shared-contracts';
 import {
   CreateDesignChangeProposalRequestSchema,
@@ -12,15 +12,18 @@ import {
   type ListDesignChangeProposalsResponse
 } from '@simbo/shared-contracts';
 
+export interface SharedModuleEntry { id:string;definitionId:string;name:string;definitionJson:ModuleDefinition;versionJson:ModuleVersion;createdAt:string;updatedAt:string; }
 export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'|'COLLABORATOR'; }
 export interface AssignableUser { id:string;name:string;role:'ARCHITECT'|'SUPERVISOR'; }
 export interface CollaboratorUser { id:string;name:string;email:string; }
 export interface ProjectCollaborator { userId:string;user:{id:string;name:string}; }
+export interface PreviewPart { x:number;y:number;z:number;width:number;height:number;depth:number;rx:number;ry:number;rz:number;color:string; }
 export interface ProjectSummary {
   id:string;name:string;ownerId:string|null;updatedAt:string;createdAt:string;
   projectType:ProjectType|null;clientName:string|null;location:string|null;
   description:string|null;responsibleId:string|null;responsible:AssignableUser|null;
   collaborators:ProjectCollaborator[];
+  previewParts?:PreviewPart[];
 }
 export interface DesignResponse { design:DesignDocument;revision:number;persisted:boolean;approvedVersionId:string|null; }
 export interface VersionSummary { id:string;revision:number;approvalStatus:'DRAFT'|'APPROVED';approvedAt:string|null;approvedById:string|null;current:boolean;createdAt:string; }
@@ -50,6 +53,8 @@ export const apiClient={
   me:()=>request<SessionUser>('/auth/me'),
   async logout():Promise<void>{try{await request('/auth/logout',{});}finally{clearSession();}},
   projects:()=>request<ProjectSummary[]>('/projects'),
+  modules:()=>request<SharedModuleEntry[]>('/modules'),
+  publishModule:(definition:ModuleDefinition,version:ModuleVersion)=>request<SharedModuleEntry>('/modules',{definitionId:definition.id,name:definition.name,definitionJson:definition,versionJson:version}),
   assignees:()=>request<AssignableUser[]>('/projects/assignees'),
   availableCollaborators:()=>request<CollaboratorUser[]>('/projects/available-collaborators'),
   setCollaborators:(id:string,collaboratorIds:string[])=>request<ProjectSummary>(`/projects/${encodeURIComponent(id)}/collaborators`,{collaboratorIds},'PATCH'),

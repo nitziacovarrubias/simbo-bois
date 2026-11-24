@@ -4,6 +4,8 @@ import './demo-ui-polish.css';
 import { useEffect, useState, type CSSProperties, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { Box, Camera, CircleDot, Cuboid, FolderPlus, History, Layers3, MessageSquarePlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Save, Scissors, Settings2, Wrench, ArrowLeft } from 'lucide-react';
 import Viewport from './components/Viewport';
+import EditorCommandNotices from './components/EditorCommandNotices';
+import { isEditorShortcut, isEditorControlTarget } from './editorShortcutPolicy';
 import Outliner from './components/Outliner';
 import Inspector from './components/Inspector';
 import ModuleBuilder from './components/ModuleBuilder';
@@ -13,6 +15,9 @@ import ScenesPanel from './components/ScenesPanel';
 import HealthPanel from './components/HealthPanel';
 import RoomPanel from './components/RoomPanel';
 import LibraryPanel from './components/LibraryPanel';
+import ModuleWorkshop from './components/ModuleWorkshop';
+import { installPortableModule } from '@simbo/module-engine';
+import type { ModuleDefinition, ModuleVersion } from '@simbo/design-domain';
 import EditorToolbar from './components/EditorToolbar';
 import ViewControls from './components/ViewControls';
 import StatusBar from './components/StatusBar';
@@ -54,6 +59,7 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
   const createVersion=useEditor(state=>state.createVersion);
   const presentationMode=useEditor(state=>state.presentationMode);
   const [newProjectOpen,setNewProjectOpen]=useState(false);
+  const [moduleWorkshopOpen,setModuleWorkshopOpen]=useState(false);
   const [demoConfirmOpen,setDemoConfirmOpen]=useState(false);
   const [demoLoading,setDemoLoading]=useState(false);
   const [demoError,setDemoError]=useState('');
@@ -118,9 +124,9 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
       const element=event.target instanceof HTMLElement?event.target:undefined;
       const tag=element?.tagName;
       if(document.querySelector('[data-simbo-modal="true"]'))return;
-      if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA'||element?.isContentEditable)return;
-      const key=event.key.toLowerCase();
-      if(event.ctrlKey||event.metaKey||['arrowright','arrowup','arrowleft','escape','enter','backspace','delete'].includes(key))event.preventDefault();
+      if(isEditorControlTarget(event.target)||element?.isContentEditable||tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return;
+      if(!isEditorShortcut(event,useEditor.getState().activeTool))return;
+      event.preventDefault();
       editorInput.keyDown({key:event.key,shift:event.shiftKey,ctrl:event.ctrlKey,meta:event.metaKey,alt:event.altKey,repeat:event.repeat});
     };
     window.addEventListener('keydown',onKeyDown);
@@ -140,6 +146,16 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
   const openPanel=(next:ActivePanel)=>{setPanel(next);setPanelCollapsed('right',false);};
   const leftWidth=workspace.leftPanelCollapsed?0:workspace.leftPanelWidth;
   const rightWidth=workspace.rightPanelCollapsed?0:workspace.rightPanelWidth;
+
+  if(moduleWorkshopOpen)return <ModuleWorkshop canPublish={user?.role==='SUPERVISOR'||user?.role==='ARCHITECT'}
+    onClose={()=>setModuleWorkshopOpen(false)}
+    onSave={async(definition:ModuleDefinition,version:ModuleVersion,publish:boolean)=>{
+      if(publish) await apiClient.publishModule(definition,version);
+      useEditor.getState().mutate(doc=>installPortableModule(doc,definition,version));
+      setModuleWorkshopOpen(false);
+      setNotice(`Módulo «${definition.name}» guardado en la biblioteca`);
+      setPanel('LIBRARY');setPanelCollapsed('right',false);
+    }}/>;
 
   if(presentationMode)return <PresentationWorkspace/>;
 
@@ -180,7 +196,7 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
       {!DEMO_FOCUSED_UI && <button className={panel==='JOINERY'?'active':''} title="Uniones" aria-label="Uniones" onClick={()=>openPanel('JOINERY')}><Wrench/></button>}
       <button className={panel==='MANUFACTURING'?'active':''} title="Manufactura" aria-label="Manufactura" onClick={()=>openPanel('MANUFACTURING')}><Scissors/></button>
       <button className={panel==='SCENES'?'active':''} title="Escenas y secciones" aria-label="Escenas y secciones" onClick={()=>openPanel('SCENES')}><Camera/></button>
-      {!DEMO_FOCUSED_UI && <button className={panel==='HEALTH'?'active':''} title="Salud del modelo" aria-label="Salud del modelo" onClick={()=>openPanel('HEALTH')}><CircleDot/></button>}
+      <button className={panel==='HEALTH'?'active':''} title="Validar diseño" aria-label="Validar diseño" onClick={()=>openPanel('HEALTH')}><CircleDot/></button>
     </aside>
 
     <aside className={`left-panel ${workspace.leftPanelCollapsed?'collapsed':''}`} aria-label="Panel de escena y habitación"><div className="panel-shell-heading"><span>Diseño y escena</span><button type="button" aria-label="Cerrar panel izquierdo" title="Cerrar panel" onClick={()=>setPanelCollapsed('left',true)}><PanelLeftClose aria-hidden="true"/></button></div><Outliner/><RoomPanel/></aside>
@@ -229,6 +245,7 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
 
     <CommandPalette/>
     <EntityContextMenu/>
+    <EditorCommandNotices/>
 
     <aside className={`right-panel ${workspace.rightPanelCollapsed?'collapsed':''}`} aria-label="Panel de herramientas y propiedades">
       <div className="panel-shell-heading"><span>{panel==='INSPECTOR'?'Propiedades':panel==='MODULE'?'Módulos':panel==='JOINERY'?'Uniones':panel==='MANUFACTURING'?'Manufactura':panel==='SCENES'?'Escenas':panel==='HEALTH'?'Validación':'Biblioteca'}</span><button type="button" aria-label="Cerrar panel derecho" title="Cerrar panel" onClick={()=>setPanelCollapsed('right',true)}><PanelRightClose aria-hidden="true"/></button></div>
@@ -238,7 +255,7 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
       {panel==='MANUFACTURING'&&<ManufacturingPanel/>}
       {panel==='SCENES'&&<ScenesPanel/>}
       {panel==='HEALTH'&&<HealthPanel/>}
-      {panel==='LIBRARY'&&<LibraryPanel/>}
+      {panel==='LIBRARY'&&<LibraryPanel onCreateModule={()=>setModuleWorkshopOpen(true)}/>}
     </aside>
     <StatusBar/>
     {newProjectOpen && <NewProjectDialog assignees={projectAssignees} currentUserId={user?.id} localOnly={!onCreateProject}

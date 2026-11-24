@@ -10,6 +10,7 @@ import ProjectDetailsDialog from './components/ProjectDetailsDialog';
 import CollaboratorsDialog from './components/CollaboratorsDialog';
 import CollaboratorViewer from './components/CollaboratorViewer';
 import FeedbackToast from './components/FeedbackToast';
+import DesignThumbnail from './components/DesignThumbnail';
 import { Info, MapPin, Pencil, UserRound, UsersRound } from 'lucide-react';
 import type { CreateProjectRequest } from '@simbo/shared-contracts';
 
@@ -593,13 +594,8 @@ const generate = async (version: VersionSummary) => {
         <div className="project-list">
           {projects.map(project=><article className="project-card" key={project.id}>
             <div className="project-card-visual" aria-hidden="true">
-              <div className="project-kitchen-wall" />
-              <div className="project-kitchen-upper" />
-              <div className="project-kitchen-backsplash" />
-              <div className="project-kitchen-counter" />
-              <div className="project-kitchen-lower" />
-              <div className="project-kitchen-island" />
-              <span className="project-card-visual-caption">SIMBO · DISEÑO</span>
+              <DesignThumbnail parts={project.previewParts ?? []} label={`Vista del último diseño guardado de ${project.name}`} />
+              <span className="project-card-visual-caption">ÚLTIMO DISEÑO GUARDADO</span>
             </div>
             <div className="project-card-details">
               <div className="project-card-title-row"><h2>{project.name}</h2>

@@ -1,4 +1,5 @@
 import { editorCommands, type EditorCommandContext } from './commands';
+import { EXPOSED_EDITOR_COMMANDS } from './exposedEditorCommands';
 
 const TOOLBAR = new Set([
   'editor.select', 'editor.addPart', 'editor.move', 'editor.rotate', 'editor.measure', 'editor.undo', 'editor.redo',
@@ -6,13 +7,11 @@ const TOOLBAR = new Set([
   'view.bottom', 'view.isometric', 'view.previous', 'view.next', 'view.projection'
 ]);
 const OVERFLOW = new Set([
-  'editor.duplicate', 'editor.group', 'editor.ungroup', 'editor.isolate', 'editor.hide', 'editor.hideRest',
-  'editor.unhideLast', 'editor.unhideAll', 'editor.showAll', 'editor.setAxes', 'editor.flipX', 'editor.flipY',
-  'editor.flipZ', 'editor.guide', 'editor.protractor', 'camera.walk', 'camera.look', 'camera.zoomWindow',
-  'section.create', 'presentation.toggle', 'view.clean', 'palette.toggle'
+  'editor.duplicate', 'editor.group', 'editor.ungroup', 'editor.isolate',
+  'editor.hide', 'editor.showAll', 'camera.focus', 'palette.toggle'
 ]);
 const CONTEXT_MENU = new Set([
-  'editor.edit', 'editor.enterContext', 'editor.move', 'editor.rotate', 'editor.duplicate', 'editor.group',
+  'editor.edit', 'editor.enterContext', 'editor.move', 'editor.rotate', 'editor.duplicate', 'editor.group', 'editor.ungroup',
   'editor.isolate', 'editor.hide', 'editor.material', 'editor.delete', 'editor.setAxes', 'module.saveAssembly',
   'module.makeUnique', 'module.setOrigin', 'guide.delete', 'guide.hide', 'section.toggle', 'section.invert',
   'section.look', 'section.delete', 'appliance.delete', 'cutout.create', 'clearance.toggle'
@@ -37,7 +36,7 @@ export function commandUiCoverage(context: EditorCommandContext): CommandUiCover
     toolbar: TOOLBAR.has(command.id),
     overflow: OVERFLOW.has(command.id),
     contextMenu: CONTEXT_MENU.has(command.id),
-    commandPalette: true,
+    commandPalette: EXPOSED_EDITOR_COMMANDS.has(command.id),
     enabled: editorCommands.canExecute(command.id, context)
   }));
 }

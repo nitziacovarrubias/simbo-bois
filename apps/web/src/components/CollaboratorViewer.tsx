@@ -1,3 +1,4 @@
+import MaterialSurface from './MaterialSurface';
 import { useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Edges, OrbitControls } from '@react-three/drei';
@@ -32,7 +33,7 @@ function DesignScene({ design }: { design: DesignDocument }) {
       return <mesh key={part.id} position={[transform.position.x,transform.position.y,transform.position.z]}
         rotation={[transform.rotation.x,transform.rotation.y,transform.rotation.z]} castShadow receiveShadow>
         <boxGeometry args={[part.dimensions.widthMm,part.dimensions.heightMm,part.dimensions.thicknessMm]}/>
-        <meshStandardMaterial color={normalizeHex(customColor ?? material?.colorHex ?? '#b58a63')}
+        <MaterialSurface material={material} color={normalizeHex(customColor ?? material?.colorHex ?? '#b58a63')}
           roughness={material?.roughness ?? 0.7} metalness={material?.metalness ?? 0}/>
         <Edges color="#624f3c" threshold={22} />
       </mesh>;

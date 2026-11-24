@@ -93,3 +93,17 @@
 .command-palette>small {font-size:10px;color:#8b7762}
 
 }
+.command-palette-heading {display:flex;align-items:center;gap:10px;padding:11px 14px;color:#5d4027;border-bottom:1px solid #eddfce;}
+.command-palette-heading>svg {height:19px;width:19px;color:#b67b2a;}
+.command-palette-heading strong {font-size:13px;flex:1;}
+.command-palette-heading button {display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:8px;color:#674c35;background:transparent;cursor:pointer;}
+.command-palette-heading button:hover {background:#f4e9d9;}
+.command-palette-heading button svg {width:17px;height:17px;}
+.command-palette-search {display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #eddfce;}
+.command-palette-search>svg {width:18px;height:18px;color:#9b7e5f;}
+.command-palette-search input {flex:1;min-width:0;height:50px;border:0;outline:0;background:transparent;font-size:14px;color:#543e2b;}
+.command-palette-search input:focus-visible {outline:0!important;}
+.command-palette .command-results button.keyboard-active:not(:disabled) {background:#f5e8d3;box-shadow:inset 3px 0 0 #c48b3c;}
+.command-palette .command-results button:disabled {opacity:.42;cursor:not-allowed;}
+.command-palette .command-results {max-height:min(52vh,400px);}
+.command-palette .command-results button {min-height:40px;}
