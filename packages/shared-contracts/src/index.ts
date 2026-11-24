@@ -126,6 +126,13 @@ export const UpdateProjectRequestSchema=CreateProjectRequestSchema.partial().ref
 export type CreateProjectRequest=z.infer<typeof CreateProjectRequestSchema>;
 export type UpdateProjectRequest=z.infer<typeof UpdateProjectRequestSchema>;
 export type ProjectType=z.infer<typeof ProjectTypeSchema>;
+// Reemplazo atómico de las asignaciones de consulta de un proyecto.
+export const SetProjectCollaboratorsRequestSchema=z.object({
+  collaboratorIds:z.array(z.string().min(1)).max(50).refine(ids=>new Set(ids).size===ids.length,{
+    message:'No repitas colaboradores en la asignación'
+  })
+}).strict();
+export type SetProjectCollaboratorsRequest=z.infer<typeof SetProjectCollaboratorsRequestSchema>;
 export type SaveDesignRequest=z.infer<typeof SaveDesignRequestSchema>;
 
 export const GenerateCuttingListParamsSchema = z.object({

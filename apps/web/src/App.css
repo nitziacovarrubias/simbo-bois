@@ -722,3 +722,7 @@
     .viewport-area > .editor-command-dock > .viewport-head-controls {top:8px;max-width:calc(100% - 95px);}
   }
 }
+
+/* Identidad de la sesión en el editor */
+.topbar-role{display:inline-flex;align-items:center;white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis;padding:7px 12px;border:1px solid #a98a5970;border-radius:18px;color:#f1dab0;font-size:11px;font-weight:650;letter-spacing:.015em}
+@media(max-width:1000px){.topbar-role{max-width:130px;padding:6px 8px}}

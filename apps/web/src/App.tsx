@@ -161,6 +161,7 @@ export default function App({user,onProjects,onCreateProject,projectAssignees=[]
         <span>{displayedProjectName}</span>
       </div>
       <div className="topbar-actions">
+        {user && <span className="topbar-role" title={user.email}>{user.name} · {user.role==='SUPERVISOR'?'Supervisor':user.role==='ARCHITECT'?'Arquitecto':'Colaborador'}</span>}
         <span className="topbar-sr-only" role="status">Estado de guardado: {saveStatus}</span>
         <button type="button" className="top-action top-save" onClick={()=>void autosaveNow().catch(()=>{})} aria-label="Guardar diseño" title="Guardar diseño"><Save aria-hidden="true"/></button>
         <button type="button" className="top-action secondary-dark" onClick={()=>{setNotice('');void createVersion().then(()=>setNotice('Versión creada')).catch(error=>setNotice(error instanceof Error?error.message:'No se pudo crear la versión'));}} title="Guardar nueva versión" aria-label="Guardar nueva versión"><History aria-hidden="true"/></button>

@@ -24,6 +24,7 @@ model Project {
   ownerId   String?
   owner     User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   cuttingListAuthorizations CuttingListAuthorization[]
+  collaborators ProjectCollaborator[]
 
   @@index([ownerId])
   @@index([responsibleId])
@@ -87,6 +88,7 @@ model ModuleCatalogEntry {
 enum UserRole {
   ARCHITECT
   SUPERVISOR
+  COLLABORATOR
 }
 
 enum DesignApprovalStatus {
@@ -105,6 +107,7 @@ model User {
   sessions     Session[]
   projects     Project[]
   responsibleProjects Project[] @relation("ProjectResponsibility")
+  collaborations ProjectCollaborator[]
   approvals    DesignVersion[]
   proposals    DesignChangeProposal[]
   cuttingListAuthorizations CuttingListAuthorization[]
@@ -134,4 +137,17 @@ model CuttingListAuthorization {
   authorizedBy User @relation(fields: [authorizedById], references: [id], onDelete: Restrict)
 
   @@index([projectId, authorizedAt])
+}
+
+// El Colaborador sólo accede a los proyectos que se le asignan explícitamente.
+model ProjectCollaborator {
+  projectId String
+  userId String
+  assignedAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, userId])
+  @@index([userId])
 }

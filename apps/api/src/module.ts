@@ -1,6 +1,6 @@
 import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Patch, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
 import {
-  CreateProjectRequestSchema, UpdateProjectRequestSchema,
+  CreateProjectRequestSchema, UpdateProjectRequestSchema, SetProjectCollaboratorsRequestSchema,
   CreateDesignChangeProposalRequestSchema, DesignChangeProposalParamsSchema,
   GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema,
   RevisionRequestSchema, SaveDesignRequestSchema
@@ -23,6 +23,12 @@ class ProjectsController {
   constructor(@Inject(ProjectsService) private readonly projects: ProjectsService) { }
   @Get() list(@CurrentUser() actor: Actor) { return this.projects.list(actor); }
   @Get('assignees') assignees(@CurrentUser() actor: Actor) { return this.projects.assignees(actor); }
+  @Get('available-collaborators') availableCollaborators(@CurrentUser() actor: Actor) {
+    return this.projects.availableCollaborators(actor);
+  }
+  @Patch(':id/collaborators') setCollaborators(@CurrentUser() actor: Actor, @Param('id') id: string, @Body() body: unknown) {
+    return this.projects.setCollaborators(actor, id, SetProjectCollaboratorsRequestSchema.parse(body).collaboratorIds);
+  }
   @Post() create(@CurrentUser() actor: Actor, @Body() body: unknown) {
     return this.projects.create(actor, CreateProjectRequestSchema.parse(body));
   }

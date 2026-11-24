@@ -7,11 +7,13 @@ import App from './App';
 
 import NewProjectDialog, { PROJECT_TYPE_LABELS } from './components/NewProjectDialog';
 import ProjectDetailsDialog from './components/ProjectDetailsDialog';
+import CollaboratorsDialog from './components/CollaboratorsDialog';
+import CollaboratorViewer from './components/CollaboratorViewer';
 import FeedbackToast from './components/FeedbackToast';
-import { Info, MapPin, Pencil, UserRound } from 'lucide-react';
+import { Info, MapPin, Pencil, UserRound, UsersRound } from 'lucide-react';
 import type { CreateProjectRequest } from '@simbo/shared-contracts';
 
-import { apiClient, type AssignableUser, type ProjectSummary, type SessionUser, type VersionSummary } from './apiClient';
+import { apiClient, type AssignableUser, type CollaboratorUser, type DesignResponse, type ProjectSummary, type SessionUser, type VersionSummary } from './apiClient';
 
 import { editorFacade } from './editorFacade';
 
@@ -113,7 +115,8 @@ export default function ProjectWorkspace() {
 
   const [user,setUser]=useState<SessionUser|null>(null);
 
-  const [screen,setScreen]=useState<'PROJECTS'|'EDITOR'>('PROJECTS');
+  const [screen,setScreen]=useState<'PROJECTS'|'EDITOR'|'VIEWER'>('PROJECTS');
+  const [readonlyProject,setReadonlyProject]=useState<{project:ProjectSummary;response:DesignResponse}|null>(null);
   const [activeProjectName,setActiveProjectName]=useState<string>();
 
   const [loading,setLoading]=useState(true);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
@@ -124,6 +127,8 @@ export default function ProjectWorkspace() {
 
   const [newProject,setNewProject]=useState(false);
   const [assignees,setAssignees]=useState<AssignableUser[]>([]);
+  const [collaboratorUsers,setCollaboratorUsers]=useState<CollaboratorUser[]>([]);
+  const [assigning,setAssigning]=useState<ProjectSummary|null>(null);
   const [details,setDetails]=useState<ProjectSummary|null>(null);
   const [editing,setEditing]=useState<ProjectSummary|null>(null);
   const [success,setSuccess]=useState('');
@@ -169,9 +174,14 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
 
 
 
-  const list=async()=>{
-    const [items, people]=await Promise.all([apiClient.projects(),apiClient.assignees()]);
-    setProjects(items);setAssignees(people);
+  const list=async(actor:SessionUser|null=user)=>{
+    if(!actor)return;
+    const [items,people,collaborators]=await Promise.all([
+      apiClient.projects(),
+      actor.role==='COLLABORATOR'?Promise.resolve([]):apiClient.assignees(),
+      actor.role==='SUPERVISOR'?apiClient.availableCollaborators():Promise.resolve([])
+    ]);
+    setProjects(items);setAssignees(people);setCollaboratorUsers(collaborators);
   };
 
   const run=async(action:()=>Promise<void>)=>{setBusy(true);setError('');try{await action();}catch(error){setError(error instanceof Error?error.message:'No se pudo completar la operación');}finally{setBusy(false);}};
@@ -183,8 +193,12 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
     let active=true;
 
     if(apiClient.hasSession())apiClient.me().then(async actor=>{if(!active)return;setUser(actor);
-      const [items,people]=await Promise.all([apiClient.projects(),apiClient.assignees()]);
-      if(active){setProjects(items);setAssignees(people);}}).catch(error=>{if(active)setError(error instanceof Error?error.message:'No se pudo recuperar la sesión');}).finally(()=>{if(active)setLoading(false);});
+      const [items,people,collaborators]=await Promise.all([
+        apiClient.projects(),
+        actor.role==='COLLABORATOR'?Promise.resolve([]):apiClient.assignees(),
+        actor.role==='SUPERVISOR'?apiClient.availableCollaborators():Promise.resolve([])
+      ]);
+      if(active){setProjects(items);setAssignees(people);setCollaboratorUsers(collaborators);}}).catch(error=>{if(active)setError(error instanceof Error?error.message:'No se pudo recuperar la sesión');}).finally(()=>{if(active)setLoading(false);});
 
     else setLoading(false);
 
@@ -208,7 +222,7 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
 
 
 
-  const login=(event:FormEvent)=>{event.preventDefault();void run(async()=>{const actor=await apiClient.login(email,password);setPassword('');setUser(actor);await list();});};
+  const login=(event:FormEvent)=>{event.preventDefault();void run(async()=>{const actor=await apiClient.login(email,password);setPassword('');setUser(actor);await list(actor);});};
 
 
 
@@ -218,6 +232,12 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
     clearCuttingList();
     if (!user) throw new Error('Inicia sesión');
     const response = await apiClient.design(project.id);
+    if(user.role==='COLLABORATOR'){
+      setReadonlyProject({project,response});
+      setReview(null);
+      setScreen('VIEWER');
+      return;
+    }
     editorFacade.loadProject(project.id, user.id, response);
     setActiveProjectName(project.name);
     setReview(null);
@@ -243,7 +263,12 @@ useEffect(() => () => { cuttingRequest.current += 1; }, []);
 
 
 
-  const back = () => void run(async () => { clearCuttingList(); await autosaveNow(); if (user) await list(); setReview(null); setScreen('PROJECTS'); });
+  const back = () => void run(async () => {
+    clearCuttingList();
+    if(user?.role!=='COLLABORATOR') await autosaveNow();
+    if(user) await list(user);
+    setReadonlyProject(null);setReview(null);setScreen('PROJECTS');
+  });
 
 
 
@@ -420,6 +445,8 @@ const generate = async (version: VersionSummary) => {
 
   if(loading)return <main className="project-workspace"><p role="status">Cargando sesión…</p></main>;
 
+  if(screen==='VIEWER'&&readonlyProject)return <CollaboratorViewer project={readonlyProject.project} response={readonlyProject.response} user={user!} onBack={back}/>;
+
   if(screen==='EDITOR')return <App user={remote?user??undefined:undefined} onProjects={back} onCreateProject={remote?create:undefined} projectAssignees={assignees} projectName={activeProjectName}/>;
 
 
@@ -557,8 +584,8 @@ const generate = async (version: VersionSummary) => {
         </div>
 
         <div className="project-actions">
-          <span className="project-user">{user.name} · {user.role === 'SUPERVISOR' ? 'Supervisor' : 'Arquitecto'}</span>
-          <button disabled={busy || cuttingLoading} className="project-btn project-btn--create" onClick={() => setNewProject(true)}><ActionIcon name="plus" /> Nuevo proyecto</button>
+          <span className="project-user" aria-label={`Usuario activo: ${user.name}, ${user.role==='SUPERVISOR'?'Supervisor':user.role==='ARCHITECT'?'Arquitecto':'Colaborador'}`}>{user.name} · {user.role==='SUPERVISOR'?'Supervisor':user.role==='ARCHITECT'?'Arquitecto':'Colaborador'}</span>
+          {user.role!=='COLLABORATOR'&&<button disabled={busy || cuttingLoading} className="project-btn project-btn--create" onClick={() => setNewProject(true)}><ActionIcon name="plus" /> Nuevo proyecto</button>}
           <button disabled={busy || cuttingLoading} className="project-btn project-btn--refresh" onClick={() => { clearCuttingList(); setReview(null); setVersions([]); void run(list); }}><ActionIcon name="refresh" /> Actualizar</button>
           <button disabled={busy || cuttingLoading} className="project-btn project-btn--logout" onClick={() => void run(async () => { clearCuttingList(); try { await apiClient.logout(); } finally { setUser(null); setProjects([]); setReview(null); useEditor.setState({ remoteProject: undefined, projectId: undefined }); } })}><ActionIcon name="logout" /> Cerrar sesión</button>
         </div>
@@ -579,6 +606,7 @@ const generate = async (version: VersionSummary) => {
                 <span className="project-card-type">{project.projectType ? PROJECT_TYPE_LABELS[project.projectType] : 'Sin tipo'}</span>
               </div>
               <div className="project-card-meta">
+                {user.role==='COLLABORATOR'&&<span className="project-card-access">Solo lectura</span>}
                 <p><UserRound size={15} aria-hidden="true"/>{project.responsible?.name || 'Sin responsable'}</p>
                 {project.clientName&&<p className="project-card-client">Cliente: {project.clientName}</p>}
                 {project.location&&<p><MapPin size={15} aria-hidden="true"/>{project.location}</p>}
@@ -586,15 +614,16 @@ const generate = async (version: VersionSummary) => {
               </div>
             </div>
             <div className="project-card-actions">
-              <button disabled={busy || cuttingLoading} className="project-btn project-btn--open" onClick={()=>void run(()=>open(project))}><ActionIcon name="open" /> Abrir diseño</button>
+              <button disabled={busy || cuttingLoading} className="project-btn project-btn--open" onClick={()=>void run(()=>open(project))}><ActionIcon name="open" /> {user.role==='COLLABORATOR'?'Consultar diseño':'Abrir diseño'}</button>
               <button disabled={busy || cuttingLoading} className="project-btn project-btn--review" onClick={()=>void run(()=>showVersions(project))}><ActionIcon name="search" /> Revisar versiones</button>
               <div className="project-card-secondary-actions">
                 <button type="button" disabled={busy || cuttingLoading} className="project-card-detail-button" onClick={()=>setDetails(project)}><Info size={15}/> Detalles</button>
-                <button type="button" disabled={busy || cuttingLoading} className="project-card-detail-button" onClick={()=>setEditing(project)}><Pencil size={15}/> Editar</button>
+                {user.role!=='COLLABORATOR'&&<button type="button" disabled={busy || cuttingLoading} className="project-card-detail-button" onClick={()=>setEditing(project)}><Pencil size={15}/> Editar</button>}
+                {user.role==='SUPERVISOR'&&<button type="button" disabled={busy || cuttingLoading} className="project-card-detail-button" onClick={()=>setAssigning(project)}><UsersRound size={15}/> Equipo ({project.collaborators?.length??0})</button>}
               </div>
             </div>
           </article>)}
-          {!projects.length&&<p className="project-empty">No hay proyectos disponibles. Crea el primero.</p>}
+          {!projects.length&&<p className="project-empty">{user.role==='COLLABORATOR'?'No tienes proyectos asignados. Consulta con tu Supervisor.':'No hay proyectos disponibles. Crea el primero.'}</p>}
         </div>
 
         {review&&<section className="project-versions">
@@ -633,10 +662,17 @@ const generate = async (version: VersionSummary) => {
         </section>}
       </section>
 
-      <button className="project-local project-btn project-btn--local" type="button" disabled={busy || cuttingLoading} onClick={local}><ActionIcon name="monitor" /> Abrir editor local</button>
+      {user.role!=='COLLABORATOR'&&<button className="project-local project-btn project-btn--local" type="button" disabled={busy || cuttingLoading} onClick={local}><ActionIcon name="monitor" /> Abrir editor local</button>}
     </div>
-    {newProject&&<NewProjectDialog assignees={assignees} currentUserId={user.id} onCancel={()=>setNewProject(false)} onSave={create}/>}
-    {details&&<ProjectDetailsDialog project={details} onClose={()=>setDetails(null)} onEdit={()=>{setEditing(details);setDetails(null);}}/>}
-    {editing&&<NewProjectDialog initial={editing} assignees={assignees} currentUserId={user.id} onCancel={()=>setEditing(null)} onSave={updateProject}/>}
+    {user.role!=='COLLABORATOR'&&newProject&&<NewProjectDialog assignees={assignees} currentUserId={user.id} onCancel={()=>setNewProject(false)} onSave={create}/>}
+    {details&&<ProjectDetailsDialog project={details} onClose={()=>setDetails(null)} onEdit={user.role==='COLLABORATOR'?undefined:()=>{setEditing(details);setDetails(null);}}/>}
+    {user.role!=='COLLABORATOR'&&editing&&<NewProjectDialog initial={editing} assignees={assignees} currentUserId={user.id} onCancel={()=>setEditing(null)} onSave={updateProject}/>}
+    {user.role==='SUPERVISOR'&&assigning&&<CollaboratorsDialog project={assigning} available={collaboratorUsers}
+      onClose={()=>setAssigning(null)} onSave={async collaboratorIds=>{
+        const updated=await apiClient.setCollaborators(assigning.id,collaboratorIds);
+        setProjects(current=>current.map(project=>project.id===updated.id?updated:project));
+        setAssigning(null);setSuccess('Asignaciones actualizadas');
+      }}/>}
+
   </main>;
 }

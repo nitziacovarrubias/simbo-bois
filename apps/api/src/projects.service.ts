@@ -15,6 +15,7 @@ import { generateCuttingList, validateCuttingListInput } from '@simbo/manufactur
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
 import { PrismaService } from './prisma.service.js';
+import { canCreateProject, canEditDesign, canEditProject, canManageCollaborators, canReadProject } from './project-permissions.js';
 
 type Transaction = Prisma.TransactionClient;
 function json(value:unknown):Prisma.InputJsonValue { return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue; }
@@ -24,7 +25,13 @@ export class ProjectsService {
   constructor(@Inject(PrismaService) private readonly prisma:PrismaService) {}
   private async access(db:Transaction,actor:Actor,id:string) {
     const project=await db.project.findUnique({where:{id}});
-    if (!project || (actor.role!=='SUPERVISOR' && project.ownerId!==actor.id && project.responsibleId!==actor.id)) throw new NotFoundException('Proyecto no encontrado');
+    if (!project) throw new NotFoundException('Proyecto no encontrado');
+    const assigned=actor.role==='COLLABORATOR'
+      ? Boolean(await db.projectCollaborator.findUnique({where:{projectId_userId:{projectId:id,userId:actor.id}},select:{projectId:true}}))
+      : false;
+    if (!canReadProject(actor.role,project.ownerId,project.responsibleId,actor.id,assigned)) {
+      throw new NotFoundException('Proyecto no encontrado');
+    }
     return project;
   }
   private async locked<T>(actor:Actor,id:string,work:(tx:Transaction)=>Promise<T>):Promise<T> {
@@ -49,12 +56,49 @@ export class ProjectsService {
     if (errors.length) throw new UnprocessableEntityException({message:'Diseño estructuralmente inválido',issues:errors});
     return design;
   }
-  private readonly projectRelations = {responsible:{select:{id:true,name:true,role:true}}} as const;
+  private readonly projectRelations = {
+    responsible:{select:{id:true,name:true,role:true}},
+    collaborators:{select:{userId:true,user:{select:{id:true,name:true}}}}
+  } as const;
 
   async assignees(actor:Actor) {
+    if (!canCreateProject(actor.role)) throw new ForbiddenException('No puedes consultar responsables');
     return this.prisma.user.findMany({
       where:{active:true,role:{in:['ARCHITECT','SUPERVISOR']},...(actor.role==='SUPERVISOR'?{}:{id:actor.id})},
       select:{id:true,name:true,role:true},orderBy:[{name:'asc'},{id:'asc'}]
+    });
+  }
+
+  async availableCollaborators(actor:Actor) {
+    if (!canManageCollaborators(actor.role)) throw new ForbiddenException('Sólo el Supervisor puede asignar colaboradores');
+    return this.prisma.user.findMany({
+      where:{active:true,role:'COLLABORATOR'},
+      select:{id:true,name:true,email:true},orderBy:[{name:'asc'},{id:'asc'}]
+    });
+  }
+
+  async setCollaborators(actor:Actor,id:string,collaboratorIds:string[]) {
+    if (!canManageCollaborators(actor.role)) throw new ForbiddenException('Sólo el Supervisor puede asignar colaboradores');
+    if (collaboratorIds.length>50 || new Set(collaboratorIds).size!==collaboratorIds.length) {
+      throw new UnprocessableEntityException('La lista de colaboradores no es válida');
+    }
+    return this.locked(actor,id,async tx=>{
+      const people=await tx.user.findMany({
+        where:{id:{in:collaboratorIds},active:true,role:'COLLABORATOR'},select:{id:true}
+      });
+      if (people.length!==collaboratorIds.length) {
+        throw new UnprocessableEntityException('Selecciona únicamente colaboradores activos');
+      }
+      const current=await tx.projectCollaborator.findMany({where:{projectId:id},select:{userId:true}});
+      const selected=new Set(collaboratorIds);
+      const unchanged=current.length===selected.size && current.every(item=>selected.has(item.userId));
+      if (!unchanged) {
+        await tx.projectCollaborator.deleteMany({where:{projectId:id,userId:{notIn:collaboratorIds}}});
+        const added=collaboratorIds.filter(userId=>!current.some(member=>member.userId===userId));
+        if (added.length) await tx.projectCollaborator.createMany({data:added.map(userId=>({projectId:id,userId}))});
+        await tx.project.update({where:{id},data:{updatedAt:new Date()}});
+      }
+      return tx.project.findUniqueOrThrow({where:{id},include:this.projectRelations});
     });
   }
 
@@ -72,12 +116,15 @@ export class ProjectsService {
 
   async list(actor:Actor) {
     return this.prisma.project.findMany({
-      where:actor.role==='SUPERVISOR'?{}:{OR:[{ownerId:actor.id},{responsibleId:actor.id}]},
+      where:actor.role==='SUPERVISOR'?{}
+        :actor.role==='COLLABORATOR'?{collaborators:{some:{userId:actor.id}}}
+        :{OR:[{ownerId:actor.id},{responsibleId:actor.id}]},
       include:this.projectRelations,
       orderBy:{updatedAt:'desc'}
     });
   }
   async create(actor:Actor,input:CreateProjectRequest) {
+    if (!canCreateProject(actor.role)) throw new ForbiddenException('No puedes crear proyectos');
     return this.prisma.$transaction(async tx=>{
       const responsibleId=await this.responsibleFor(tx,actor,input.responsibleId);
       const project=await tx.project.create({
@@ -96,6 +143,7 @@ export class ProjectsService {
     });
   }
   async update(actor:Actor,id:string,input:UpdateProjectRequest) {
+    if (!canEditProject(actor.role)) throw new ForbiddenException('No puedes editar proyectos');
     return this.locked(actor,id,async tx=>{
       const responsibleId=input.responsibleId!==undefined
         ?await this.responsibleFor(tx,actor,input.responsibleId):undefined;
@@ -124,6 +172,7 @@ export class ProjectsService {
     return {design,revision,persisted:Boolean(draft),approvedVersionId:approved?.id??null};
   }
   async save(actor:Actor,id:string,design:DesignDocument,expectedRevision:number) {
+    if (!canEditDesign(actor.role)) throw new ForbiddenException('No puedes modificar diseños');
     const parsed=this.document(design,id);
     return this.locked(actor,id,async tx=>{
       const draft=await tx.designDraft.findUnique({where:{projectId:id}});
@@ -149,6 +198,7 @@ export class ProjectsService {
     return {...version,design:this.document(version.designJson,id),designJson:undefined};
   }
   async createVersion(actor:Actor,id:string,expectedRevision:number) {
+    if (!canEditDesign(actor.role)) throw new ForbiddenException('No puedes crear versiones');
     return this.locked(actor,id,async tx=>{
       const draft=await tx.designDraft.findUnique({where:{projectId:id}});
       if (!draft) throw new UnprocessableEntityException('Guarda el diseño antes de crear una versión');

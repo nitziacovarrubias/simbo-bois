@@ -44,7 +44,7 @@ async function main(): Promise<void> {
     update: {}
   });
 
-  for (const role of ['SUPERVISOR','ARCHITECT'] as const) {
+  for (const role of ['SUPERVISOR','ARCHITECT','COLLABORATOR'] as const) {
     const email=process.env[`BOOTSTRAP_${role}_EMAIL`]?.trim().toLowerCase();
     const password=process.env[`BOOTSTRAP_${role}_PASSWORD`];
     if (!email && !password) continue;

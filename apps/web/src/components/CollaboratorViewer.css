@@ -1,0 +1,21 @@
+.simbo-readonly-page{min-height:100vh;background:#eee9e2;color:#2d231c;display:flex;flex-direction:column;font-family:inherit}
+.simbo-readonly-header{display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:#291f19;color:#fbf4e8;padding:13px 26px;min-height:76px}
+.simbo-readonly-brand{display:flex;align-items:center;gap:10px;font-size:16px;color:#d8b780;letter-spacing:.05em}
+.simbo-readonly-project{display:grid;gap:3px;flex:1;min-width:170px}
+.simbo-readonly-project strong{font-size:15px;overflow-wrap:anywhere}
+.simbo-readonly-project span{color:#c6b9a8;font-size:12px}
+.simbo-readonly-badge{display:flex;align-items:center;gap:6px;color:#eddeb9;border:1px solid #7a6246;border-radius:20px;padding:7px 12px;font-size:12px}
+.simbo-readonly-back{display:flex;align-items:center;gap:8px;border:1px solid #786552;background:#463529;color:#faf4eb;border-radius:8px;padding:10px 14px;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
+.simbo-readonly-back:hover{background:#604836}
+.simbo-readonly-content{width:min(1400px,calc(100% - 48px));margin:25px auto;display:grid;gap:14px;flex:1;grid-template-rows:auto minmax(380px,1fr) auto}
+.simbo-readonly-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.simbo-readonly-toolbar h1{font-size:21px;margin:0 0 4px}
+.simbo-readonly-toolbar p{font-size:13px;color:#796d5f;margin:0}
+.simbo-readonly-views{display:flex;gap:5px;background:#e1d9cf;padding:5px;border-radius:10px}
+.simbo-readonly-views button{display:flex;align-items:center;gap:7px;border:0;border-radius:7px;padding:9px 13px;background:transparent;color:#594739;cursor:pointer;font:inherit;font-size:12px}
+.simbo-readonly-views button.active{background:#fff9f0;color:#392b20;box-shadow:0 1px 5px #37261919}
+.simbo-readonly-canvas{min-height:380px;position:relative;border-radius:14px;overflow:hidden;background:#f2f0e9;border:1px solid #d9cbbb;box-shadow:0 15px 40px #38281912}
+.simbo-readonly-empty{pointer-events:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);padding:9px 15px;border-radius:7px;background:#ffffffdd;color:#76695a;font-size:13px;white-space:nowrap}
+.simbo-readonly-summary{display:flex;flex-wrap:wrap;gap:12px;color:#67594b;font-size:12px}
+.simbo-readonly-summary span{padding:8px 12px;background:#fffaf3;border-radius:7px;border:1px solid #ded1c1}
+@media(max-width:760px){.simbo-readonly-header{padding:14px}.simbo-readonly-badge{order:4}.simbo-readonly-content{width:calc(100% - 24px);margin:14px auto}}

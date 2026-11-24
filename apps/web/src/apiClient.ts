@@ -12,12 +12,15 @@ import {
   type ListDesignChangeProposalsResponse
 } from '@simbo/shared-contracts';
 
-export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'; }
+export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'|'COLLABORATOR'; }
 export interface AssignableUser { id:string;name:string;role:'ARCHITECT'|'SUPERVISOR'; }
+export interface CollaboratorUser { id:string;name:string;email:string; }
+export interface ProjectCollaborator { userId:string;user:{id:string;name:string}; }
 export interface ProjectSummary {
   id:string;name:string;ownerId:string|null;updatedAt:string;createdAt:string;
   projectType:ProjectType|null;clientName:string|null;location:string|null;
   description:string|null;responsibleId:string|null;responsible:AssignableUser|null;
+  collaborators:ProjectCollaborator[];
 }
 export interface DesignResponse { design:DesignDocument;revision:number;persisted:boolean;approvedVersionId:string|null; }
 export interface VersionSummary { id:string;revision:number;approvalStatus:'DRAFT'|'APPROVED';approvedAt:string|null;approvedById:string|null;current:boolean;createdAt:string; }
@@ -48,6 +51,8 @@ export const apiClient={
   async logout():Promise<void>{try{await request('/auth/logout',{});}finally{clearSession();}},
   projects:()=>request<ProjectSummary[]>('/projects'),
   assignees:()=>request<AssignableUser[]>('/projects/assignees'),
+  availableCollaborators:()=>request<CollaboratorUser[]>('/projects/available-collaborators'),
+  setCollaborators:(id:string,collaboratorIds:string[])=>request<ProjectSummary>(`/projects/${encodeURIComponent(id)}/collaborators`,{collaboratorIds},'PATCH'),
   createProject:(input:CreateProjectRequest)=>request<ProjectSummary>('/projects',input),
   updateProject:(id:string,input:CreateProjectRequest)=>request<ProjectSummary>(`/projects/${encodeURIComponent(id)}`,input,'PATCH'),
   design:(id:string)=>request<DesignResponse>(`/projects/${encodeURIComponent(id)}/design`),
