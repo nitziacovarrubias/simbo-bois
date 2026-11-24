@@ -1,0 +1,171 @@
+.cutting-auth-panel {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(92, 64, 42, 0.22);
+  border-radius: 12px;
+  background: #fffdf9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cutting-auth-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cutting-auth-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #3a2618;
+}
+
+.cutting-auth-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: #6b5344;
+}
+
+.cutting-auth-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.cutting-auth-badge--current {
+  background: #e7f6ec;
+  color: #165b33;
+  border-color: #9ed5b0;
+}
+
+.cutting-auth-badge--historic {
+  background: #f3efe8;
+  color: #5a4635;
+  border-color: #cbbba6;
+}
+
+.cutting-auth-badge--pending {
+  background: #fef5e7;
+  color: #8a4b08;
+  border-color: #f3c68f;
+}
+
+.cutting-auth-status {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #5c4536;
+}
+
+.cutting-auth-success {
+  margin: 0;
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  background: #e7f6ec;
+  color: #165b33;
+  border: 1px solid #9ed5b0;
+  font-weight: 500;
+}
+
+.cutting-auth-alert {
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  background: #fdeeee;
+  color: #8c1d18;
+  border: 1px solid #f0b5b2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cutting-auth-alert p {
+  margin: 0;
+}
+
+.cutting-auth-alert-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cutting-auth-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f8f3ec;
+}
+
+.cutting-auth-meta dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #745b49;
+}
+
+.cutting-auth-meta dd {
+  margin: 0.2rem 0 0;
+  font-weight: 600;
+  color: #2d1e14;
+  word-break: break-word;
+}
+
+.cutting-auth-historic-note,
+.cutting-auth-info {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #5c4536;
+}
+
+.cutting-auth-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.cutting-auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 16, 10, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.cutting-auth-modal {
+  width: 100%;
+  max-width: 440px;
+  background: #fffdf9;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(92, 64, 42, 0.25);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+
+.cutting-auth-modal h4 {
+  margin: 0 0 0.75rem;
+  color: #3a2618;
+}
+
+.cutting-auth-modal p {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+  color: #4f3a2c;
+}
+
+.cutting-auth-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
