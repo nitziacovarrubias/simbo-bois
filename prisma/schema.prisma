@@ -18,6 +18,7 @@ model Project {
   ownerId   String?
   owner     User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   cuttingListAuthorizations CuttingListAuthorization[]
+  quotations Quotation[]
 
   @@index([ownerId])
 }
@@ -45,9 +46,9 @@ model DesignVersion {
   designJson    Json
   createdAt     DateTime @default(now())
   cuttingListAuthorization CuttingListAuthorization?
-
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   proposals DesignChangeProposal[]
+  quotations Quotation[]
 
   @@index([projectId])
 }
@@ -100,6 +101,7 @@ model User {
   approvals    DesignVersion[]
   proposals    DesignChangeProposal[]
   cuttingListAuthorizations CuttingListAuthorization[]
+  quotations Quotation[] @relation("QuotationCreatedBy")
 }
 
 model Session {
@@ -126,4 +128,24 @@ model CuttingListAuthorization {
   authorizedBy User @relation(fields: [authorizedById], references: [id], onDelete: Restrict)
 
   @@index([projectId, authorizedAt])
+}
+
+model Quotation {
+  id                    String   @id @default(cuid())
+  projectId             String
+  versionId             String
+  revision              Int
+  createdById           String
+  createdAt             DateTime @default(now())
+  materialSubtotalCents Int
+  laborCostCents        Int
+  totalCents            Int
+  calculationJson       Json
+
+  project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  version   DesignVersion @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  createdBy User          @relation("QuotationCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([projectId, createdAt])
+  @@index([versionId, createdAt])
 }
