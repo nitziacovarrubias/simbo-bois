@@ -1,0 +1,96 @@
+.quotation-panel {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #d4d8df;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.quotation-panel-header,
+.quotation-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.quotation-panel-subtitle,
+.quotation-meta {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.quotation-section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.quotation-rates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.quotation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.quotation-field input {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.quotation-field input[aria-invalid='true'] {
+  border-color: #dc2626;
+}
+
+.quotation-field-error {
+  color: #b91c1c;
+  font-size: 0.82rem;
+}
+
+.quotation-form-actions {
+  margin-top: 1rem;
+}
+
+.quotation-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.quotation-table th,
+.quotation-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.quotation-totals {
+  margin-top: 1rem;
+  max-width: 340px;
+  margin-left: auto;
+}
+
+.quotation-totals div {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+}
+
+.quotation-totals-grand {
+  border-top: 2px solid #111827;
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
