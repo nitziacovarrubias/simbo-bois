@@ -1,4 +1,4 @@
-import { ConflictException, BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
 import { CreateDesignChangeProposalResponseSchema, DesignDocumentSchema, ListDesignChangeProposalsResponseSchema, type CreateDesignChangeProposalRequest } from '@simbo/shared-contracts';
