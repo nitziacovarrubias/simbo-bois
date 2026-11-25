@@ -28,6 +28,7 @@ import {
   DesignDocumentSchema,
 } from '@simbo/shared-contracts';
 import { generateCuttingList, validateCuttingListInput } from '@simbo/manufacturing-engine';
+import { calculateQuotation } from '@simbo/quotation-engine';
 import { isDeepStrictEqual } from 'node:util';
 import type { Actor } from './auth.js';
 import { projectPreviewParts } from './project-preview.js';

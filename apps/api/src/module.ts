@@ -1,13 +1,14 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ConflictException,
   ForbiddenException,
   Get,
-  NotFoundException,
   HttpCode,
   Inject,
   Module,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -27,6 +28,7 @@ import {
   RevisionRequestSchema,
   SaveDesignRequestSchema,
   SetProjectStageRequestSchema,
+  QuotationGenerationRequestSchema,
 } from '@simbo/shared-contracts';
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
@@ -34,7 +36,7 @@ import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from 
 import { PrismaService } from './prisma.service.js';
 import { WorkspaceService } from './workspace.service.js';
 import { ProjectsService } from './projects.service.js';
-import { assertMaterialTextures, assertPartAppearanceTextures } from './material-texture.guard.js';
+import { assertMaterialTextures, assertPartAppearanceTextures } from './material-texture.guard.js'; { assertMaterialTextures, assertPartAppearanceTextures } from './material-texture.guard.js';
 
 const ModuleCatalogRequestSchema = z
   .object({
@@ -213,6 +215,41 @@ class ProjectsController {
       params.designVersionId,
     );
   }
+
+  @Post(':id/versions/:versionId/quotations')
+  @HttpCode(201)
+  createQuotation(
+    @CurrentUser() user: Actor,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() body: unknown
+  ){
+    const parsed = QuotationGenerationRequestSchema.safeParse(body)
+    if (!parsed.success){
+      throw new BadRequestException(parsed.error.flatten())
+    }
+
+    return this.projects.createQuotation(user, id, versionId, parsed.data)
+  }
+
+@Get(':id/quotations')
+  listQuotations(
+    @CurrentUser() user: Actor,
+    @Param('id') id: string
+  ) {
+    return this.projects.listQuotations(user, id);
+  }
+
+  @Get(':id/quotations/:quotationId')
+  getQuotation(
+    @CurrentUser() user: Actor,
+    @Param('id') id: string,
+    @Param('quotationId') quotationId: string
+  ) {
+    return this.projects.getQuotation(user, id, quotationId);
+  }
+
+
 }
 @UseGuards(AuthGuard)
 @Controller('clients')
