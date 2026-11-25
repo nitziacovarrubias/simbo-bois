@@ -1,8 +1,59 @@
-.simbo-feedback-toast{position:fixed;bottom:25px;right:25px;z-index:2500;display:flex;align-items:center;gap:11px;max-width:min(390px,calc(100vw - 30px));min-height:46px;box-sizing:border-box;padding:11px 12px 11px 15px;border-radius:12px;border:1px solid #b8d4c3;background:#f5fbf6;color:#2b6342;box-shadow:0 14px 46px #1c171326;font-size:13px;font-weight:640;line-height:1.4}
-.simbo-feedback-toast>svg{flex:0 0 auto}
-.simbo-feedback-toast span{flex:1;min-width:0}
-.simbo-feedback-toast button{display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:inherit;cursor:pointer}
-.simbo-feedback-toast button:hover{background:#e4f1e8}
-.simbo-feedback-toast--error{border-color:#e6c0b9;background:#fff6f3;color:#873d2c}
-.simbo-feedback-toast--error button:hover{background:#f7e6e0}
-@media(max-width:620px){.simbo-feedback-toast{bottom:14px;right:15px;left:15px;max-width:none}}
+.simbo-feedback-toast {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  max-width: min(390px, calc(100vw - 30px));
+  min-height: 46px;
+  box-sizing: border-box;
+  padding: 11px 12px 11px 15px;
+  border-radius: 12px;
+  border: 1px solid #b8d4c3;
+  background: #f5fbf6;
+  color: #2b6342;
+  box-shadow: 0 14px 46px #1c171326;
+  font-size: 13px;
+  font-weight: 640;
+  line-height: 1.4;
+}
+.simbo-feedback-toast > svg {
+  flex: 0 0 auto;
+}
+.simbo-feedback-toast span {
+  flex: 1;
+  min-width: 0;
+}
+.simbo-feedback-toast button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.simbo-feedback-toast button:hover {
+  background: #e4f1e8;
+}
+.simbo-feedback-toast--error {
+  border-color: #e6c0b9;
+  background: #fff6f3;
+  color: #873d2c;
+}
+.simbo-feedback-toast--error button:hover {
+  background: #f7e6e0;
+}
+@media (max-width: 620px) {
+  .simbo-feedback-toast {
+    bottom: 14px;
+    right: 15px;
+    left: 15px;
+    max-width: none;
+  }
+}

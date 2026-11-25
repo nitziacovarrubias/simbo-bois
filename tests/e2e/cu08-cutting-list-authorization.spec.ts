@@ -1,7 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
-import { addPartToAssembly, createPanel, type DesignDocument } from '../../packages/design-domain/src/index.ts';
+import {
+  addPartToAssembly,
+  createPanel,
+  type DesignDocument,
+} from '../../packages/design-domain/src/index.ts';
 import { hashPassword } from '../../apps/api/src/security.ts';
 
 const API_URL = process.env.VITE_API_URL ?? 'http://127.0.0.1:3001/api';
@@ -16,8 +20,8 @@ test.beforeAll(async () => {
       email: supervisorEmail,
       name: 'Supervisor CU08 E2E',
       role: 'SUPERVISOR',
-      passwordHash: await hashPassword(password)
-    }
+      passwordHash: await hashPassword(password),
+    },
   });
   supervisorId = user.id;
 });
@@ -35,9 +39,9 @@ async function apiJson<T>(path: string, token?: string, body?: unknown): Promise
     method: body === undefined ? 'GET' : 'POST',
     headers: {
       'content-type': 'application/json',
-      ...(token ? { authorization: `Bearer ${token}` } : {})
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
     },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   const data = await response.json();
   if (!response.ok) {
@@ -49,39 +53,41 @@ async function apiJson<T>(path: string, token?: string, body?: unknown): Promise
 async function seedApprovedProject(name: string) {
   const session = await apiJson<{ token: string }>('/auth/login', undefined, {
     email: supervisorEmail,
-    password
+    password,
   });
   const project = await apiJson<{ id: string }>('/projects', session.token, { name });
   const initial = await apiJson<{ design: DesignDocument; revision: number }>(
     `/projects/${project.id}/design`,
-    session.token
+    session.token,
   );
   const materialId = initial.design.materials[0]!.id;
   const panel = createPanel({
     name: 'Lateral E2E',
-    materialId
+    materialId,
   });
   addPartToAssembly(initial.design, panel, initial.design.rootAssemblyId);
-  const saved = await apiJson<{ revision: number }>(`/projects/${project.id}/design`, session.token, {
-    design: initial.design,
-    expectedRevision: initial.revision
-  });
+  const saved = await apiJson<{ revision: number }>(
+    `/projects/${project.id}/design`,
+    session.token,
+    {
+      design: initial.design,
+      expectedRevision: initial.revision,
+    },
+  );
   const version = await apiJson<{ id: string; revision: number }>(
     `/projects/${project.id}/versions`,
     session.token,
-    { expectedRevision: saved.revision }
+    { expectedRevision: saved.revision },
   );
-  await apiJson(
-    `/projects/${project.id}/versions/${version.id}/approve`,
-    session.token,
-    { expectedRevision: saved.revision }
-  );
+  await apiJson(`/projects/${project.id}/versions/${version.id}/approve`, session.token, {
+    expectedRevision: saved.revision,
+  });
   return {
     token: session.token,
     projectId: project.id,
     versionId: version.id,
     design: initial.design,
-    revision: saved.revision
+    revision: saved.revision,
   };
 }
 
@@ -95,11 +101,13 @@ async function signInSupervisor(page: Page) {
 
 function projectCard(page: Page, name: string) {
   return page.locator('.project-list article').filter({
-    has: page.getByRole('heading', { name })
+    has: page.getByRole('heading', { name }),
   });
 }
 
-test('CU08-02: generar despiece, confirmar autorización, persistir tras recarga y consultar historial', async ({ page }) => {
+test('CU08-02: generar despiece, confirmar autorización, persistir tras recarga y consultar historial', async ({
+  page,
+}) => {
   const name = `CU08-02 E2E ${randomUUID()}`;
   const seeded = await seedApprovedProject(name);
 
@@ -128,11 +136,11 @@ test('CU08-02: generar despiece, confirmar autorización, persistir tras recarga
 
   const updatedDesign: DesignDocument = {
     ...seeded.design,
-    metadata: { ...seeded.design.metadata, notes: 'Cambio posterior a autorización' }
+    metadata: { ...seeded.design.metadata, notes: 'Cambio posterior a autorización' },
   };
   await apiJson(`/projects/${seeded.projectId}/design`, seeded.token, {
     design: updatedDesign,
-    expectedRevision: seeded.revision
+    expectedRevision: seeded.revision,
   });
 
   await page.reload();

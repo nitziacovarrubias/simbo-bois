@@ -5,40 +5,82 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.edit-context-breadcrumb {position: absolute;
+  .edit-context-breadcrumb {
+    position: absolute;
     z-index: 18;
     left: 16px;
     top: 84px;
     display: flex;
     align-items: center;
     gap: 5px;
-    background: rgba(36, 47, 55, .9);
+    background: rgba(36, 47, 55, 0.9);
     color: #dbe2e6;
     border: 1px solid #56636c;
     border-radius: 6px;
     padding: 5px 7px;
     font-size: 9px;
-    backdrop-filter: blur(5px)}
-.edit-context-breadcrumb span {white-space: nowrap}
-.edit-context-breadcrumb button {padding: 3px 5px;
+    backdrop-filter: blur(5px);
+  }
+  .edit-context-breadcrumb span {
+    white-space: nowrap;
+  }
+  .edit-context-breadcrumb button {
+    padding: 3px 5px;
     background: #45535d;
-    border-color: #64737d}
+    border-color: #64737d;
+  }
 }
 
 @layer refresh {
-.edit-context-breadcrumb {top: var(--dock-bottom); left: 14px;
-  max-width: calc(100% - 155px); min-height: 31px;
-  flex-wrap: wrap; padding: 6px 9px; border-radius: 8px;
-  color: #fff; background: #293241ed; border-color: #657c8f;
-  font-size: 11px;}
-.edit-context-breadcrumb button {color: #fff; background: #3e5c76; border-color: #718aa0;}
+  .edit-context-breadcrumb {
+    top: var(--dock-bottom);
+    left: 14px;
+    max-width: calc(100% - 155px);
+    min-height: 31px;
+    flex-wrap: wrap;
+    padding: 6px 9px;
+    border-radius: 8px;
+    color: #fff;
+    background: #293241ed;
+    border-color: #657c8f;
+    font-size: 11px;
+  }
+  .edit-context-breadcrumb button {
+    color: #fff;
+    background: #3e5c76;
+    border-color: #718aa0;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-.edit-context-breadcrumb {top:auto;bottom:65px;left:72px;right:auto;max-width:calc(100% - 265px);min-height:32px;border:1px solid #dccaaf;border-radius:9px;background:#fffdf9f0;color:#604a36;font-size:11px;box-shadow:var(--shadow-sm)}
-.edit-context-breadcrumb button {min-height:25px;padding:3px 9px;background:#fff0d6;border-color:#efce9d;color:#875006;border-radius:6px}
-@media(max-width:950px){.edit-context-breadcrumb{left:65px;max-width:calc(100% - 170px);bottom:85px}}
-
+  .edit-context-breadcrumb {
+    top: auto;
+    bottom: 65px;
+    left: 72px;
+    right: auto;
+    max-width: calc(100% - 265px);
+    min-height: 32px;
+    border: 1px solid #dccaaf;
+    border-radius: 9px;
+    background: #fffdf9f0;
+    color: #604a36;
+    font-size: 11px;
+    box-shadow: var(--shadow-sm);
+  }
+  .edit-context-breadcrumb button {
+    min-height: 25px;
+    padding: 3px 9px;
+    background: #fff0d6;
+    border-color: #efce9d;
+    color: #875006;
+    border-radius: 6px;
+  }
+  @media (max-width: 950px) {
+    .edit-context-breadcrumb {
+      left: 65px;
+      max-width: calc(100% - 170px);
+      bottom: 85px;
+    }
+  }
 }

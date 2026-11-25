@@ -8,7 +8,7 @@ import {
   createPanel,
   getAssemblyWorldTransform,
   getPartWorldTransform,
-  type SnapDefinition
+  type SnapDefinition,
 } from '../packages/design-domain/src/index.ts';
 import {
   MeasurementsBuffer,
@@ -25,12 +25,16 @@ import {
   resolveSnapDefinitionWorld,
   selectByScreenRectangle,
   snapDefinitionToDefinition,
-  synchronizeCameraState
+  synchronizeCameraState,
 } from '../packages/editor-engine/src/index.ts';
 
 function nestedPart() {
   const design = createEmptyDesign('nested');
-  const part = createPanel({ name: 'Nested', materialId: design.materials[0]!.id, transform: { position: { x: 10, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } } });
+  const part = createPanel({
+    name: 'Nested',
+    materialId: design.materials[0]!.id,
+    transform: { position: { x: 10, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
   design.parts.push(part);
   const assembly = createAssembly('Parent', [{ kind: 'PART', id: part.id }]);
   assembly.transform.position.x = 1000;
@@ -58,14 +62,17 @@ test('Move exact distance commits once and converts world back to local for nest
   manager.exactMove('500mm');
   const moved = manager.commit(design);
   assert.equal(getPartWorldTransform(moved, part.id).position.x, 1510);
-  assert.equal(moved.parts.find(value => value.id === part.id)!.transform.position.x, 510);
+  assert.equal(moved.parts.find((value) => value.id === part.id)!.transform.position.x, 510);
   assert.equal(getAssemblyWorldTransform(moved, assembly.id).position.x, 1000);
   assert.equal(getPartWorldTransform(design, part.id).position.x, 1010);
 });
 
 test('Move reference point is point-to-point, not center-only', () => {
   const design = createEmptyDesign('reference');
-  const part = createPanel({ materialId: design.materials[0]!.id, transform: { position: { x: 100, y: 100, z: 0 }, rotation: { x: 0, y: 0, z: 0 } } });
+  const part = createPanel({
+    materialId: design.materials[0]!.id,
+    transform: { position: { x: 100, y: 100, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
   addPartToAssembly(design, part);
   const manager = new ToolManager();
   manager.beginMovePickReference(design, part.id);
@@ -122,7 +129,7 @@ test('Move copy mode creates a new domain Part and leaves source unchanged', () 
   const copied = manager.commit(design);
   assert.equal(copied.parts.length, 2);
   assert.equal(getPartWorldTransform(copied, part.id).position.y, 0);
-  const newPart = copied.parts.find(value => value.id !== part.id)!;
+  const newPart = copied.parts.find((value) => value.id !== part.id)!;
   assert.equal(getPartWorldTransform(copied, newPart.id).position.y, 300);
   assert.equal(manager.lastCommittedEntityId, newPart.id);
 });
@@ -132,12 +139,15 @@ test('duplicateArray uses world spacing even for a nested Part', () => {
   const ids = duplicateArray(design, part.id, 2, 300, 'y');
   assert.equal(getPartWorldTransform(design, ids[0]!).position.y, 300);
   assert.equal(getPartWorldTransform(design, ids[1]!).position.y, 600);
-  assert.equal(design.parts.find(value => value.id === ids[0])!.transform.position.x, 10);
+  assert.equal(design.parts.find((value) => value.id === ids[0])!.transform.position.x, 10);
 });
 
 test('inference priority prefers endpoint over face at equal cursor distance', () => {
   const design = createEmptyDesign('inference priority');
-  const part = createPanel({ materialId: design.materials[0]!.id, dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 } });
+  const part = createPanel({
+    materialId: design.materials[0]!.id,
+    dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 },
+  });
   addPartToAssembly(design, part);
   const settings = defaultInferenceSettings();
   settings.toleranceMm = 500;
@@ -148,10 +158,29 @@ test('inference priority prefers endpoint over face at equal cursor distance', (
 test('custom SnapDefinitions move and orient without RIGHT -> LEFT hardcoding', () => {
   const design = createEmptyDesign('custom snaps');
   const moving = createPanel({ materialId: design.materials[0]!.id });
-  const target = createPanel({ materialId: design.materials[0]!.id, transform: { position: { x: 1000, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } } });
-  addPartToAssembly(design, moving); addPartToAssembly(design, target);
-  const source: SnapDefinition = { id: 'source', name: 'Trasera', entityId: moving.id, position: { x: 20, y: 0, z: 0 }, compatibleTypes: ['WALL'], metadata: {} };
-  const destination: SnapDefinition = { id: 'target', name: 'Pared', entityId: target.id, position: { x: -20, y: 0, z: 0 }, orientation: { x: 0, y: Math.PI / 2, z: 0 }, compatibleTypes: ['WALL'], metadata: {} };
+  const target = createPanel({
+    materialId: design.materials[0]!.id,
+    transform: { position: { x: 1000, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
+  addPartToAssembly(design, moving);
+  addPartToAssembly(design, target);
+  const source: SnapDefinition = {
+    id: 'source',
+    name: 'Trasera',
+    entityId: moving.id,
+    position: { x: 20, y: 0, z: 0 },
+    compatibleTypes: ['WALL'],
+    metadata: {},
+  };
+  const destination: SnapDefinition = {
+    id: 'target',
+    name: 'Pared',
+    entityId: target.id,
+    position: { x: -20, y: 0, z: 0 },
+    orientation: { x: 0, y: Math.PI / 2, z: 0 },
+    compatibleTypes: ['WALL'],
+    metadata: {},
+  };
   const sourceWorld = resolveSnapDefinitionWorld(design, moving.id, source);
   const targetWorld = resolveSnapDefinitionWorld(design, target.id, destination);
   const snap = snapDefinitionToDefinition(design, moving.id, sourceWorld, targetWorld);
@@ -161,10 +190,23 @@ test('custom SnapDefinitions move and orient without RIGHT -> LEFT hardcoding', 
 
 test('camera synchronization captures the real orbit pose into Scene', () => {
   const design = createEmptyDesign('camera');
-  const base = synchronizeCameraState({ projection: 'PERSPECTIVE', position: { x: 1, y: 2, z: 3 }, target: { x: 0, y: 0, z: 0 }, up: { x: 0, y: 1, z: 0 }, fov: 45, orthoScale: 5000 }, { position: { x: 1234, y: 2345, z: 3456 }, target: { x: 111, y: 222, z: 333 } });
+  const base = synchronizeCameraState(
+    {
+      projection: 'PERSPECTIVE',
+      position: { x: 1, y: 2, z: 3 },
+      target: { x: 0, y: 0, z: 0 },
+      up: { x: 0, y: 1, z: 0 },
+      fov: 45,
+      orthoScale: 5000,
+    },
+    { position: { x: 1234, y: 2345, z: 3456 }, target: { x: 111, y: 222, z: 333 } },
+  );
   const scene = createScene('Orbitada', base, 'SHADED', design);
   design.scenes.push(scene);
-  const later = synchronizeCameraState(base, { position: { x: 777, y: 888, z: 999 }, target: { x: 10, y: 20, z: 30 } });
+  const later = synchronizeCameraState(base, {
+    position: { x: 777, y: 888, z: 999 },
+    target: { x: 10, y: 20, z: 30 },
+  });
   captureScene(design, scene.id, later, 'HIDDEN_LINE');
   assert.deepEqual(design.scenes[0]!.camera.position, { x: 777, y: 888, z: 999 });
   assert.deepEqual(design.scenes[0]!.camera.target, { x: 10, y: 20, z: 30 });
@@ -175,10 +217,13 @@ test('selection window contains only fully enclosed bounds; crossing selects tou
   const candidates = [
     { id: 'a', bounds: { left: 20, top: 20, right: 40, bottom: 40 } },
     { id: 'b', bounds: { left: 80, top: 80, right: 130, bottom: 130 } },
-    { id: 'c', bounds: { left: 150, top: 150, right: 170, bottom: 170 } }
+    { id: 'c', bounds: { left: 150, top: 150, right: 170, bottom: 170 } },
   ];
   assert.deepEqual(selectByScreenRectangle(candidates, { x: 0, y: 0 }, { x: 100, y: 100 }), ['a']);
-  assert.deepEqual(selectByScreenRectangle(candidates, { x: 100, y: 100 }, { x: 0, y: 0 }), ['a', 'b']);
+  assert.deepEqual(selectByScreenRectangle(candidates, { x: 100, y: 100 }, { x: 0, y: 0 }), [
+    'a',
+    'b',
+  ]);
 });
 
 test('Measure uses world-space centers for Parts under different Assemblies', () => {
@@ -188,8 +233,10 @@ test('Measure uses world-space centers for Parts under different Assemblies', ()
   design.parts.push(a, b);
   const aa = createAssembly('A', [{ kind: 'PART', id: a.id }]);
   const bb = createAssembly('B', [{ kind: 'PART', id: b.id }]);
-  aa.transform.position.x = 1000; bb.transform.position.x = 2500;
-  addAssemblyToAssembly(design, aa); addAssemblyToAssembly(design, bb);
+  aa.transform.position.x = 1000;
+  bb.transform.position.x = 2500;
+  addAssemblyToAssembly(design, aa);
+  addAssemblyToAssembly(design, bb);
   const measured = measurePartsWorld(design, a.id, b.id);
   assert.equal(measured.distanceMm, 1500);
   assert.deepEqual(measured.delta, { x: 1500, y: 0, z: 0 });
@@ -197,7 +244,10 @@ test('Measure uses world-space centers for Parts under different Assemblies', ()
 
 test('Rotate around an external pivot updates world position as well as rotation', () => {
   const design = createEmptyDesign('rotate pivot');
-  const part = createPanel({ materialId: design.materials[0]!.id, transform: { position: { x: 100, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } } });
+  const part = createPanel({
+    materialId: design.materials[0]!.id,
+    transform: { position: { x: 100, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
   addPartToAssembly(design, part);
   const manager = new ToolManager();
   manager.beginRotateEntity(design, part.id, 15);
@@ -211,12 +261,19 @@ test('Rotate around an external pivot updates world position as well as rotation
   assert.ok(Math.abs(world.rotation.z - Math.PI / 2) < 1e-9);
 });
 
-
 test('SnapEngine chooses the nearest compatible face pair instead of hardcoding RIGHT -> LEFT', () => {
   const design = createEmptyDesign('smart face snap');
-  const moving = createPanel({ materialId: design.materials[0]!.id, dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 } });
-  const target = createPanel({ materialId: design.materials[0]!.id, dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 }, transform: { position: { x: 0, y: 300, z: 0 }, rotation: { x: 0, y: 0, z: 0 } } });
-  addPartToAssembly(design, moving); addPartToAssembly(design, target);
+  const moving = createPanel({
+    materialId: design.materials[0]!.id,
+    dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 },
+  });
+  const target = createPanel({
+    materialId: design.materials[0]!.id,
+    dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 },
+    transform: { position: { x: 0, y: 300, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
+  addPartToAssembly(design, moving);
+  addPartToAssembly(design, target);
   const snap = new SnapEngine().face(design, moving, target);
   assert.ok(snap.label.includes('TOP') && snap.label.includes('BOTTOM'));
   assert.equal(snap.position.y, 200);

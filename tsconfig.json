@@ -12,48 +12,19 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@simbo/design-domain": [
-        "packages/design-domain/src/index.ts"
-      ],
-      "@simbo/constraint-engine": [
-        "packages/constraint-engine/src/index.ts"
-      ],
-      "@simbo/geometry-engine": [
-        "packages/geometry-engine/src/index.ts"
-      ],
-      "@simbo/module-engine": [
-        "packages/module-engine/src/index.ts"
-      ],
-      "@simbo/editor-engine": [
-        "packages/editor-engine/src/index.ts"
-      ],
-      "@simbo/joinery-engine": [
-        "packages/joinery-engine/src/index.ts"
-      ],
-      "@simbo/kitchen-engine": [
-        "packages/kitchen-engine/src/index.ts"
-      ],
-      "@simbo/hardware-engine": [
-        "packages/hardware-engine/src/index.ts"
-      ],
-      "@simbo/kinematics-engine": [
-        "packages/kinematics-engine/src/index.ts"
-      ],
-      "@simbo/manufacturing-engine": [
-        "packages/manufacturing-engine/src/index.ts"
-      ],
-      "@simbo/validation-engine": [
-        "packages/validation-engine/src/index.ts"
-      ],
-      "@simbo/shared-contracts": [
-        "packages/shared-contracts/src/index.ts"
-      ]
+      "@simbo/design-domain": ["packages/design-domain/src/index.ts"],
+      "@simbo/constraint-engine": ["packages/constraint-engine/src/index.ts"],
+      "@simbo/geometry-engine": ["packages/geometry-engine/src/index.ts"],
+      "@simbo/module-engine": ["packages/module-engine/src/index.ts"],
+      "@simbo/editor-engine": ["packages/editor-engine/src/index.ts"],
+      "@simbo/joinery-engine": ["packages/joinery-engine/src/index.ts"],
+      "@simbo/kitchen-engine": ["packages/kitchen-engine/src/index.ts"],
+      "@simbo/hardware-engine": ["packages/hardware-engine/src/index.ts"],
+      "@simbo/kinematics-engine": ["packages/kinematics-engine/src/index.ts"],
+      "@simbo/manufacturing-engine": ["packages/manufacturing-engine/src/index.ts"],
+      "@simbo/validation-engine": ["packages/validation-engine/src/index.ts"],
+      "@simbo/shared-contracts": ["packages/shared-contracts/src/index.ts"]
     }
   },
-  "include": [
-    "packages/**/*.ts",
-    "tests/**/*.ts",
-    "types/**/*.d.ts",
-    "playwright.config.ts"
-  ]
+  "include": ["packages/**/*.ts", "tests/**/*.ts", "types/**/*.d.ts", "playwright.config.ts"]
 }

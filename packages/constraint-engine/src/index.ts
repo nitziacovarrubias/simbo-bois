@@ -10,7 +10,7 @@ import {
   type Id,
   type Part,
   type Transform,
-  type ValidationIssue
+  type ValidationIssue,
 } from '../../design-domain/src/index.ts';
 
 function getPath(root: unknown, path: string): unknown {
@@ -35,7 +35,10 @@ function setPath(root: unknown, path: string, value: unknown): void {
   current[tokens[tokens.length - 1]!] = value;
 }
 
-export function evaluateExpression(expression: BindingExpression, context: unknown): number | string | boolean {
+export function evaluateExpression(
+  expression: BindingExpression,
+  context: unknown,
+): number | string | boolean {
   if (expression.type === 'Literal') return expression.value;
   if (expression.type === 'Reference') {
     const value = getPath(context, expression.path);
@@ -53,51 +56,64 @@ export function evaluateExpression(expression: BindingExpression, context: unkno
   const left = Number(evaluateExpression(expression.left, context));
   const right = Number(evaluateExpression(expression.right, context));
   switch (expression.type) {
-    case 'Add': return left + right;
-    case 'Subtract': return left - right;
-    case 'Multiply': return left * right;
-    case 'Divide': if (right === 0) throw new Error('División entre cero'); return left / right;
-    case 'Min': return Math.min(left, right);
-    case 'Max': return Math.max(left, right);
+    case 'Add':
+      return left + right;
+    case 'Subtract':
+      return left - right;
+    case 'Multiply':
+      return left * right;
+    case 'Divide':
+      if (right === 0) throw new Error('División entre cero');
+      return left / right;
+    case 'Min':
+      return Math.min(left, right);
+    case 'Max':
+      return Math.max(left, right);
   }
 }
 
 export function expressionReferences(expression: BindingExpression): string[] {
   if (expression.type === 'Reference') return [expression.path];
   if (expression.type === 'Literal') return [];
-  if (expression.type === 'Clamp') return [
-    ...expressionReferences(expression.value),
-    ...expressionReferences(expression.min),
-    ...expressionReferences(expression.max)
-  ];
+  if (expression.type === 'Clamp')
+    return [
+      ...expressionReferences(expression.value),
+      ...expressionReferences(expression.min),
+      ...expressionReferences(expression.max),
+    ];
   return [...expressionReferences(expression.left), ...expressionReferences(expression.right)];
 }
 
 export function remapBindingExpression(
   expression: BindingExpression,
-  remapPath: (path: string) => string
+  remapPath: (path: string) => string,
 ): BindingExpression {
   if (expression.type === 'Literal') return structuredClone(expression);
-  if (expression.type === 'Reference') return { type: 'Reference', path: remapPath(expression.path) };
-  if (expression.type === 'Clamp') return {
-    type: 'Clamp',
-    value: remapBindingExpression(expression.value, remapPath),
-    min: remapBindingExpression(expression.min, remapPath),
-    max: remapBindingExpression(expression.max, remapPath)
-  };
+  if (expression.type === 'Reference')
+    return { type: 'Reference', path: remapPath(expression.path) };
+  if (expression.type === 'Clamp')
+    return {
+      type: 'Clamp',
+      value: remapBindingExpression(expression.value, remapPath),
+      min: remapBindingExpression(expression.min, remapPath),
+      max: remapBindingExpression(expression.max, remapPath),
+    };
   return {
     type: expression.type,
     left: remapBindingExpression(expression.left, remapPath),
-    right: remapBindingExpression(expression.right, remapPath)
+    right: remapBindingExpression(expression.right, remapPath),
   };
 }
 
 export function detectBindingCycles(bindings: Binding[]): string[][] {
-  const enabled = bindings.filter(binding => binding.enabled);
-  const byTarget = new Map(enabled.map(binding => [binding.targetPath, binding]));
+  const enabled = bindings.filter((binding) => binding.enabled);
+  const byTarget = new Map(enabled.map((binding) => [binding.targetPath, binding]));
   const graph = new Map<string, string[]>();
   for (const binding of enabled) {
-    graph.set(binding.targetPath, expressionReferences(binding.expression).filter(reference => byTarget.has(reference)));
+    graph.set(
+      binding.targetPath,
+      expressionReferences(binding.expression).filter((reference) => byTarget.has(reference)),
+    );
   }
   const visiting = new Set<string>();
   const visited = new Set<string>();
@@ -110,25 +126,35 @@ export function detectBindingCycles(bindings: Binding[]): string[][] {
       return;
     }
     if (visited.has(node)) return;
-    visiting.add(node); stack.push(node);
+    visiting.add(node);
+    stack.push(node);
     for (const dependency of graph.get(node) ?? []) visit(dependency);
-    stack.pop(); visiting.delete(node); visited.add(node);
+    stack.pop();
+    visiting.delete(node);
+    visited.add(node);
   };
   for (const node of graph.keys()) visit(node);
   return cycles;
 }
 
-export function applyBindings<T extends object>(target: T, bindings: Binding[], context: object = target): T {
+export function applyBindings<T extends object>(
+  target: T,
+  bindings: Binding[],
+  context: object = target,
+): T {
   const cycles = detectBindingCycles(bindings);
-  if (cycles.length) throw new Error(`Constraint cycle: ${cycles.map(cycle => cycle.join(' -> ')).join(', ')}`);
-  const pending = [...bindings.filter(binding => binding.enabled)];
+  if (cycles.length)
+    throw new Error(`Constraint cycle: ${cycles.map((cycle) => cycle.join(' -> ')).join(', ')}`);
+  const pending = [...bindings.filter((binding) => binding.enabled)];
   let guard = pending.length * 3 + 1;
   while (pending.length && guard-- > 0) {
     let progress = false;
     for (let index = pending.length - 1; index >= 0; index -= 1) {
       const binding = pending[index]!;
       const references = expressionReferences(binding.expression);
-      const unresolved = references.some(reference => pending.some(candidate => candidate.targetPath === reference));
+      const unresolved = references.some((reference) =>
+        pending.some((candidate) => candidate.targetPath === reference),
+      );
       if (unresolved) continue;
       setPath(target, binding.targetPath, evaluateExpression(binding.expression, context));
       pending.splice(index, 1);
@@ -141,9 +167,16 @@ export function applyBindings<T extends object>(target: T, bindings: Binding[], 
 
 type Transformable = Part | Assembly;
 function findTransformable(design: DesignDocument, id: Id): Transformable | undefined {
-  return design.parts.find(part => part.id === id) ?? design.assemblies.find(assembly => assembly.id === id);
+  return (
+    design.parts.find((part) => part.id === id) ??
+    design.assemblies.find((assembly) => assembly.id === id)
+  );
 }
-function setWorldTransform(design: DesignDocument, entity: Transformable, transform: Transform): void {
+function setWorldTransform(
+  design: DesignDocument,
+  entity: Transformable,
+  transform: Transform,
+): void {
   if ('dimensions' in entity) setPartWorldTransform(design, entity.id, transform);
   else setAssemblyWorldTransform(design, entity.id, transform);
 }
@@ -165,15 +198,18 @@ function applyConstraint(design: DesignDocument, constraint: Constraint): void {
     const axis = String(constraint.parameters.axis ?? 'x') as 'x' | 'y' | 'z';
     const worldA = getWorldTransform(design, entityA.id);
     const worldB = getWorldTransform(design, entityB.id);
-    worldB.position[axis] = constraint.type === 'CENTER'
-      ? worldA.position[axis]
-      : worldA.position[axis] + Number(constraint.parameters.distanceMm ?? 0);
+    worldB.position[axis] =
+      constraint.type === 'CENTER'
+        ? worldA.position[axis]
+        : worldA.position[axis] + Number(constraint.parameters.distanceMm ?? 0);
     setWorldTransform(design, entityB, worldB);
     return;
   }
   if (constraint.type === 'EQUAL_DIMENSION') {
-    if (!entityB || !('dimensions' in entityA) || !('dimensions' in entityB)) throw new Error('EQUAL_DIMENSION requiere dos Parts');
-    const dimension = String(constraint.parameters.dimension ?? 'widthMm') as 'widthMm' | 'heightMm' | 'thicknessMm';
+    if (!entityB || !('dimensions' in entityA) || !('dimensions' in entityB))
+      throw new Error('EQUAL_DIMENSION requiere dos Parts');
+    const dimension = String(constraint.parameters.dimension ?? 'widthMm') as
+      'widthMm' | 'heightMm' | 'thicknessMm';
     entityB.dimensions[dimension] = entityA.dimensions[dimension];
     return;
   }
@@ -191,10 +227,16 @@ function applyConstraint(design: DesignDocument, constraint: Constraint): void {
 
 export function solveConstraints(design: DesignDocument): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-  for (const constraint of design.constraints.filter(candidate => candidate.enabled)) {
-    try { applyConstraint(design, constraint); }
-    catch (error) {
-      issues.push({ code: 'CONSTRAINT_INVALID', severity: 'WARNING', entityId: constraint.id, message: error instanceof Error ? error.message : String(error) });
+  for (const constraint of design.constraints.filter((candidate) => candidate.enabled)) {
+    try {
+      applyConstraint(design, constraint);
+    } catch (error) {
+      issues.push({
+        code: 'CONSTRAINT_INVALID',
+        severity: 'WARNING',
+        entityId: constraint.id,
+        message: error instanceof Error ? error.message : String(error),
+      });
     }
   }
   return issues;
@@ -205,8 +247,15 @@ export function solveDesignRelations(design: DesignDocument): ValidationIssue[] 
   const entities: Record<string, Part | Assembly> = {};
   for (const part of design.parts) entities[part.id] = part;
   for (const assembly of design.assemblies) entities[assembly.id] = assembly;
-  try { applyBindings({ entities }, design.bindings, { entities }); }
-  catch (error) { issues.push({ code: 'BINDING_SOLVE', severity: 'ERROR', message: error instanceof Error ? error.message : String(error) }); }
+  try {
+    applyBindings({ entities }, design.bindings, { entities });
+  } catch (error) {
+    issues.push({
+      code: 'BINDING_SOLVE',
+      severity: 'ERROR',
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
   issues.push(...solveConstraints(design));
   return issues;
 }
@@ -214,12 +263,25 @@ export function solveDesignRelations(design: DesignDocument): ValidationIssue[] 
 export function validateConstraints(design: DesignDocument): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   for (const cycle of detectBindingCycles(design.bindings)) {
-    issues.push({ code: 'CONSTRAINT_CYCLE', severity: 'ERROR', message: `Ciclo: ${cycle.join(' -> ')}` });
+    issues.push({
+      code: 'CONSTRAINT_CYCLE',
+      severity: 'ERROR',
+      message: `Ciclo: ${cycle.join(' -> ')}`,
+    });
   }
-  const ids = new Set([...design.parts.map(part => part.id), ...design.assemblies.map(assembly => assembly.id)]);
+  const ids = new Set([
+    ...design.parts.map((part) => part.id),
+    ...design.assemblies.map((assembly) => assembly.id),
+  ]);
   for (const constraint of design.constraints) {
     for (const id of constraint.entityIds) {
-      if (!ids.has(id)) issues.push({ code: 'CONSTRAINT_REF', severity: 'WARNING', entityId: constraint.id, message: `Constraint referencia entidad inexistente ${id}` });
+      if (!ids.has(id))
+        issues.push({
+          code: 'CONSTRAINT_REF',
+          severity: 'WARNING',
+          entityId: constraint.id,
+          message: `Constraint referencia entidad inexistente ${id}`,
+        });
     }
   }
   return issues;

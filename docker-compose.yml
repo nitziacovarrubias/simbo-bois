@@ -6,9 +6,9 @@ services:
       POSTGRES_PASSWORD: simbo
       POSTGRES_DB: simbo
     ports:
-      - "5432:5432"
+      - '5432:5432'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U simbo -d simbo"]
+      test: ['CMD-SHELL', 'pg_isready -U simbo -d simbo']
       interval: 3s
       timeout: 3s
       retries: 20

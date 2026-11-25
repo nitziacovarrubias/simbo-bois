@@ -13,7 +13,7 @@ import {
   type DesignDocument,
   type ModuleDefinition,
   type ModuleVersion,
-  type Part
+  type Part,
 } from '../packages/design-domain/src/index.ts';
 import {
   alignParts,
@@ -23,13 +23,13 @@ import {
   fitAllCamera,
   focusCamera,
   infer,
-  snapFaceToFace
+  snapFaceToFace,
 } from '../packages/editor-engine/src/index.ts';
 import {
   designGeometry,
   intersectsAabb,
   partLocalAabb,
-  partWorldAabb
+  partWorldAabb,
 } from '../packages/geometry-engine/src/index.ts';
 import { createScrewJoint } from '../packages/joinery-engine/src/index.ts';
 import { instantiateModule } from '../packages/module-engine/src/index.ts';
@@ -37,7 +37,9 @@ import { boundaryIssues, collisionIssues } from '../packages/validation-engine/s
 
 function attachAssembly(design: DesignDocument, assembly: Assembly): void {
   design.assemblies.push(assembly);
-  design.assemblies.find(candidate => candidate.id === design.rootAssemblyId)!.children.push({ kind: 'ASSEMBLY', id: assembly.id });
+  design.assemblies
+    .find((candidate) => candidate.id === design.rootAssemblyId)!
+    .children.push({ kind: 'ASSEMBLY', id: assembly.id });
 }
 
 function panel(design: DesignDocument, name: string, x = 0): Part {
@@ -45,7 +47,7 @@ function panel(design: DesignDocument, name: string, x = 0): Part {
     name,
     materialId: design.materials[0]!.id,
     dimensions: { widthMm: 100, heightMm: 100, thicknessMm: 20 },
-    transform: { position: { x, y: 100, z: 0 }, rotation: { x: 0, y: 0, z: 0 } }
+    transform: { position: { x, y: 100, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
   });
   design.parts.push(part);
   return part;
@@ -57,7 +59,7 @@ const camera: CameraState = {
   target: { x: 0, y: 0, z: 0 },
   up: { x: 0, y: 1, z: 0 },
   fov: 45,
-  orthoScale: 5000
+  orthoScale: 5000,
 };
 
 test('partLocalAabb and partWorldAabb keep local/world coordinate spaces explicit', () => {
@@ -80,7 +82,7 @@ test('designGeometry exposes the effective viewport transform: Part X=10 + Assem
   assembly.transform.position.x = 1000;
   attachAssembly(design, assembly);
 
-  const descriptor = designGeometry(design).find(item => item.entityId === part.id)!;
+  const descriptor = designGeometry(design).find((item) => item.entityId === part.id)!;
   assert.equal(part.transform.position.x, 10);
   assert.equal(descriptor.transform.position.x, 1010);
 });
@@ -126,7 +128,7 @@ test('hardware and machining overlays have world transforms that follow Assembly
   const b = panel(design, 'B', 200);
   const assembly = createAssembly('Hardware parent', [
     { kind: 'PART', id: a.id },
-    { kind: 'PART', id: b.id }
+    { kind: 'PART', id: b.id },
   ]);
   assembly.transform.position.x = 1000;
   attachAssembly(design, assembly);
@@ -139,7 +141,7 @@ test('hardware and machining overlays have world transforms that follow Assembly
     startOffsetMm: 0,
     head: 'COUNTERSUNK',
     orientation: 'AUTO',
-    generatePilotHole: true
+    generatePilotHole: true,
   });
   const hardwareId = joint.hardwareInstanceIds[0]!;
   const machiningId = joint.machiningFeatureIds[0]!;
@@ -171,7 +173,11 @@ test('boundaryIssues reports OUTSIDE_ROOM when only the parent Assembly moves th
   assembly.transform.position.x = 2000;
   attachAssembly(design, assembly);
 
-  assert.ok(boundaryIssues(design).some(issue => issue.code === 'OUTSIDE_ROOM' && issue.entityId === part.id));
+  assert.ok(
+    boundaryIssues(design).some(
+      (issue) => issue.code === 'OUTSIDE_ROOM' && issue.entityId === part.id,
+    ),
+  );
 });
 
 test('collisionIssues detects collision between Parts in different transformed Assemblies', () => {
@@ -185,7 +191,7 @@ test('collisionIssues detects collision between Parts in different transformed A
   attachAssembly(design, assemblyA);
   attachAssembly(design, assemblyB);
 
-  assert.ok(collisionIssues(design).some(issue => issue.code === 'COLLISION'));
+  assert.ok(collisionIssues(design).some((issue) => issue.code === 'COLLISION'));
 });
 
 test('inference, face snap, distribute and focus operate in world space for nested Parts', () => {
@@ -206,7 +212,9 @@ test('inference, face snap, distribute and focus operate in world space for nest
   const settings = defaultInferenceSettings();
   settings.toleranceMm = 1;
   const candidates = infer(design, { x: 1000, y: 100, z: 0 }, settings);
-  const center = candidates.find(candidate => candidate.kind === 'CENTER' && candidate.entityId === b.id)!;
+  const center = candidates.find(
+    (candidate) => candidate.kind === 'CENTER' && candidate.entityId === b.id,
+  )!;
   assert.equal(center.point.x, 1000);
 
   distributeParts(design, [a.id, b.id, c.id], 'x');
@@ -230,7 +238,6 @@ test('intersectsAabb applies an explicit CAD tolerance and rejects invalid toler
   assert.doesNotThrow(() => intersectsAabb(a, b, 0));
 });
 
-
 test('seed-shaped ModuleSnapshot includes every current collection and can be instantiated', () => {
   const design = createEmptyDesign('Seed snapshot');
   const definition: ModuleDefinition = {
@@ -243,7 +250,7 @@ test('seed-shaped ModuleSnapshot includes every current collection and can be in
     versionIds: ['demo-module-v1'],
     currentVersionId: 'demo-module-v1',
     tags: ['DEMO'],
-    metadata: { demo: true }
+    metadata: { demo: true },
   };
   const version: ModuleVersion = {
     id: 'demo-module-v1',
@@ -254,13 +261,15 @@ test('seed-shaped ModuleSnapshot includes every current collection and can be in
     snapshot: {
       rootAssemblyId: 'demo-root',
       parts: [],
-      assemblies: [{
-        id: 'demo-root',
-        name: 'Módulo demostrativo raíz',
-        children: [],
-        transform: { position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
-        metadata: { demo: true }
-      }],
+      assemblies: [
+        {
+          id: 'demo-root',
+          name: 'Módulo demostrativo raíz',
+          children: [],
+          transform: { position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+          metadata: { demo: true },
+        },
+      ],
       constraints: [],
       bindings: [],
       joints: [],
@@ -270,12 +279,12 @@ test('seed-shaped ModuleSnapshot includes every current collection and can be in
       kinematics: [],
       materials: [],
       snapDefinitions: [],
-      parameterBindings: []
-    }
+      parameterBindings: [],
+    },
   };
   design.moduleDefinitions.push(definition);
   design.moduleVersions.push(version);
   const instance = instantiateModule(design, definition.id, { position: { x: 250, y: 0, z: 0 } });
   assert.equal(instance.definitionId, definition.id);
-  assert.ok(design.assemblies.some(assembly => assembly.id === instance.rootAssemblyId));
+  assert.ok(design.assemblies.some((assembly) => assembly.id === instance.rootAssemblyId));
 });

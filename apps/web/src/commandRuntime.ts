@@ -16,17 +16,31 @@ export function runEditorCommand(id: string, targetId?: Id): boolean {
     return false;
   }
   if (!editorCommands.canExecute(id, context)) {
-    publishEditorFeedback(commandUnavailableReason(id, context.selectedIds.length || Number(Boolean(targetId)), context.undoStack?.length, context.redoStack?.length));
+    publishEditorFeedback(
+      commandUnavailableReason(
+        id,
+        context.selectedIds.length || Number(Boolean(targetId)),
+        context.undoStack?.length,
+        context.redoStack?.length,
+      ),
+    );
     return false;
   }
   try {
     const result = editorCommands.execute(id, context);
-    if (result instanceof Promise) void result.catch(error => {
-      publishEditorFeedback(error instanceof Error ? error.message : 'La operación no pudo completarse.', 'error');
-    });
+    if (result instanceof Promise)
+      void result.catch((error) => {
+        publishEditorFeedback(
+          error instanceof Error ? error.message : 'La operación no pudo completarse.',
+          'error',
+        );
+      });
     return true;
   } catch (error) {
-    publishEditorFeedback(error instanceof Error ? error.message : 'La operación no pudo completarse.', 'error');
+    publishEditorFeedback(
+      error instanceof Error ? error.message : 'La operación no pudo completarse.',
+      'error',
+    );
     return false;
   }
 }

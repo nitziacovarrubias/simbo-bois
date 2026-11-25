@@ -5,26 +5,78 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.module-instance-row {padding-left:9px}
-.module-dot {width:8px;height:8px;border-radius:2px;background:#527d96;transform:rotate(45deg);margin:0 4px}
-.module-instance-row .badge {margin-left:auto}
+  .module-instance-row {
+    padding-left: 9px;
+  }
+  .module-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: #527d96;
+    transform: rotate(45deg);
+    margin: 0 4px;
+  }
+  .module-instance-row .badge {
+    margin-left: auto;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-.module-builder {background:#fffdfa}
-.module-builder .panel-title {font-size:15px}
-.module-builder .module-intro {background:#fff6e9;border-left:3px solid #ef9d23;padding:10px 12px;border-radius:0 8px 8px 0;font-size:11px;margin:0 0 18px;color:#74583b}
-.module-builder>.field-grid {margin:12px 0 14px;gap:12px}
-.module-builder>.secondary {width:100%;margin:8px 0}
-.module-builder>.panel-subtitle {padding-top:14px;border-top:1px solid #eae0d5}
-.module-builder>.catalog {gap:9px}
-.module-builder .catalog-item {background:#fffdf8;border-radius:11px;min-height:60px;padding:12px}
-.module-builder .instances {display:grid;gap:12px}
-.module-builder .instances .card {padding:14px;border:1px solid #e5d7c6;border-radius:12px;display:grid;gap:10px}
-.module-builder .instances .card>.row {align-items:center}
-.module-builder .instances .card>label {margin:3px 0}
-.module-builder .instances .card .badge {margin-left:auto}
-
+  .module-builder {
+    background: #fffdfa;
+  }
+  .module-builder .panel-title {
+    font-size: 15px;
+  }
+  .module-builder .module-intro {
+    background: #fff6e9;
+    border-left: 3px solid #ef9d23;
+    padding: 10px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 11px;
+    margin: 0 0 18px;
+    color: #74583b;
+  }
+  .module-builder > .field-grid {
+    margin: 12px 0 14px;
+    gap: 12px;
+  }
+  .module-builder > .secondary {
+    width: 100%;
+    margin: 8px 0;
+  }
+  .module-builder > .panel-subtitle {
+    padding-top: 14px;
+    border-top: 1px solid #eae0d5;
+  }
+  .module-builder > .catalog {
+    gap: 9px;
+  }
+  .module-builder .catalog-item {
+    background: #fffdf8;
+    border-radius: 11px;
+    min-height: 60px;
+    padding: 12px;
+  }
+  .module-builder .instances {
+    display: grid;
+    gap: 12px;
+  }
+  .module-builder .instances .card {
+    padding: 14px;
+    border: 1px solid #e5d7c6;
+    border-radius: 12px;
+    display: grid;
+    gap: 10px;
+  }
+  .module-builder .instances .card > .row {
+    align-items: center;
+  }
+  .module-builder .instances .card > label {
+    margin: 3px 0;
+  }
+  .module-builder .instances .card .badge {
+    margin-left: auto;
+  }
 }

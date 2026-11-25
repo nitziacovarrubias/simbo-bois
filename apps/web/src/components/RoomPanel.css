@@ -5,64 +5,162 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.opening-editor {border-top:1px solid #dde3e6;padding:4px 0}
-.opening-editor summary {display:flex;justify-content:space-between;gap:8px;font-size:9px;color:#4c5962;cursor:pointer;padding:5px 0}
-.opening-editor summary small {color:#8a959b}
-.opening-editor-body {display:grid;gap:6px;padding:6px;background:#f2f5f6;border-radius:5px}
-.opening-editor-body>label {display:flex;flex-direction:row;align-items:center;justify-content:space-between}
-.opening-editor-body select {width:110px}
+  .opening-editor {
+    border-top: 1px solid #dde3e6;
+    padding: 4px 0;
+  }
+  .opening-editor summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 9px;
+    color: #4c5962;
+    cursor: pointer;
+    padding: 5px 0;
+  }
+  .opening-editor summary small {
+    color: #8a959b;
+  }
+  .opening-editor-body {
+    display: grid;
+    gap: 6px;
+    padding: 6px;
+    background: #f2f5f6;
+    border-radius: 5px;
+  }
+  .opening-editor-body > label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .opening-editor-body select {
+    width: 110px;
+  }
 }
 
 @layer layout {
-.room-mini {padding:10px 12px;border-top:1px solid #d7dde1}
-.opening-row {display:flex;justify-content:space-between;gap:6px;border-top:1px solid #e3e7ea;padding:7px 0;font-size:10px}
+  .room-mini {
+    padding: 10px 12px;
+    border-top: 1px solid #d7dde1;
+  }
+  .opening-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    border-top: 1px solid #e3e7ea;
+    padding: 7px 0;
+    font-size: 10px;
+  }
 }
 
 @layer workspace {
-.room-mini {padding:10px 11px}
-.room-mini .panel-subtitle {margin-top:0}
+  .room-mini {
+    padding: 10px 11px;
+  }
+  .room-mini .panel-subtitle {
+    margin-top: 0;
+  }
 }
 
 @layer refresh {
-.room-mini label {color: #475e70; font-size: 11px;}
-.room-mini input, .room-mini select {border-color: #cbd8e0; border-radius: 7px;}
-.room-mini input:focus {border-color: #3e5c76;}
+  .room-mini label {
+    color: #475e70;
+    font-size: 11px;
+  }
+  .room-mini input,
+  .room-mini select {
+    border-color: #cbd8e0;
+    border-radius: 7px;
+  }
+  .room-mini input:focus {
+    border-color: #3e5c76;
+  }
 }
-
 
 @layer refresh {
-.room-mini {
-  border-top-color: #ded7cf;
-  background: rgba(255,255,255,.45);
-}
-.opening-editor {
-  border-top-color: #e6ded6;
-}
-.opening-editor summary {
-  font-size: 11px;
-  font-weight: 700;
-  color: #6f675f;
-}
-.opening-editor-body {
-  background: #fbf8f4;
-  border: 1px solid #ebe2d9;
-  border-radius: 12px;
-}
+  .room-mini {
+    border-top-color: #ded7cf;
+    background: rgba(255, 255, 255, 0.45);
+  }
+  .opening-editor {
+    border-top-color: #e6ded6;
+  }
+  .opening-editor summary {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6f675f;
+  }
+  .opening-editor-body {
+    background: #fbf8f4;
+    border: 1px solid #ebe2d9;
+    border-radius: 12px;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-.room-mini {padding:19px 18px 24px;background:#faf6f1;border-top:1px solid #e7dcd0}
-.room-mini .panel-subtitle {margin:0 0 13px;color:#6c4b2c;font-size:11px}
-.room-mini .field-grid {gap:12px 9px;margin-bottom:15px}
-.room-mini .field-grid label {min-width:0;color:#776453;font-size:10px}
-.room-mini input,.room-mini select {width:100%;height:36px;min-height:36px;border-color:#ddccbb;font-size:12px}
-.room-mini .row {gap:8px;margin:10px 0}
-.room-mini .row button {flex:1;white-space:nowrap;min-width:0}
-.room-mini .opening-editor {padding:8px 0;border-top:1px solid #e6dcd1}
-.room-mini .opening-editor summary {display:flex;flex-wrap:wrap;align-items:center;gap:8px;color:#504137;font-size:11px;font-weight:650}
-.room-mini .opening-editor summary small {color:#a27b4e;font-size:10px;margin-left:auto}
-.room-mini .opening-editor-body {margin-top:6px;padding:12px;background:#fff;border:1px solid #ede0cf;border-radius:10px;display:grid;gap:12px}
-
+  .room-mini {
+    padding: 19px 18px 24px;
+    background: #faf6f1;
+    border-top: 1px solid #e7dcd0;
+  }
+  .room-mini .panel-subtitle {
+    margin: 0 0 13px;
+    color: #6c4b2c;
+    font-size: 11px;
+  }
+  .room-mini .field-grid {
+    gap: 12px 9px;
+    margin-bottom: 15px;
+  }
+  .room-mini .field-grid label {
+    min-width: 0;
+    color: #776453;
+    font-size: 10px;
+  }
+  .room-mini input,
+  .room-mini select {
+    width: 100%;
+    height: 36px;
+    min-height: 36px;
+    border-color: #ddccbb;
+    font-size: 12px;
+  }
+  .room-mini .row {
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .room-mini .row button {
+    flex: 1;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .room-mini .opening-editor {
+    padding: 8px 0;
+    border-top: 1px solid #e6dcd1;
+  }
+  .room-mini .opening-editor summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: #504137;
+    font-size: 11px;
+    font-weight: 650;
+  }
+  .room-mini .opening-editor summary small {
+    color: #a27b4e;
+    font-size: 10px;
+    margin-left: auto;
+  }
+  .room-mini .opening-editor-body {
+    margin-top: 6px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #ede0cf;
+    border-radius: 10px;
+    display: grid;
+    gap: 12px;
+  }
 }

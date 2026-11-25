@@ -2,27 +2,42 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { collectManufacturingData } from '../packages/manufacturing-engine/src/index.ts';
-import { deserializeDesign, serializeDesign, validateDesignStructural } from '../packages/design-domain/src/index.ts';
+import {
+  deserializeDesign,
+  serializeDesign,
+  validateDesignStructural,
+} from '../packages/design-domain/src/index.ts';
 import { createPerformanceDesign } from './fixtures/performance.ts';
 
 function demoDesign() {
-  return deserializeDesign(readFileSync(new URL('../examples/demo-kitchen.design.json', import.meta.url), 'utf8'));
+  return deserializeDesign(
+    readFileSync(new URL('../examples/demo-kitchen.design.json', import.meta.url), 'utf8'),
+  );
 }
 
 function hasRendererObject(value: unknown): boolean {
   if (!value || typeof value !== 'object') return false;
   if (Array.isArray(value)) return value.some(hasRendererObject);
   const record = value as Record<string, unknown>;
-  const forbidden = new Set(['mesh', 'Mesh', 'object3D', 'Object3D', 'bufferGeometry', 'BufferGeometry']);
-  return Object.entries(record).some(([key, child]) => forbidden.has(key) || hasRendererObject(child));
+  const forbidden = new Set([
+    'mesh',
+    'Mesh',
+    'object3D',
+    'Object3D',
+    'bufferGeometry',
+    'BufferGeometry',
+  ]);
+  return Object.entries(record).some(
+    ([key, child]) => forbidden.has(key) || hasRendererObject(child),
+  );
 }
 
 test('Baseline 1.0: demo oficial cumple el contrato y contiene entidades de integración', () => {
   const design = demoDesign();
   assert.equal(design.schemaVersion, 2);
   assert.deepEqual(validateDesignStructural(design), []);
-  assert.ok(design.room.openings.some(opening => opening.type === 'DOOR'));
-  assert.ok(design.room.openings.some(opening => opening.type === 'WINDOW'));
+  assert.ok(design.room.openings.some((opening) => opening.type === 'DOOR'));
+  assert.ok(design.room.openings.some((opening) => opening.type === 'WINDOW'));
   assert.ok(design.materials.length >= 2);
   assert.ok(design.parts.length >= 1);
   assert.ok(design.assemblies.length >= 1);
@@ -40,9 +55,9 @@ test('Baseline 1.0: demo oficial cumple el contrato y contiene entidades de inte
   assert.ok(design.servicePoints.length >= 1);
   assert.ok(design.scenes.length >= 1);
   assert.ok(design.sectionPlanes.length >= 1);
-  assert.ok(design.functionalZones.some(zone => zone.type === 'HANGING'));
-  assert.ok(design.parts.some(part => part.semanticRole === 'TOE_KICK'));
-  assert.ok(design.parts.some(part => part.semanticRole === 'SHOE_SHELF'));
+  assert.ok(design.functionalZones.some((zone) => zone.type === 'HANGING'));
+  assert.ok(design.parts.some((part) => part.semanticRole === 'TOE_KICK'));
+  assert.ok(design.parts.some((part) => part.semanticRole === 'SHOE_SHELF'));
   assert.equal(hasRendererObject(design), false);
 });
 

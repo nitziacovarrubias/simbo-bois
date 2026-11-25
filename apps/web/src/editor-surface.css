@@ -15,7 +15,9 @@
 }
 
 /* 1. Navbar — mismo lenguaje visual que la lista de Proyectos ------------ */
-.app-shell { grid-template-rows: 68px minmax(0, 1fr) 42px; }
+.app-shell {
+  grid-template-rows: 68px minmax(0, 1fr) 42px;
+}
 
 .app-shell > .topbar {
   grid-column: 1 / -1;
@@ -29,11 +31,13 @@
   padding: 0 clamp(14px, 2vw, 30px);
   background: #281d17;
   border-bottom: 1px solid #453229;
-  box-shadow: 0 2px 7px rgba(33, 21, 15, .18);
+  box-shadow: 0 2px 7px rgba(33, 21, 15, 0.18);
   color: #fff;
   z-index: 20;
 }
-.app-shell > .topbar > * { min-width: 0; }
+.app-shell > .topbar > * {
+  min-width: 0;
+}
 
 .app-shell > .topbar .brand {
   display: flex;
@@ -61,13 +65,17 @@
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
-.app-shell > .topbar .brand-icon .brand-logo-fallback { color: #fff; }
-.app-shell > .topbar .brand-copy { min-width: 0; }
+.app-shell > .topbar .brand-icon .brand-logo-fallback {
+  color: #fff;
+}
+.app-shell > .topbar .brand-copy {
+  min-width: 0;
+}
 .app-shell > .topbar .brand strong {
   display: block;
   font-size: clamp(21px, 2.1vw, 30px);
   font-weight: 350;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
   line-height: 1;
   color: #fff;
   white-space: nowrap;
@@ -93,7 +101,7 @@
   color: #fff;
   font-size: clamp(13px, 1.25vw, 18px);
   font-weight: 500;
-  letter-spacing: .012em;
+  letter-spacing: 0.012em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -106,7 +114,7 @@
   bottom: 5px;
   height: 3px;
   background: #fff;
-  box-shadow: 0 2px 3px rgba(0,0,0,.28);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.28);
 }
 
 .app-shell > .topbar .topbar-actions {
@@ -145,7 +153,10 @@
   color: #fff2e6;
   box-shadow: none;
   cursor: pointer;
-  transition: background .15s, border-color .15s, transform .15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.15s;
 }
 .app-shell > .topbar .top-action svg {
   display: block;
@@ -159,8 +170,14 @@
   border-color: #319c76;
   color: #fff;
 }
-.app-shell > .topbar .top-save:hover { background: #22996b; border-color: #6ac9a2; }
-.app-shell > .topbar .top-action.secondary-dark:hover { background: #6a4d38; border-color: #b38a60; }
+.app-shell > .topbar .top-save:hover {
+  background: #22996b;
+  border-color: #6ac9a2;
+}
+.app-shell > .topbar .top-action.secondary-dark:hover {
+  background: #6a4d38;
+  border-color: #b38a60;
+}
 .app-shell > .topbar .top-action.top-back {
   flex: 0 0 auto;
   width: auto;
@@ -181,7 +198,9 @@
   outline: 2px solid #ffe0b6;
   outline-offset: 3px;
 }
-.app-shell > .topbar .top-action:active { transform: translateY(1px); }
+.app-shell > .topbar .top-action:active {
+  transform: translateY(1px);
+}
 .app-shell > .topbar .topbar-notice {
   position: absolute;
   right: 15px;
@@ -196,7 +215,7 @@
   font-weight: 600;
   line-height: 1.4;
   overflow-wrap: anywhere;
-  box-shadow: 0 5px 18px rgba(28, 20, 12, .18);
+  box-shadow: 0 5px 18px rgba(28, 20, 12, 0.18);
   z-index: 60;
 }
 
@@ -211,7 +230,10 @@
   background: transparent;
   color: #d6c4b2;
   box-shadow: none;
-  transition: background .15s, color .15s, border-color .15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .app-shell > .left-rail button:hover {
   background: #5d4434;
@@ -222,7 +244,7 @@
   background: var(--shell-orange);
   color: #352314;
   border-color: #ffbb62;
-  box-shadow: 0 3px 9px rgba(32,20,10,.15);
+  box-shadow: 0 3px 9px rgba(32, 20, 10, 0.15);
 }
 .app-shell .left-panel .panel-shell-heading,
 .app-shell .right-panel .panel-shell-heading {
@@ -234,7 +256,7 @@
   font-size: 11px;
   font-weight: 850;
   line-height: 1.25;
-  letter-spacing: .065em;
+  letter-spacing: 0.065em;
 }
 .app-shell .left-panel .panel-shell-heading > span,
 .app-shell .right-panel .panel-shell-heading > span {
@@ -249,18 +271,20 @@
   height: 30px;
   min-height: 30px;
   border-radius: 8px;
-  background: rgba(255,255,255,.22);
+  background: rgba(255, 255, 255, 0.22);
   border: 0;
   color: #4d321b;
 }
 .app-shell .left-panel .panel-shell-heading button:hover,
 .app-shell .right-panel .panel-shell-heading button:hover {
-  background: rgba(255,255,255,.65);
+  background: rgba(255, 255, 255, 0.65);
   color: #2e2015;
 }
 
 /* 3. Biblioteca: tarjetas legibles y compactas ------------------------- */
-.app-shell .right-panel:has(.library-panel) { background: var(--shell-paper); }
+.app-shell .right-panel:has(.library-panel) {
+  background: var(--shell-paper);
+}
 .app-shell .right-panel .library-panel {
   min-width: 0;
   width: 100%;
@@ -268,10 +292,12 @@
   background: transparent;
 }
 /* Biblioteca ya aparece en la franja superior del panel. */
-.app-shell .right-panel .library-panel > .panel-heading { display: none; }
+.app-shell .right-panel .library-panel > .panel-heading {
+  display: none;
+}
 .app-shell .right-panel .library-panel .library-tabs {
   display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
   min-width: 0;
   margin: 0 0 13px;
@@ -290,14 +316,20 @@
   color: #76583c;
   box-shadow: none;
 }
-.app-shell .right-panel .library-panel .library-tabs button svg { width: 18px; height: 18px; }
-.app-shell .right-panel .library-panel .library-tabs button:hover { background: #fff1dc; border-color: #eeb96d; }
+.app-shell .right-panel .library-panel .library-tabs button svg {
+  width: 18px;
+  height: 18px;
+}
+.app-shell .right-panel .library-panel .library-tabs button:hover {
+  background: #fff1dc;
+  border-color: #eeb96d;
+}
 .app-shell .right-panel .library-panel .library-tabs button.active,
 .app-shell .right-panel .panel .library-tabs button.active {
   background: #f49b17;
   border-color: #e08b0d;
   color: #34210f;
-  box-shadow: 0 2px 8px rgba(228,138,16,.13);
+  box-shadow: 0 2px 8px rgba(228, 138, 16, 0.13);
 }
 
 .app-shell .right-panel .library-panel > .search {
@@ -339,9 +371,11 @@
 }
 .app-shell .right-panel .library-panel > .search:focus-within {
   border-color: #e0a64b;
-  box-shadow: 0 0 0 3px rgba(240,159,49,.14);
+  box-shadow: 0 0 0 3px rgba(240, 159, 49, 0.14);
 }
-.app-shell .right-panel .library-panel > .search input::placeholder { color: #a99c90; }
+.app-shell .right-panel .library-panel > .search input::placeholder {
+  color: #a99c90;
+}
 .app-shell .right-panel .library-panel .library-category {
   width: 100%;
   height: 39px;
@@ -356,7 +390,7 @@
 .app-shell .right-panel .library-panel .library-list {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(0,1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 9px;
 }
 .app-shell .right-panel .library-panel .library-card {
@@ -371,25 +405,28 @@
   border: 1px solid #e9e1d7;
   border-radius: 11px;
   background: #fff;
-  box-shadow: 0 2px 7px rgba(44,30,19,.035);
-  transition: border-color .16s, background .16s, box-shadow .16s;
+  box-shadow: 0 2px 7px rgba(44, 30, 19, 0.035);
+  transition:
+    border-color 0.16s,
+    background 0.16s,
+    box-shadow 0.16s;
 }
 .app-shell .right-panel .library-panel .library-card:hover {
   border-color: #e2c7a1;
-  box-shadow: 0 4px 12px rgba(44,30,19,.06);
+  box-shadow: 0 4px 12px rgba(44, 30, 19, 0.06);
 }
 /* A plain module has NO swatch: reserve no fake swatch column. */
 .app-shell .right-panel .library-panel .library-card--plain {
-  grid-template-columns: minmax(0,1fr) 36px;
+  grid-template-columns: minmax(0, 1fr) 36px;
 }
 .app-shell .right-panel .library-panel .library-card--swatch {
-  grid-template-columns: 28px minmax(0,1fr) 36px;
+  grid-template-columns: 28px minmax(0, 1fr) 36px;
 }
 .app-shell .right-panel .library-panel .library-card--readonly.library-card--swatch {
-  grid-template-columns: 28px minmax(0,1fr);
+  grid-template-columns: 28px minmax(0, 1fr);
 }
 .app-shell .right-panel .library-panel .library-card--plain:not(:has(> button)) {
-  grid-template-columns: minmax(0,1fr);
+  grid-template-columns: minmax(0, 1fr);
 }
 .app-shell .right-panel .library-panel .library-card-copy {
   min-width: 0;
@@ -438,8 +475,12 @@
   border-radius: 8px;
   border: 1px solid #ddd0c0;
 }
-.app-shell .right-panel .library-panel .library-card--plain > .library-card-copy { grid-column: 1; }
-.app-shell .right-panel .library-panel .library-card--swatch > .library-card-copy { grid-column: 2; }
+.app-shell .right-panel .library-panel .library-card--plain > .library-card-copy {
+  grid-column: 1;
+}
+.app-shell .right-panel .library-panel .library-card--swatch > .library-card-copy {
+  grid-column: 2;
+}
 .app-shell .right-panel .library-panel .library-card--plain > button,
 .app-shell .right-panel .panel .library-card--plain > button {
   grid-column: 2;
@@ -466,7 +507,10 @@
   color: #a36314;
   box-shadow: none;
 }
-.app-shell .right-panel .library-panel .library-card > button svg {width:18px;height:18px;}
+.app-shell .right-panel .library-panel .library-card > button svg {
+  width: 18px;
+  height: 18px;
+}
 .app-shell .right-panel .library-panel .library-card > button:hover {
   background: #ee9b27;
   border-color: #df8918;
@@ -491,10 +535,10 @@
   gap: 12px;
   padding: 0 12px;
   overflow: hidden;
-  border-top: 1px solid rgba(176,150,122,.5);
-  background: rgba(255,252,247,.96);
+  border-top: 1px solid rgba(176, 150, 122, 0.5);
+  background: rgba(255, 252, 247, 0.96);
   color: #4b382a;
-  box-shadow: 0 -3px 12px rgba(66,43,25,.07);
+  box-shadow: 0 -3px 12px rgba(66, 43, 25, 0.07);
   backdrop-filter: blur(12px);
 }
 .app-shell > .viewbar .status-context {
@@ -513,7 +557,7 @@
   color: #5f422d;
   font-size: 11px;
   font-weight: 850;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 .app-shell > .viewbar .status-context span {
   display: block;
@@ -579,9 +623,11 @@
   text-overflow: ellipsis;
   text-align: right;
 }
-.app-shell > .viewbar .status-measurement > span.error { color: #b4362e; }
+.app-shell > .viewbar .status-measurement > span.error {
+  color: #b4362e;
+}
 .app-shell > .viewbar .status-measurement button,
-.app-shell > .viewbar .status-measurement button:nth-last-child(-n+4) {
+.app-shell > .viewbar .status-measurement button:nth-last-child(-n + 4) {
   flex: 0 0 31px;
   display: inline-flex;
   justify-content: center;
@@ -597,7 +643,11 @@
   color: #604831;
   box-shadow: none;
 }
-.app-shell > .viewbar .status-measurement button svg {width:15px;height:15px;stroke-width:1.9;}
+.app-shell > .viewbar .status-measurement button svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+}
 .app-shell > .viewbar .status-measurement button:hover {
   background: #fceacd;
   border-color: #d3a665;
@@ -611,49 +661,119 @@
 
 /* Layout responsivo sin ocultar herramientas funcionales. */
 @media (max-width: 1200px) {
-  .app-shell > .topbar .top-action.top-back span { display: none; }
+  .app-shell > .topbar .top-action.top-back span {
+    display: none;
+  }
   .app-shell > .topbar .top-action.top-back {
     flex: 0 0 38px;
     width: 38px;
     min-width: 38px;
     padding: 0;
   }
-  .app-shell > .viewbar .status-context {max-width:40%;}
-  .app-shell > .viewbar .status-signals {max-width:190px;}
+  .app-shell > .viewbar .status-context {
+    max-width: 40%;
+  }
+  .app-shell > .viewbar .status-signals {
+    max-width: 190px;
+  }
 }
 @media (max-width: 880px) {
-  .app-shell > .topbar { gap: 8px; padding-inline: 12px; }
-  .app-shell > .topbar .brand { gap: 7px; }
-  .app-shell > .topbar .brand-icon { width: 33px; height: 33px; flex-basis: 33px; }
-  .app-shell > .topbar .brand-icon img { width: 33px; height: 33px; }
-  .app-shell > .topbar .brand strong { font-size: 20px; }
-  .app-shell > .topbar .project-name > span { font-size: 13px; }
-  .app-shell > .viewbar .status-context {max-width:35%;}
-  .app-shell > .viewbar .status-signals {max-width:150px;}
+  .app-shell > .topbar {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+  .app-shell > .topbar .brand {
+    gap: 7px;
+  }
+  .app-shell > .topbar .brand-icon {
+    width: 33px;
+    height: 33px;
+    flex-basis: 33px;
+  }
+  .app-shell > .topbar .brand-icon img {
+    width: 33px;
+    height: 33px;
+  }
+  .app-shell > .topbar .brand strong {
+    font-size: 20px;
+  }
+  .app-shell > .topbar .project-name > span {
+    font-size: 13px;
+  }
+  .app-shell > .viewbar .status-context {
+    max-width: 35%;
+  }
+  .app-shell > .viewbar .status-signals {
+    max-width: 150px;
+  }
 }
 @media (max-width: 600px) {
-  .app-shell > .topbar { grid-template-columns: minmax(80px,1fr) minmax(0,1.1fr) minmax(105px,1fr); gap: 5px; padding: 0 7px; }
-  .app-shell > .topbar .brand strong { font-size: 16px; }
-  .app-shell > .topbar .brand-icon { width: 28px; height: 28px; flex-basis: 28px; }
-  .app-shell > .topbar .brand-icon img { width: 28px; height: 28px; }
-  .app-shell > .topbar .brand {gap: 4px;}
-  .app-shell > .topbar .topbar-actions {gap: 4px;}
+  .app-shell > .topbar {
+    grid-template-columns: minmax(80px, 1fr) minmax(0, 1.1fr) minmax(105px, 1fr);
+    gap: 5px;
+    padding: 0 7px;
+  }
+  .app-shell > .topbar .brand strong {
+    font-size: 16px;
+  }
+  .app-shell > .topbar .brand-icon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+  .app-shell > .topbar .brand-icon img {
+    width: 28px;
+    height: 28px;
+  }
+  .app-shell > .topbar .brand {
+    gap: 4px;
+  }
+  .app-shell > .topbar .topbar-actions {
+    gap: 4px;
+  }
   .app-shell > .topbar .top-action,
   .app-shell > .topbar .top-action.secondary-dark,
-  .app-shell > .topbar .top-action.top-back { width: 32px; min-width: 32px; flex-basis: 32px; height: 33px; min-height: 33px; }
-  .app-shell > .topbar .top-action svg { width: 16px; height: 16px; }
-  .app-shell > .topbar .project-name > span {font-size:11px;}
-  .app-shell > .viewbar {gap:6px;padding:0 6px;}
-  .app-shell > .viewbar .status-context {max-width:none;flex:1 1 72px;}
-  .app-shell > .viewbar .status-context span {display:none;}
-  .app-shell > .viewbar .status-signals {display:none;}
-  .app-shell > .viewbar .status-measurement {max-width:calc(100% - 80px);}
-  .app-shell > .viewbar .status-measurement > span {min-width:31px;}
+  .app-shell > .topbar .top-action.top-back {
+    width: 32px;
+    min-width: 32px;
+    flex-basis: 32px;
+    height: 33px;
+    min-height: 33px;
+  }
+  .app-shell > .topbar .top-action svg {
+    width: 16px;
+    height: 16px;
+  }
+  .app-shell > .topbar .project-name > span {
+    font-size: 11px;
+  }
+  .app-shell > .viewbar {
+    gap: 6px;
+    padding: 0 6px;
+  }
+  .app-shell > .viewbar .status-context {
+    max-width: none;
+    flex: 1 1 72px;
+  }
+  .app-shell > .viewbar .status-context span {
+    display: none;
+  }
+  .app-shell > .viewbar .status-signals {
+    display: none;
+  }
+  .app-shell > .viewbar .status-measurement {
+    max-width: calc(100% - 80px);
+  }
+  .app-shell > .viewbar .status-measurement > span {
+    min-width: 31px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .app-shell > .topbar button,
   .app-shell .library-card,
-  .app-shell .left-rail button { transition: none; }
+  .app-shell .left-rail button {
+    transition: none;
+  }
 }
 
 .app-shell > .topbar .top-action.top-proposal {
@@ -674,7 +794,7 @@
   border-radius: 10px;
   background: #fffdfa;
   color: #382d24;
-  box-shadow: 0 10px 32px rgba(32, 24, 17, .24);
+  box-shadow: 0 10px 32px rgba(32, 24, 17, 0.24);
 }
 .proposal-panel-heading,
 .proposal-panel-actions {
@@ -683,7 +803,9 @@
   justify-content: space-between;
   gap: 10px;
 }
-.proposal-panel-heading { margin-bottom: 12px; }
+.proposal-panel-heading {
+  margin-bottom: 12px;
+}
 .proposal-panel-heading h2 {
   margin: 0;
   font-size: 16px;
@@ -695,7 +817,10 @@
   font-size: 22px;
   line-height: 1;
 }
-.proposal-panel form { display: grid; gap: 8px; }
+.proposal-panel form {
+  display: grid;
+  gap: 8px;
+}
 .proposal-panel label {
   color: #56483c;
   font-size: 12px;
@@ -710,7 +835,10 @@
   color: #382d24;
   font: inherit;
 }
-.proposal-panel-actions { justify-content: flex-end; margin-top: 4px; }
+.proposal-panel-actions {
+  justify-content: flex-end;
+  margin-top: 4px;
+}
 .proposal-panel-actions button {
   border: 1px solid #a46a24;
   border-radius: 6px;
@@ -724,7 +852,10 @@
   background: #fff;
   color: #57483b;
 }
-.proposal-panel-actions button:disabled { cursor: wait; opacity: .65; }
+.proposal-panel-actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
 .proposal-error {
   margin: 0 0 10px;
   color: #a52922;
@@ -738,5 +869,10 @@
   background: #e9f6ec;
   color: #205d37;
 }
-.proposal-confirmation p { margin: 6px 0; overflow-wrap: anywhere; }
-.proposal-confirmation small { color: #477453; }
+.proposal-confirmation p {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.proposal-confirmation small {
+  color: #477453;
+}

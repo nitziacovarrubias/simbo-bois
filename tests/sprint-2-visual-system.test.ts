@@ -8,12 +8,21 @@ import {
   gridStepForDistance,
   normalizeWorkspacePreferences,
   parseCadNumericInput,
-  selectionVisualState
+  selectionVisualState,
 } from '../apps/web/src/cadVisualSystem.ts';
 import { cameraPreset, focusCamera } from '../packages/editor-engine/src/index.ts';
 
 test('DisplayModeConfig defines a complete professional visual policy for all modes', () => {
-  const expected = ['SHADED','TECHNICAL','PRESENTATION','XRAY','HIDDEN_LINE','WIREFRAME','MONOCHROME','MANUFACTURING'];
+  const expected = [
+    'SHADED',
+    'TECHNICAL',
+    'PRESENTATION',
+    'XRAY',
+    'HIDDEN_LINE',
+    'WIREFRAME',
+    'MONOCHROME',
+    'MANUFACTURING',
+  ];
   assert.deepEqual(Object.keys(DISPLAY_MODE_CONFIG).sort(), expected.sort());
   assert.equal(DISPLAY_MODE_CONFIG.PRESENTATION.grid, 'HIDDEN');
   assert.equal(DISPLAY_MODE_CONFIG.PRESENTATION.contactShadows, true);
@@ -30,12 +39,20 @@ test('QualityPreset scales rendering cost without changing domain data', () => {
 });
 
 test('workspace panel preferences are clamped and default to BALANCED', () => {
-  const normalized = normalizeWorkspacePreferences({ leftPanelWidth: 999, rightPanelWidth: 12, qualityPreset: 'QUALITY', wallsMode: 'HIDDEN' });
+  const normalized = normalizeWorkspacePreferences({
+    leftPanelWidth: 999,
+    rightPanelWidth: 12,
+    qualityPreset: 'QUALITY',
+    wallsMode: 'HIDDEN',
+  });
   assert.equal(normalized.leftPanelWidth, 420);
   assert.equal(normalized.rightPanelWidth, 260);
   assert.equal(normalized.qualityPreset, 'QUALITY');
   assert.equal(normalized.wallsMode, 'HIDDEN');
-  assert.equal(normalizeWorkspacePreferences(null).qualityPreset, DEFAULT_WORKSPACE_PREFERENCES.qualityPreset);
+  assert.equal(
+    normalizeWorkspacePreferences(null).qualityPreset,
+    DEFAULT_WORKSPACE_PREFERENCES.qualityPreset,
+  );
 });
 
 test('adaptive CAD grid selects hierarchical millimeter spacing from camera distance', () => {
@@ -69,7 +86,10 @@ test('professional camera composition uses a moderate isometric FOV and safe foc
   assert.equal(camera.projection, 'PERSPECTIVE');
   assert.ok(camera.fov >= 34 && camera.fov <= 42);
   assert.ok(camera.position.y > 2500);
-  const focused = focusCamera(camera, { min: { x: -350, y: 0, z: -9 }, max: { x: 350, y: 500, z: 9 } });
+  const focused = focusCamera(camera, {
+    min: { x: -350, y: 0, z: -9 },
+    max: { x: 350, y: 500, z: 9 },
+  });
   assert.equal(focused.target.y, 250);
   const dx = focused.position.x - focused.target.x;
   const dy = focused.position.y - focused.target.y;

@@ -16,7 +16,9 @@ if (!root) throw new Error('No se encontró el contenedor principal de SIMBO');
 ReactDOM.createRoot(root).render(
   <React.StrictMode>
     <AppErrorBoundary>
-      <QueryClientProvider client={client}><ProjectWorkspace /></QueryClientProvider>
+      <QueryClientProvider client={client}>
+        <ProjectWorkspace />
+      </QueryClientProvider>
     </AppErrorBoundary>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

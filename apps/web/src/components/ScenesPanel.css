@@ -5,117 +5,324 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.compact-tabs {display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:9px}
-.compact-tabs button {background:#eef1f3;color:#53616a;border-color:#d1d8dc;padding:5px 3px;font-size:8px;letter-spacing:.05em}
-.compact-tabs button.active {background:#303d46;color:#fff;border-color:#303d46}
-.scene-create-row input {flex:1}
-.scene-transition-toggle {margin:8px 0}
-.scene-activate {width:100%;display:flex!important;flex-direction:column;align-items:flex-start!important;gap:2px!important;text-align:left}
-.scene-actions {flex-wrap:wrap;margin-top:5px}
-.primary-wide {width:100%;margin-top:8px}
-.empty-state-card.compact {padding:10px;margin:8px 0}
-.compact-help {margin:5px 0 9px}
-.section-card.active {border-color:#d4942f;background:#fff9ef}
-.section-select {background:transparent;border:0;color:#34424b;padding:2px;text-align:left}
-.section-editor {margin-top:10px}
-.visibility-list {display:grid;gap:2px;margin-bottom:10px}
-.visibility-row {display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:6px;padding:6px;border-bottom:1px solid #e3e7e9}
-.visibility-row code {font-size:7px;color:#8a959b}
+  .compact-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    margin-bottom: 9px;
+  }
+  .compact-tabs button {
+    background: #eef1f3;
+    color: #53616a;
+    border-color: #d1d8dc;
+    padding: 5px 3px;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+  }
+  .compact-tabs button.active {
+    background: #303d46;
+    color: #fff;
+    border-color: #303d46;
+  }
+  .scene-create-row input {
+    flex: 1;
+  }
+  .scene-transition-toggle {
+    margin: 8px 0;
+  }
+  .scene-activate {
+    width: 100%;
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 2px !important;
+    text-align: left;
+  }
+  .scene-actions {
+    flex-wrap: wrap;
+    margin-top: 5px;
+  }
+  .primary-wide {
+    width: 100%;
+    margin-top: 8px;
+  }
+  .empty-state-card.compact {
+    padding: 10px;
+    margin: 8px 0;
+  }
+  .compact-help {
+    margin: 5px 0 9px;
+  }
+  .section-card.active {
+    border-color: #d4942f;
+    background: #fff9ef;
+  }
+  .section-select {
+    background: transparent;
+    border: 0;
+    color: #34424b;
+    padding: 2px;
+    text-align: left;
+  }
+  .section-editor {
+    margin-top: 10px;
+  }
+  .visibility-list {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 10px;
+  }
+  .visibility-row {
+    display: grid;
+    grid-template-columns: 18px 1fr auto;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-bottom: 1px solid #e3e7e9;
+  }
+  .visibility-row code {
+    font-size: 7px;
+    color: #8a959b;
+  }
 }
 
 @layer layout {
-.scene-list {display:grid;gap:6px}
-.scene-card {border:1px solid #d4dce1;border-radius:6px;padding:6px;background:#fff}
-.scene-card>button:first-child {width:100%;display:flex;justify-content:space-between;background:#eff2f4;color:#34434d;border:0}
-.scene-card small {color:#7b8991}
+  .scene-list {
+    display: grid;
+    gap: 6px;
+  }
+  .scene-card {
+    border: 1px solid #d4dce1;
+    border-radius: 6px;
+    padding: 6px;
+    background: #fff;
+  }
+  .scene-card > button:first-child {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    background: #eff2f4;
+    color: #34434d;
+    border: 0;
+  }
+  .scene-card small {
+    color: #7b8991;
+  }
 }
 
 @layer refresh {
-.scene-card.active {border-color:#d4942f;box-shadow:inset 3px 0 #d4942f}
-.scene-card {background: #fff; border-color: #d8e1e7; border-radius: 10px;}
+  .scene-card.active {
+    border-color: #d4942f;
+    box-shadow: inset 3px 0 #d4942f;
+  }
+  .scene-card {
+    background: #fff;
+    border-color: #d8e1e7;
+    border-radius: 10px;
+  }
 }
-
 
 @layer refresh {
-.compact-tabs {
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.compact-tabs button {
-  min-height: 38px;
-  background: #fff;
-  color: #7d7165;
-  border-color: #ddd5cd;
-  font-size: 10px;
-  font-weight: 800;
-}
-.compact-tabs button.active {
-  background: linear-gradient(180deg, #f6ae35 0%, #ef9917 100%);
-  border-color: #e09218;
-  color: #fff;
-}
-.scene-card {
-  border-radius: 14px;
-  border-color: #e1d9d1;
-  box-shadow: 0 6px 18px rgba(53,33,15,.06);
-}
-.scene-card > .scene-activate {
-  background: #f8f4ee;
-  border-radius: 10px;
-}
-.scene-card.active {
-  border-color: #efbf76;
-  box-shadow: inset 4px 0 0 #f39a16, 0 10px 24px rgba(243,154,22,.10);
-}
-.visibility-row {
-  border-bottom-color: #e7e0d8;
-  border-radius: 10px;
-}
-.visibility-row:hover {
-  background: #faf6f1;
-}
-.primary-wide {
-  min-height: 42px;
-}
+  .compact-tabs {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .compact-tabs button {
+    min-height: 38px;
+    background: #fff;
+    color: #7d7165;
+    border-color: #ddd5cd;
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .compact-tabs button.active {
+    background: linear-gradient(180deg, #f6ae35 0%, #ef9917 100%);
+    border-color: #e09218;
+    color: #fff;
+  }
+  .scene-card {
+    border-radius: 14px;
+    border-color: #e1d9d1;
+    box-shadow: 0 6px 18px rgba(53, 33, 15, 0.06);
+  }
+  .scene-card > .scene-activate {
+    background: #f8f4ee;
+    border-radius: 10px;
+  }
+  .scene-card.active {
+    border-color: #efbf76;
+    box-shadow:
+      inset 4px 0 0 #f39a16,
+      0 10px 24px rgba(243, 154, 22, 0.1);
+  }
+  .visibility-row {
+    border-bottom-color: #e7e0d8;
+    border-radius: 10px;
+  }
+  .visibility-row:hover {
+    background: #faf6f1;
+  }
+  .primary-wide {
+    min-height: 42px;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-.scenes-workspace-panel {background:#fffdfa}
-.scenes-workspace-panel .panel-title {font-size:15px}
-.scenes-workspace-panel .compact-tabs {grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 0 18px}
-.scenes-workspace-panel .compact-tabs button {min-height:36px;padding:6px 4px;background:#faf6f0;color:#73583d;border-color:#e8ddcf;font-size:10px;letter-spacing:0}
-.scenes-workspace-panel .compact-tabs button.active {background:var(--ui-orange);border-color:#d9870c;color:#291b0b}
-.scenes-workspace-panel .scene-create-row {gap:7px;margin:6px 0 15px;flex-wrap:nowrap}
-.scenes-workspace-panel .scene-create-row input {min-width:0;flex:1}
-.scenes-workspace-panel .scene-create-row button {flex:0 0 auto}
-.scenes-workspace-panel .scene-transition-toggle {margin:0 0 15px}
-.scenes-workspace-panel .scene-list {display:grid;gap:11px}
-.scenes-workspace-panel .scene-card {padding:12px;display:grid;gap:9px;border:1px solid #e5d9c9;border-radius:12px;background:#fff}
-.scenes-workspace-panel .scene-card.active {border-color:#eeb960;box-shadow:inset 3px 0 #efa22a}
-.scenes-workspace-panel .scene-card>.scene-activate,.scenes-workspace-panel .scene-card>.scene-activate:hover {
-  display:flex!important;flex-direction:column;align-items:flex-start!important;gap:3px!important;
-  background:#faf5ed;color:#554030;border:0;padding:11px;border-radius:8px;white-space:normal;min-height:0;
-}
-.scenes-workspace-panel .scene-card .scene-activate small {color:#827262;white-space:normal;font-size:10px;line-height:1.4}
-.scenes-workspace-panel .scene-actions {display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-.scenes-workspace-panel .scene-actions .icon-text {font-size:10px;padding:5px 7px;border-radius:7px;min-height:28px}
-.scenes-workspace-panel .scene-actions .icon-text:hover {background:#fff0d5}
-.scenes-workspace-panel .primary-wide {margin-top:16px;min-height:41px}
-.scenes-workspace-panel .section-card {padding:13px;border-radius:11px}
-.scenes-workspace-panel .visibility-list {display:grid;gap:5px}
-.scenes-workspace-panel .visibility-row {display:flex;align-items:center;gap:10px;min-height:38px;padding:8px;border:1px solid #f0e6da;border-radius:8px;background:#fff}
-.scenes-workspace-panel .visibility-row:hover {background:#fff6e9}
-
+  .scenes-workspace-panel {
+    background: #fffdfa;
+  }
+  .scenes-workspace-panel .panel-title {
+    font-size: 15px;
+  }
+  .scenes-workspace-panel .compact-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    margin: 0 0 18px;
+  }
+  .scenes-workspace-panel .compact-tabs button {
+    min-height: 36px;
+    padding: 6px 4px;
+    background: #faf6f0;
+    color: #73583d;
+    border-color: #e8ddcf;
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+  .scenes-workspace-panel .compact-tabs button.active {
+    background: var(--ui-orange);
+    border-color: #d9870c;
+    color: #291b0b;
+  }
+  .scenes-workspace-panel .scene-create-row {
+    gap: 7px;
+    margin: 6px 0 15px;
+    flex-wrap: nowrap;
+  }
+  .scenes-workspace-panel .scene-create-row input {
+    min-width: 0;
+    flex: 1;
+  }
+  .scenes-workspace-panel .scene-create-row button {
+    flex: 0 0 auto;
+  }
+  .scenes-workspace-panel .scene-transition-toggle {
+    margin: 0 0 15px;
+  }
+  .scenes-workspace-panel .scene-list {
+    display: grid;
+    gap: 11px;
+  }
+  .scenes-workspace-panel .scene-card {
+    padding: 12px;
+    display: grid;
+    gap: 9px;
+    border: 1px solid #e5d9c9;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .scenes-workspace-panel .scene-card.active {
+    border-color: #eeb960;
+    box-shadow: inset 3px 0 #efa22a;
+  }
+  .scenes-workspace-panel .scene-card > .scene-activate,
+  .scenes-workspace-panel .scene-card > .scene-activate:hover {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 3px !important;
+    background: #faf5ed;
+    color: #554030;
+    border: 0;
+    padding: 11px;
+    border-radius: 8px;
+    white-space: normal;
+    min-height: 0;
+  }
+  .scenes-workspace-panel .scene-card .scene-activate small {
+    color: #827262;
+    white-space: normal;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+  .scenes-workspace-panel .scene-actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .scenes-workspace-panel .scene-actions .icon-text {
+    font-size: 10px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    min-height: 28px;
+  }
+  .scenes-workspace-panel .scene-actions .icon-text:hover {
+    background: #fff0d5;
+  }
+  .scenes-workspace-panel .primary-wide {
+    margin-top: 16px;
+    min-height: 41px;
+  }
+  .scenes-workspace-panel .section-card {
+    padding: 13px;
+    border-radius: 11px;
+  }
+  .scenes-workspace-panel .visibility-list {
+    display: grid;
+    gap: 5px;
+  }
+  .scenes-workspace-panel .visibility-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 38px;
+    padding: 8px;
+    border: 1px solid #f0e6da;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .scenes-workspace-panel .visibility-row:hover {
+    background: #fff6e9;
+  }
 }
 
 @layer pro {
-.scenes-workspace-panel .scene-actions {gap:6px;margin-top:2px;flex-wrap:nowrap}
-.scenes-workspace-panel .scene-actions .icon-text {display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:30px;padding:5px 7px;flex:0 0 auto}
-.scenes-workspace-panel .scene-actions .icon-text:first-child {margin-right:auto}
-.scenes-workspace-panel .scene-actions .icon-text svg {width:14px;height:14px}
-.scenes-workspace-panel .scene-actions .scene-icon-action {width:30px;padding:5px}
-.scenes-workspace-panel .scene-actions .danger:hover {background:#ffebe8;color:#aa3732}
-@media(max-width:1150px){.scenes-workspace-panel .scene-actions{flex-wrap:wrap}.scenes-workspace-panel .scene-actions .icon-text:first-child{margin-right:0}}
+  .scenes-workspace-panel .scene-actions {
+    gap: 6px;
+    margin-top: 2px;
+    flex-wrap: nowrap;
+  }
+  .scenes-workspace-panel .scene-actions .icon-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 5px 7px;
+    flex: 0 0 auto;
+  }
+  .scenes-workspace-panel .scene-actions .icon-text:first-child {
+    margin-right: auto;
+  }
+  .scenes-workspace-panel .scene-actions .icon-text svg {
+    width: 14px;
+    height: 14px;
+  }
+  .scenes-workspace-panel .scene-actions .scene-icon-action {
+    width: 30px;
+    padding: 5px;
+  }
+  .scenes-workspace-panel .scene-actions .danger:hover {
+    background: #ffebe8;
+    color: #aa3732;
+  }
+  @media (max-width: 1150px) {
+    .scenes-workspace-panel .scene-actions {
+      flex-wrap: wrap;
+    }
+    .scenes-workspace-panel .scene-actions .icon-text:first-child {
+      margin-right: 0;
+    }
+  }
 }

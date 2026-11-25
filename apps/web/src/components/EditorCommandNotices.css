@@ -1,9 +1,63 @@
-.editor-command-notice {position:fixed;z-index:310;left:50%;bottom:65px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;max-width:min(490px,calc(100vw - 36px));padding:11px 12px 11px 14px;border-radius:11px;border:1px solid #d8c5a7;background:#fffcf4;color:#503923;box-shadow:0 10px 34px #2b1e172c;font:500 12px/1.45 system-ui,sans-serif;}
-.editor-command-notice>svg {width:18px;height:18px;flex-shrink:0;color:#ae771e;}
-.editor-command-notice span {min-width:0;overflow-wrap:anywhere;}
-.editor-command-notice button {display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;margin-left:5px;background:transparent;border:0;border-radius:7px;color:inherit;cursor:pointer;}
-.editor-command-notice button:hover {background:#f4eadc;}
-.editor-command-notice button svg {width:15px;height:15px;}
-.editor-command-notice--error {border-color:#deb9ad;background:#fff5f0;color:#893c2f;}
-.editor-command-notice--error>svg {color:#bf5e47;}
-@media(max-width:700px){.editor-command-notice{bottom:60px;}}
+.editor-command-notice {
+  position: fixed;
+  z-index: 310;
+  left: 50%;
+  bottom: 65px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(490px, calc(100vw - 36px));
+  padding: 11px 12px 11px 14px;
+  border-radius: 11px;
+  border: 1px solid #d8c5a7;
+  background: #fffcf4;
+  color: #503923;
+  box-shadow: 0 10px 34px #2b1e172c;
+  font:
+    500 12px/1.45 system-ui,
+    sans-serif;
+}
+.editor-command-notice > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #ae771e;
+}
+.editor-command-notice span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.editor-command-notice button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin-left: 5px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  color: inherit;
+  cursor: pointer;
+}
+.editor-command-notice button:hover {
+  background: #f4eadc;
+}
+.editor-command-notice button svg {
+  width: 15px;
+  height: 15px;
+}
+.editor-command-notice--error {
+  border-color: #deb9ad;
+  background: #fff5f0;
+  color: #893c2f;
+}
+.editor-command-notice--error > svg {
+  color: #bf5e47;
+}
+@media (max-width: 700px) {
+  .editor-command-notice {
+    bottom: 60px;
+  }
+}

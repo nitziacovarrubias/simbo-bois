@@ -6,7 +6,7 @@ import {
   validateDesignStructural,
   type DesignDocument,
   type Id,
-  type ValidationIssue
+  type ValidationIssue,
 } from '@simbo/design-domain';
 import { DesignDocumentSchema } from '@simbo/shared-contracts';
 import type { DesignResponse } from './apiClient';
@@ -18,7 +18,7 @@ export interface EditorFacadeApi {
   getDesign(): DesignDocument;
   loadDesign(input: string | DesignDocument): void;
   loadDemo(): void;
-  loadProject(projectId:string,userId:string,response:DesignResponse):void;
+  loadProject(projectId: string, userId: string, response: DesignResponse): void;
   getSelection(): Id[];
   selectEntity(id: Id): void;
   focusEntity(id: Id): void;
@@ -31,14 +31,18 @@ export interface EditorFacadeApi {
 
 let previousDesign = useEditor.getState().design;
 let previousSelection = useEditor.getState().selectedIds;
-useEditor.subscribe(state => {
+useEditor.subscribe((state) => {
   if (state.design !== previousDesign) {
     previousDesign = state.design;
     editorEvents.emit(changedEvent(state.design));
   }
   if (state.selectedIds !== previousSelection) {
     previousSelection = state.selectedIds;
-    editorEvents.emit({ type: 'selection.changed', designId: state.design.id, selection: [...state.selectedIds] });
+    editorEvents.emit({
+      type: 'selection.changed',
+      designId: state.design.id,
+      selection: [...state.selectedIds],
+    });
   }
 });
 
@@ -48,16 +52,21 @@ function resetForLoadedDesign(design: DesignDocument, source: 'local' | 'demo' |
     projectId: undefined,
     remoteProject: undefined,
     saveError: undefined,
-    workspaceHiddenIds: [], hiddenHistory: [], editContextId: undefined, editContextPath: [], guides: [], kinematicValues: {},
+    workspaceHiddenIds: [],
+    hiddenHistory: [],
+    editContextId: undefined,
+    editContextPath: [],
+    guides: [],
+    kinematicValues: {},
     selectedIds: [],
     isolatedIds: null,
-    activeSectionId: design.sectionPlanes.find(section => section.enabled)?.id,
+    activeSectionId: design.sectionPlanes.find((section) => section.enabled)?.id,
     activeSceneId: design.activeSceneId,
     selectedSectionId: undefined,
     sectionDraft: undefined,
     undoStack: [],
     redoStack: [],
-    saveStatus: source === 'local' ? 'GUARDADO' : 'PENDIENTE'
+    saveStatus: source === 'local' ? 'GUARDADO' : 'PENDIENTE',
   });
   useEditor.getState().setTool('SELECT');
   useEditor.getState().fitAll();
@@ -66,18 +75,35 @@ function resetForLoadedDesign(design: DesignDocument, source: 'local' | 'demo' |
 
 export const editorFacade: EditorFacadeApi = {
   getDesign: () => cloneDesign(useEditor.getState().design),
-  loadDesign: input => resetForLoadedDesign(typeof input === 'string' ? deserializeDesign(input) : migrateDesign(input), 'external'),
-  loadProject: (projectId,userId,response) => {
-    const design=migrateDesign(DesignDocumentSchema.parse(response.design));
-    if(design.metadata.projectId!==projectId)throw new Error('El documento recibido pertenece a otro proyecto');
-    resetForLoadedDesign(design,'local');
-    useEditor.setState({projectId,remoteProject:{projectId,userId,connectionId:crypto.randomUUID(),revision:response.revision,savedDesign:serializeDesign(design),persisted:response.persisted,approvedVersionId:response.approvedVersionId},saveStatus:'GUARDADO'});
-    editorEvents.emit({type:'design.loaded',designId:design.id,source:'api'});
+  loadDesign: (input) =>
+    resetForLoadedDesign(
+      typeof input === 'string' ? deserializeDesign(input) : migrateDesign(input),
+      'external',
+    ),
+  loadProject: (projectId, userId, response) => {
+    const design = migrateDesign(DesignDocumentSchema.parse(response.design));
+    if (design.metadata.projectId !== projectId)
+      throw new Error('El documento recibido pertenece a otro proyecto');
+    resetForLoadedDesign(design, 'local');
+    useEditor.setState({
+      projectId,
+      remoteProject: {
+        projectId,
+        userId,
+        connectionId: crypto.randomUUID(),
+        revision: response.revision,
+        savedDesign: serializeDesign(design),
+        persisted: response.persisted,
+        approvedVersionId: response.approvedVersionId,
+      },
+      saveStatus: 'GUARDADO',
+    });
+    editorEvents.emit({ type: 'design.loaded', designId: design.id, source: 'api' });
   },
   loadDemo: () => resetForLoadedDesign(createDemoDesign(), 'demo'),
   getSelection: () => [...useEditor.getState().selectedIds],
-  selectEntity: id => useEditor.getState().select(id),
-  focusEntity: id => {
+  selectEntity: (id) => useEditor.getState().select(id),
+  focusEntity: (id) => {
     const state = useEditor.getState();
     state.select(id);
     queueMicrotask(() => useEditor.getState().focusSelected());
@@ -86,5 +112,5 @@ export const editorFacade: EditorFacadeApi = {
   redo: () => useEditor.getState().redo(),
   saveLocal: () => useEditor.getState().saveLocal(),
   validate: () => validateDesignStructural(useEditor.getState().design),
-  events: editorEvents
+  events: editorEvents,
 };

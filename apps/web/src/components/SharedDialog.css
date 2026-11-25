@@ -1,27 +1,193 @@
 /* Modales compartidos de SIMBO: independientes de las capas del editor. */
-.simbo-dialog-overlay {position:fixed;inset:0;z-index:3000;display:grid;place-items:center;padding:18px;background:rgba(31,22,17,.68);backdrop-filter:blur(5px)}
-.simbo-dialog {box-sizing:border-box;width:min(100%,520px);max-height:min(88dvh,830px);display:flex;flex-direction:column;overflow:hidden;background:#fcfaf7;color:#332820;border:1px solid #d9c9b6;border-radius:18px;box-shadow:0 32px 95px #1c120e5c;font:inherit}
-.simbo-dialog--wide{width:min(100%,710px)}
-.simbo-dialog-heading{display:flex;align-items:center;gap:13px;padding:22px 24px 19px;border-bottom:1px solid #e9dfd4}
-.simbo-dialog-icon{flex:0 0 auto;display:grid;place-items:center;width:43px;height:43px;border:1px solid #e9d1a7;border-radius:12px;background:#f8eddc;color:#8b5a22}
-.simbo-dialog-icon svg{width:21px;height:21px}
-.simbo-dialog-heading-text{min-width:0;flex:1}
-.simbo-dialog-heading h2{margin:0;font-size:20px;line-height:1.25;letter-spacing:-.025em;color:#332820;font-weight:760}
-.simbo-dialog-heading p{margin:4px 0 0;font-size:12px;line-height:1.45;color:#74675d}
-.simbo-dialog-close{align-self:flex-start;flex:0 0 auto;display:grid;place-items:center;width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:9px;color:#76675c;background:transparent;cursor:pointer}
-.simbo-dialog-close:hover:not(:disabled){background:#f0e7dc;color:#37291c}
-.simbo-dialog-body{padding:23px 24px;overflow-y:auto;min-height:0;overscroll-behavior:contain}
-.simbo-dialog-footer{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:9px;padding:15px 24px;border-top:1px solid #e9dfd4;background:#f8f4ef}
-.simbo-dialog button:focus-visible,.simbo-dialog input:focus-visible,.simbo-dialog select:focus-visible,.simbo-dialog textarea:focus-visible{outline:3px solid #ad8654;outline-offset:2px}
-.simbo-dialog-button{display:inline-flex;justify-content:center;align-items:center;gap:8px;padding:10px 16px;min-height:42px;border:1px solid #d7c9b8;border-radius:9px;background:#fff;color:#4c3c30;font-size:13px;font-weight:700;cursor:pointer}
-.simbo-dialog-button svg{width:17px;height:17px}
-.simbo-dialog-button:hover:not(:disabled){background:#f2ebe2}
-.simbo-dialog-button--primary{border-color:#446c50;background:#446c50;color:#fff}
-.simbo-dialog-button--primary:hover:not(:disabled){background:#33543e}
-.simbo-dialog-button--danger{border-color:#975331;background:#975331;color:#fff}
-.simbo-dialog-button--danger:hover:not(:disabled){background:#804428}
-.simbo-dialog button:disabled{opacity:.6;cursor:not-allowed}
-.simbo-dialog-error{margin:0 0 14px;padding:11px 13px;border-radius:8px;border:1px solid #e8b6ab;background:#fff2ee;color:#8c332b;font-size:12px;line-height:1.5}
-.simbo-dialog-note{margin:0;color:#76675d;font-size:13px;line-height:1.55}
-@media(max-width:600px){.simbo-dialog-overlay{padding:9px;align-items:end}.simbo-dialog{max-height:94dvh;border-radius:16px 16px 10px 10px}.simbo-dialog-heading,.simbo-dialog-body{padding:18px}.simbo-dialog-footer{padding:14px 18px}.simbo-dialog-heading h2{font-size:18px}}
-@media(prefers-reduced-motion:reduce){.simbo-dialog-overlay{backdrop-filter:none}}
+.simbo-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(31, 22, 17, 0.68);
+  backdrop-filter: blur(5px);
+}
+.simbo-dialog {
+  box-sizing: border-box;
+  width: min(100%, 520px);
+  max-height: min(88dvh, 830px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fcfaf7;
+  color: #332820;
+  border: 1px solid #d9c9b6;
+  border-radius: 18px;
+  box-shadow: 0 32px 95px #1c120e5c;
+  font: inherit;
+}
+.simbo-dialog--wide {
+  width: min(100%, 710px);
+}
+.simbo-dialog-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 22px 24px 19px;
+  border-bottom: 1px solid #e9dfd4;
+}
+.simbo-dialog-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border: 1px solid #e9d1a7;
+  border-radius: 12px;
+  background: #f8eddc;
+  color: #8b5a22;
+}
+.simbo-dialog-icon svg {
+  width: 21px;
+  height: 21px;
+}
+.simbo-dialog-heading-text {
+  min-width: 0;
+  flex: 1;
+}
+.simbo-dialog-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: #332820;
+  font-weight: 760;
+}
+.simbo-dialog-heading p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #74675d;
+}
+.simbo-dialog-close {
+  align-self: flex-start;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: #76675c;
+  background: transparent;
+  cursor: pointer;
+}
+.simbo-dialog-close:hover:not(:disabled) {
+  background: #f0e7dc;
+  color: #37291c;
+}
+.simbo-dialog-body {
+  padding: 23px 24px;
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.simbo-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 15px 24px;
+  border-top: 1px solid #e9dfd4;
+  background: #f8f4ef;
+}
+.simbo-dialog button:focus-visible,
+.simbo-dialog input:focus-visible,
+.simbo-dialog select:focus-visible,
+.simbo-dialog textarea:focus-visible {
+  outline: 3px solid #ad8654;
+  outline-offset: 2px;
+}
+.simbo-dialog-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 42px;
+  border: 1px solid #d7c9b8;
+  border-radius: 9px;
+  background: #fff;
+  color: #4c3c30;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.simbo-dialog-button svg {
+  width: 17px;
+  height: 17px;
+}
+.simbo-dialog-button:hover:not(:disabled) {
+  background: #f2ebe2;
+}
+.simbo-dialog-button--primary {
+  border-color: #446c50;
+  background: #446c50;
+  color: #fff;
+}
+.simbo-dialog-button--primary:hover:not(:disabled) {
+  background: #33543e;
+}
+.simbo-dialog-button--danger {
+  border-color: #975331;
+  background: #975331;
+  color: #fff;
+}
+.simbo-dialog-button--danger:hover:not(:disabled) {
+  background: #804428;
+}
+.simbo-dialog button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.simbo-dialog-error {
+  margin: 0 0 14px;
+  padding: 11px 13px;
+  border-radius: 8px;
+  border: 1px solid #e8b6ab;
+  background: #fff2ee;
+  color: #8c332b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.simbo-dialog-note {
+  margin: 0;
+  color: #76675d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+@media (max-width: 600px) {
+  .simbo-dialog-overlay {
+    padding: 9px;
+    align-items: end;
+  }
+  .simbo-dialog {
+    max-height: 94dvh;
+    border-radius: 16px 16px 10px 10px;
+  }
+  .simbo-dialog-heading,
+  .simbo-dialog-body {
+    padding: 18px;
+  }
+  .simbo-dialog-footer {
+    padding: 14px 18px;
+  }
+  .simbo-dialog-heading h2 {
+    font-size: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .simbo-dialog-overlay {
+    backdrop-filter: none;
+  }
+}

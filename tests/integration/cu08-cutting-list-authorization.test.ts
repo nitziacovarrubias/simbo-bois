@@ -5,14 +5,14 @@ import { PrismaClient, type UserRole } from '@prisma/client';
 import {
   addPartToAssembly,
   createPanel,
-  type DesignDocument
+  type DesignDocument,
 } from '../../packages/design-domain/src/index.ts';
 import { hashPassword } from '../../apps/api/src/security.ts';
 
 const database = process.env.TEST_DATABASE_URL;
 if (!database) {
   throw new Error(
-    'TEST_DATABASE_URL es obligatoria: prepara y migra una base exclusiva para pruebas'
+    'TEST_DATABASE_URL es obligatoria: prepara y migra una base exclusiva para pruebas',
   );
 }
 process.env.DATABASE_URL = database;
@@ -35,16 +35,16 @@ async function request(path: string, actor?: string, body?: unknown) {
     method: body === undefined ? 'GET' : 'POST',
     headers: {
       'content-type': 'application/json',
-      ...(actor ? { authorization: 'Bearer ' + tokens[actor] } : {})
+      ...(actor ? { authorization: 'Bearer ' + tokens[actor] } : {}),
     },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   return { status: response.status, body: await response.json() };
 }
 
 async function createProject(actor = 'architect') {
   const response = await request('/projects', actor, {
-    name: 'Proyecto CU08 ' + randomUUID()
+    name: 'Proyecto CU08 ' + randomUUID(),
   });
   assert.equal(response.status, 201);
   projects.push(response.body.id);
@@ -70,28 +70,26 @@ async function prepareApprovedProjectWithParts() {
     design,
     createPanel({
       name: 'Costado Izquierdo',
-      materialId: design.materials[0]!.id
-    })
+      materialId: design.materials[0]!.id,
+    }),
   );
 
   const saved = await request(`/projects/${projectId}/design`, 'architect', {
     design,
-    expectedRevision: 0
+    expectedRevision: 0,
   });
   assert.equal(saved.status, 201);
 
-  const versionRes = await request(
-    `/projects/${projectId}/versions`,
-    'architect',
-    { expectedRevision: 1 }
-  );
+  const versionRes = await request(`/projects/${projectId}/versions`, 'architect', {
+    expectedRevision: 1,
+  });
   assert.equal(versionRes.status, 201);
   const versionId = versionRes.body.id as string;
 
   const approveRes = await request(
     `/projects/${projectId}/versions/${versionId}/approve`,
     'supervisor',
-    { expectedRevision: 1 }
+    { expectedRevision: 1 },
   );
   assert.equal(approveRes.status, 201);
 
@@ -109,7 +107,7 @@ before(async () => {
     ['architect', 'ARCHITECT'],
     ['other', 'ARCHITECT'],
     ['supervisor', 'SUPERVISOR'],
-    ['supervisor2', 'SUPERVISOR']
+    ['supervisor2', 'SUPERVISOR'],
   ] as const) {
     const email = `cu08-${randomUUID()}@example.test`;
     const user = await prisma.user.create({
@@ -117,8 +115,8 @@ before(async () => {
         email,
         name: key,
         role: role as UserRole,
-        passwordHash: await hashPassword(password)
-      }
+        passwordHash: await hashPassword(password),
+      },
     });
     users.push(user.id);
     userIds[key] = user.id;
@@ -136,40 +134,35 @@ after(async () => {
 });
 
 test('TDD-018: Autorización correcta del despiece, persistencia, idempotencia y concurrencia', async () => {
-  const { projectId, versionId, revision } =
-    await prepareApprovedProjectWithParts();
+  const { projectId, versionId, revision } = await prepareApprovedProjectWithParts();
 
   // Consulta previa sin autorización devuelve authorized: false
   const beforeGet = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorization`,
-    'supervisor'
+    'supervisor',
   );
   assert.equal(beforeGet.status, 200);
   assert.deepEqual(beforeGet.body, {
     authorized: false,
-    authorization: null
+    authorization: null,
   });
 
   // Generar despiece de referencia
   const generated = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list`,
     'supervisor',
-    {}
+    {},
   );
   assert.equal(generated.status, 201);
 
   // Dos solicitudes simultáneas no crean dos autorizaciones y devuelven HTTP 200
   const [auth1, auth2] = await Promise.all([
-    request(
-      `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
-      'supervisor',
-      { expectedRevision: revision }
-    ),
-    request(
-      `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
-      'supervisor2',
-      { expectedRevision: revision }
-    )
+    request(`/projects/${projectId}/versions/${versionId}/cutting-list/authorize`, 'supervisor', {
+      expectedRevision: revision,
+    }),
+    request(`/projects/${projectId}/versions/${versionId}/cutting-list/authorize`, 'supervisor2', {
+      expectedRevision: revision,
+    }),
   ]);
 
   assert.equal(auth1.status, 200);
@@ -189,7 +182,7 @@ test('TDD-018: Autorización correcta del despiece, persistencia, idempotencia y
   const repeated = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
     'supervisor2',
-    { expectedRevision: revision }
+    { expectedRevision: revision },
   );
   assert.equal(repeated.status, 200);
   assert.equal(repeated.body.id, firstAuth.id);
@@ -200,7 +193,7 @@ test('TDD-018: Autorización correcta del despiece, persistencia, idempotencia y
   // Consultar autorización mediante GET
   const getAuth = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorization`,
-    'supervisor'
+    'supervisor',
   );
   assert.equal(getAuth.status, 200);
   assert.equal(getAuth.body.authorized, true);
@@ -208,20 +201,19 @@ test('TDD-018: Autorización correcta del despiece, persistencia, idempotencia y
 
   // Verificar registro único en PostgreSQL
   const dbCount = await prisma.cuttingListAuthorization.count({
-    where: { versionId }
+    where: { versionId },
   });
   assert.equal(dbCount, 1);
 });
 
 test('TDD-019: Autorización y consulta sin permisos son rechazadas (HTTP 401 y 403)', async () => {
-  const { projectId, versionId, revision } =
-    await prepareApprovedProjectWithParts();
+  const { projectId, versionId, revision } = await prepareApprovedProjectWithParts();
 
   // Sin autenticar -> 401
   const unauthPost = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
     undefined,
-    { expectedRevision: revision }
+    { expectedRevision: revision },
   );
   assert.equal(unauthPost.status, 401);
 
@@ -229,21 +221,21 @@ test('TDD-019: Autorización y consulta sin permisos son rechazadas (HTTP 401 y 
   const archPost = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
     'architect',
-    { expectedRevision: revision }
+    { expectedRevision: revision },
   );
   assert.equal(archPost.status, 403);
 
   // Arquitecto intenta consultar autorización -> 403
   const archGet = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorization`,
-    'architect'
+    'architect',
   );
   assert.equal(archGet.status, 403);
 
   // Comprobar con Supervisor que no existe autorización registrada
   const supGet = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorization`,
-    'supervisor'
+    'supervisor',
   );
   assert.equal(supGet.status, 200);
   assert.equal(supGet.body.authorized, false);
@@ -252,14 +244,13 @@ test('TDD-019: Autorización y consulta sin permisos son rechazadas (HTTP 401 y 
 
 test('TDD-020: Despiece desactualizado se rechaza (409), pero autorización histórica se conserva y puede consultarse', async () => {
   // Caso A: Versión aprobada que nunca se autorizó y luego el diseño cambió
-  const { projectId, versionId, design } =
-    await prepareApprovedProjectWithParts();
+  const { projectId, versionId, design } = await prepareApprovedProjectWithParts();
 
   const modified = structuredClone(design);
   modified.metadata.notes = 'Cambio posterior a la aprobación';
   const saveRes = await request(`/projects/${projectId}/design`, 'architect', {
     design: modified,
-    expectedRevision: 1
+    expectedRevision: 1,
   });
   assert.equal(saveRes.status, 201);
   assert.equal(saveRes.body.revision, 2);
@@ -268,20 +259,20 @@ test('TDD-020: Despiece desactualizado se rechaza (409), pero autorización hist
   const staleAttempt1 = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 1 }
+    { expectedRevision: 1 },
   );
   assert.equal(staleAttempt1.status, 409);
 
   const staleAttempt2 = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 2 }
+    { expectedRevision: 2 },
   );
   assert.equal(staleAttempt2.status, 409);
 
   const checkEmpty = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorization`,
-    'supervisor'
+    'supervisor',
   );
   assert.equal(checkEmpty.body.authorized, false);
 
@@ -292,7 +283,7 @@ test('TDD-020: Despiece desactualizado se rechaza (409), pero autorización hist
   const authRes = await request(
     `/projects/${hist.projectId}/versions/${hist.versionId}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: hist.revision }
+    { expectedRevision: hist.revision },
   );
   assert.equal(authRes.status, 200);
 
@@ -307,28 +298,27 @@ test('TDD-020: Despiece desactualizado se rechaza (409), pero autorización hist
     modHist,
     createPanel({
       name: 'Entrepaño Nuevo',
-      materialId: modHist.materials[0]!.id
-    })
+      materialId: modHist.materials[0]!.id,
+    }),
   );
-  const savedHist = await request(
-    `/projects/${hist.projectId}/design`,
-    'architect',
-    { design: modHist, expectedRevision: 1 }
-  );
+  const savedHist = await request(`/projects/${hist.projectId}/design`, 'architect', {
+    design: modHist,
+    expectedRevision: 1,
+  });
   assert.equal(savedHist.status, 201);
 
   // Intentar re-autorizar la versión histórica debe rechazarse con 409
   const reauthStale = await request(
     `/projects/${hist.projectId}/versions/${hist.versionId}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 2 }
+    { expectedRevision: 2 },
   );
   assert.equal(reauthStale.status, 409);
 
   // Pero consultar la autorización histórica con GET sigue disponible e intacta
   const getHistorical = await request(
     `/projects/${hist.projectId}/versions/${hist.versionId}/cutting-list/authorization`,
-    'supervisor'
+    'supervisor',
   );
   assert.equal(getHistorical.status, 200);
   assert.equal(getHistorical.body.authorized, true);
@@ -338,18 +328,16 @@ test('TDD-020: Despiece desactualizado se rechaza (409), pero autorización hist
 test('Validaciones adicionales: versión DRAFT, otro proyecto, expectedRevision incorrecto y despiece inválido', async () => {
   // 1. Diseño sin piezas fabricables -> 422 al intentar autorizar
   const emptyProjectId = await createProject('architect');
-  const emptyVersion = await request(
-    `/projects/${emptyProjectId}/versions`,
-    'architect',
-    { expectedRevision: 0 }
-  );
+  const emptyVersion = await request(`/projects/${emptyProjectId}/versions`, 'architect', {
+    expectedRevision: 0,
+  });
   assert.equal(emptyVersion.status, 201);
 
   // Intentar autorizar en estado DRAFT -> 409
   const draftAuth = await request(
     `/projects/${emptyProjectId}/versions/${emptyVersion.body.id}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 0 }
+    { expectedRevision: 0 },
   );
   assert.equal(draftAuth.status, 409);
 
@@ -357,12 +345,12 @@ test('Validaciones adicionales: versión DRAFT, otro proyecto, expectedRevision 
   await request(
     `/projects/${emptyProjectId}/versions/${emptyVersion.body.id}/approve`,
     'supervisor',
-    { expectedRevision: 0 }
+    { expectedRevision: 0 },
   );
   const invalidCuttingAuth = await request(
     `/projects/${emptyProjectId}/versions/${emptyVersion.body.id}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 0 }
+    { expectedRevision: 0 },
   );
   assert.equal(invalidCuttingAuth.status, 422);
 
@@ -372,14 +360,14 @@ test('Validaciones adicionales: versión DRAFT, otro proyecto, expectedRevision 
   const wrongRev = await request(
     `/projects/${projectId}/versions/${versionId}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 99 }
+    { expectedRevision: 99 },
   );
   assert.equal(wrongRev.status, 409);
 
   const crossProject = await request(
     `/projects/${emptyProjectId}/versions/${versionId}/cutting-list/authorize`,
     'supervisor',
-    { expectedRevision: 1 }
+    { expectedRevision: 1 },
   );
   assert.equal(crossProject.status, 404);
 });

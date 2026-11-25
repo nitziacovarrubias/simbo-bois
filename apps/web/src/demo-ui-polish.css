@@ -1,51 +1,189 @@
 /* Avance 2 · presentación enfocada. Únicamente UI, no afecta el modelo de diseño. */
-.sr-only {position:absolute!important; width:1px!important;height:1px!important;padding:0!important;
- margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;}
-.app-shell .topbar .top-action {display:inline-flex;align-items:center;justify-content:center;
-  width:36px;min-width:36px;height:36px;padding:0;border-radius:10px;}
-.app-shell .topbar .top-action svg {width:18px;height:18px;}
-.app-shell .topbar .project-connection button {display:flex;align-items:center;justify-content:center;
-  height:35px;width:38px;min-width:38px;padding:0;border-radius:9px;border:1px solid #9d7954;}
-.app-shell .topbar .project-connection button svg {width:18px;height:18px;}
-.app-shell .topbar .brand-copy > span {font-size:9px;letter-spacing:.025em;}
-.app-shell .topbar .save-state {gap:6px;}
-.app-shell .left-rail {gap:8px;align-items:center;padding:10px 5px;}
-.app-shell .left-rail button {height:46px;width:46px;display:grid;place-items:center;border-radius:13px;
-  background:rgba(255,255,255,.035);border:1px solid transparent;}
-.app-shell .left-rail button svg {width:21px;height:21px;}
-.app-shell .left-rail button:hover {background:#6b4b34;border-color:#a17c59;}
-.app-shell .left-rail button.active {background:#e9a43e;color:#362311;border-color:#f9ca7f;}
-.app-shell .editor-command-dock .tool-strip .tool-button {width:44px;min-width:44px;height:43px;min-height:43px;}
-.app-shell .editor-command-dock .tool-strip .tool-button svg {width:21px;height:21px;}
-.app-shell .editor-command-dock .tool-strip .toolbar-overflow > summary {width:44px;}
-.app-shell .viewport-head-controls .view-quick-actions button {width:40px;min-width:40px;padding:0;}
-.app-shell .viewport-head-controls .view-menu>summary,
-.app-shell .viewport-head-controls .view-settings-menu>summary {width:40px;min-width:40px;padding:0;justify-content:center;}
-.app-shell .viewport-head-controls .view-menu>summary>svg,
-.app-shell .viewport-head-controls .view-settings-menu>summary>svg {width:18px;height:18px;}
-.app-shell .viewport-head-controls select.display-mode-select {min-width:110px;max-width:128px;}
-.app-shell .viewbar .status-measurement button {height:31px;min-width:32px;display:inline-flex;align-items:center;
- justify-content:center;padding:4px 7px;border-radius:8px;}
-.app-shell .viewbar .status-measurement button svg {width:16px;height:16px;}
-.app-shell .library-tabs {grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
-.app-shell .panel .library-tabs button {min-width:0;min-height:42px;padding:0;display:flex;align-items:center;justify-content:center;}
-.app-shell .library-tabs button svg {height:19px;width:19px;}
-.app-shell .panel .library-card>button {grid-column:3;justify-self:end;align-self:center;width:37px;min-width:37px;
- height:37px;min-height:37px;padding:0;display:grid;place-items:center;}
-.app-shell .library-card {grid-template-columns:28px minmax(0,1fr) 37px;}
-.app-shell .library-card button svg {width:19px;height:19px;}
-.app-shell .library-panel .eyebrow {display:none;}
-.app-shell .panel-shell-heading {font-size:12px;}
-.app-shell button:focus-visible,.app-shell summary:focus-visible {outline:3px solid #ffc877;outline-offset:2px;}
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.app-shell .topbar .top-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 10px;
+}
+.app-shell .topbar .top-action svg {
+  width: 18px;
+  height: 18px;
+}
+.app-shell .topbar .project-connection button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid #9d7954;
+}
+.app-shell .topbar .project-connection button svg {
+  width: 18px;
+  height: 18px;
+}
+.app-shell .topbar .brand-copy > span {
+  font-size: 9px;
+  letter-spacing: 0.025em;
+}
+.app-shell .topbar .save-state {
+  gap: 6px;
+}
+.app-shell .left-rail {
+  gap: 8px;
+  align-items: center;
+  padding: 10px 5px;
+}
+.app-shell .left-rail button {
+  height: 46px;
+  width: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid transparent;
+}
+.app-shell .left-rail button svg {
+  width: 21px;
+  height: 21px;
+}
+.app-shell .left-rail button:hover {
+  background: #6b4b34;
+  border-color: #a17c59;
+}
+.app-shell .left-rail button.active {
+  background: #e9a43e;
+  color: #362311;
+  border-color: #f9ca7f;
+}
+.app-shell .editor-command-dock .tool-strip .tool-button {
+  width: 44px;
+  min-width: 44px;
+  height: 43px;
+  min-height: 43px;
+}
+.app-shell .editor-command-dock .tool-strip .tool-button svg {
+  width: 21px;
+  height: 21px;
+}
+.app-shell .editor-command-dock .tool-strip .toolbar-overflow > summary {
+  width: 44px;
+}
+.app-shell .viewport-head-controls .view-quick-actions button {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+.app-shell .viewport-head-controls .view-menu > summary,
+.app-shell .viewport-head-controls .view-settings-menu > summary {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+  justify-content: center;
+}
+.app-shell .viewport-head-controls .view-menu > summary > svg,
+.app-shell .viewport-head-controls .view-settings-menu > summary > svg {
+  width: 18px;
+  height: 18px;
+}
+.app-shell .viewport-head-controls select.display-mode-select {
+  min-width: 110px;
+  max-width: 128px;
+}
+.app-shell .viewbar .status-measurement button {
+  height: 31px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 7px;
+  border-radius: 8px;
+}
+.app-shell .viewbar .status-measurement button svg {
+  width: 16px;
+  height: 16px;
+}
+.app-shell .library-tabs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.app-shell .panel .library-tabs button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-shell .library-tabs button svg {
+  height: 19px;
+  width: 19px;
+}
+.app-shell .panel .library-card > button {
+  grid-column: 3;
+  justify-self: end;
+  align-self: center;
+  width: 37px;
+  min-width: 37px;
+  height: 37px;
+  min-height: 37px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.app-shell .library-card {
+  grid-template-columns: 28px minmax(0, 1fr) 37px;
+}
+.app-shell .library-card button svg {
+  width: 19px;
+  height: 19px;
+}
+.app-shell .library-panel .eyebrow {
+  display: none;
+}
+.app-shell .panel-shell-heading {
+  font-size: 12px;
+}
+.app-shell button:focus-visible,
+.app-shell summary:focus-visible {
+  outline: 3px solid #ffc877;
+  outline-offset: 2px;
+}
 /* La escena central gana espacio; el texto útil sigue en los paneles y ayudas emergentes. */
-@media(max-width:1160px) {
-  .app-shell .topbar .brand-copy>span {display:none;}
-  .app-shell .viewport-head-controls select.display-mode-select {max-width:95px;min-width:80px;}
+@media (max-width: 1160px) {
+  .app-shell .topbar .brand-copy > span {
+    display: none;
+  }
+  .app-shell .viewport-head-controls select.display-mode-select {
+    max-width: 95px;
+    min-width: 80px;
+  }
 }
 
 /* Ajustes de legibilidad en el editor sin alterar herramientas ni eventos. */
-.app-shell .topbar { min-width: 0; }
-.app-shell .topbar > * { min-width: 0; }
+.app-shell .topbar {
+  min-width: 0;
+}
+.app-shell .topbar > * {
+  min-width: 0;
+}
 .app-shell .topbar .project-connection {
   min-width: 0;
   max-width: 260px;
@@ -59,23 +197,53 @@
   overflow: visible;
   text-overflow: clip;
 }
-.app-shell .panel-shell-heading { min-width: 0; line-height: 1.35; }
-.app-shell .panel-shell-heading > span { min-width: 0; overflow-wrap: anywhere; }
-.app-shell .left-panel, .app-shell .right-panel { overflow-x: hidden; }
-.app-shell .panel { min-width: 0; }
-.app-shell .panel .field-grid > *, .app-shell .panel .row > *,
-.app-shell .panel .card, .app-shell .panel .tree-row { min-width: 0; }
-.app-shell .panel p, .app-shell .panel .muted,
-.app-shell .panel .selection-note, .app-shell .panel .warning,
+.app-shell .panel-shell-heading {
+  min-width: 0;
+  line-height: 1.35;
+}
+.app-shell .panel-shell-heading > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.app-shell .left-panel,
+.app-shell .right-panel {
+  overflow-x: hidden;
+}
+.app-shell .panel {
+  min-width: 0;
+}
+.app-shell .panel .field-grid > *,
+.app-shell .panel .row > *,
+.app-shell .panel .card,
+.app-shell .panel .tree-row {
+  min-width: 0;
+}
+.app-shell .panel p,
+.app-shell .panel .muted,
+.app-shell .panel .selection-note,
+.app-shell .panel .warning,
 .app-shell .panel .empty-state-card {
   overflow-wrap: anywhere;
   white-space: normal;
   line-height: 1.5;
 }
-.app-shell .panel .table-wrap { max-width: 100%; overflow-x: auto; }
-.app-shell .panel .table-wrap table { width: max-content; min-width: 100%; }
-.app-shell .panel input, .app-shell .panel select { max-width: 100%; }
-.app-shell .editor-command-dock .toolbar-menu { max-width: min(320px, 85vw); }
+.app-shell .panel .table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.app-shell .panel .table-wrap table {
+  width: max-content;
+  min-width: 100%;
+}
+.app-shell .panel input,
+.app-shell .panel select {
+  max-width: 100%;
+}
+.app-shell .editor-command-dock .toolbar-menu {
+  max-width: min(320px, 85vw);
+}
 @media (max-width: 1000px) {
-  .app-shell .topbar .project-connection { max-width: 175px; }
+  .app-shell .topbar .project-connection {
+    max-width: 175px;
+  }
 }

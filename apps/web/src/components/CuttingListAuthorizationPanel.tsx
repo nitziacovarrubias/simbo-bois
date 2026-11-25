@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type {
   CuttingListAuthorizationResponse,
-  CuttingListResponse
+  CuttingListResponse,
 } from '@simbo/shared-contracts';
 import { ApiError, apiClient, type VersionSummary } from '../apiClient';
 import './CuttingListAuthorizationPanel.css';
@@ -17,7 +17,7 @@ interface CuttingListAuthorizationPanelProps {
 
 function AuthorizationCuttingTable({
   result,
-  projectName
+  projectName,
 }: {
   result: CuttingListResponse;
   projectName: string;
@@ -58,10 +58,16 @@ function AuthorizationCuttingTable({
                       <li key={`${origin.partId}-${index}`}>
                         <strong>Pieza:</strong> {origin.partId}
                         {origin.moduleInstanceId ? (
-                          <> · <strong>Módulo:</strong> {origin.moduleInstanceId}</>
+                          <>
+                            {' '}
+                            · <strong>Módulo:</strong> {origin.moduleInstanceId}
+                          </>
                         ) : null}
                         {origin.assemblyPath.length > 0 ? (
-                          <> · <strong>Ensambles:</strong> {origin.assemblyPath.join(' / ')}</>
+                          <>
+                            {' '}
+                            · <strong>Ensambles:</strong> {origin.assemblyPath.join(' / ')}
+                          </>
                         ) : null}
                       </li>
                     ))}
@@ -82,7 +88,7 @@ export default function CuttingListAuthorizationPanel({
   version,
   cuttingResult,
   canAuthorize,
-  onRefreshVersions
+  onRefreshVersions,
 }: CuttingListAuthorizationPanelProps) {
   const [authorization, setAuthorization] = useState<CuttingListAuthorizationResponse | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
@@ -123,7 +129,9 @@ export default function CuttingListAuthorizationPanel({
       if (err instanceof ApiError && err.status === 403) {
         setError('No tienes permisos para consultar o autorizar despieces.');
       } else {
-        setError(err instanceof Error ? err.message : 'No se pudo consultar el estado de autorización.');
+        setError(
+          err instanceof Error ? err.message : 'No se pudo consultar el estado de autorización.',
+        );
       }
     } finally {
       if (seq === requestSeq.current) {
@@ -182,7 +190,7 @@ export default function CuttingListAuthorizationPanel({
       const saved = await apiClient.authorizeCuttingList(
         projectId,
         version.id,
-        currentDesign.revision
+        currentDesign.revision,
       );
       if (seq !== requestSeq.current) return;
 
@@ -224,10 +232,7 @@ export default function CuttingListAuthorizationPanel({
     : 'cutting-auth-badge--pending';
 
   return (
-    <section
-      className="cutting-auth-panel"
-      aria-labelledby={`cutting-auth-title-${version.id}`}
-    >
+    <section className="cutting-auth-panel" aria-labelledby={`cutting-auth-title-${version.id}`}>
       <div className="cutting-auth-header">
         <div>
           <h3 id={`cutting-auth-title-${version.id}`}>
@@ -238,9 +243,7 @@ export default function CuttingListAuthorizationPanel({
             {version.current ? 'Vigente' : 'Histórica'}
           </p>
         </div>
-        <span className={`cutting-auth-badge ${statusModifier}`}>
-          Estado: {statusLabel}
-        </span>
+        <span className={`cutting-auth-badge ${statusModifier}`}>Estado: {statusLabel}</span>
       </div>
 
       {statusLoading && (
@@ -306,10 +309,7 @@ export default function CuttingListAuthorizationPanel({
               Esta autorización pertenece a una versión histórica y se conserva solo para consulta.
             </p>
           )}
-          <AuthorizationCuttingTable
-            result={authorization.cuttingList}
-            projectName={projectName}
-          />
+          <AuthorizationCuttingTable result={authorization.cuttingList} projectName={projectName} />
         </div>
       )}
 
@@ -317,13 +317,15 @@ export default function CuttingListAuthorizationPanel({
         <div className="cutting-auth-pending">
           {version.approvalStatus !== 'APPROVED' && (
             <p className="cutting-auth-info">
-              Esta versión está pendiente de aprobación. Solo pueden autorizarse despieces de versiones aprobadas y vigentes.
+              Esta versión está pendiente de aprobación. Solo pueden autorizarse despieces de
+              versiones aprobadas y vigentes.
             </p>
           )}
 
           {version.approvalStatus === 'APPROVED' && !version.current && (
             <p className="cutting-auth-info">
-              Esta versión es histórica y no cuenta con una autorización registrada. No se pueden registrar nuevas autorizaciones sobre versiones históricas.
+              Esta versión es histórica y no cuenta con una autorización registrada. No se pueden
+              registrar nuevas autorizaciones sobre versiones históricas.
             </p>
           )}
 
@@ -360,7 +362,8 @@ export default function CuttingListAuthorizationPanel({
               ¿Autorizar este despiece? (Revisión {version.revision})
             </h4>
             <p>
-              Se registrará la autorización de la versión seleccionada y se conservará la lista de piezas como información histórica.
+              Se registrará la autorización de la versión seleccionada y se conservará la lista de
+              piezas como información histórica.
             </p>
             <p>Esta operación no podrá modificarse desde esta función.</p>
             <div className="cutting-auth-modal-actions">

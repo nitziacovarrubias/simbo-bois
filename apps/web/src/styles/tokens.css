@@ -1,135 +1,165 @@
 @layer tokens, reset, existing, layout, workspace, refresh;
 /* Variables compartidas: edita aquí colores, dimensiones y sombras globales. */
 @layer tokens {
-/* Tokens visuales compartidos. Los componentes consumen estas variables cuando necesitan valores comunes. */
-:root{
-  --color-ink:#26343d;--color-muted:#71808a;--color-surface:#f6f7f8;--color-surface-raised:#fff;--color-surface-dark:#202a32;
-  --color-border:#d5dce0;--color-accent:#d88a19;--color-accent-soft:#fff1d8;--color-focus:#5b8da8;--app-background:#dfe4e7;
-  --text:var(--color-ink);--text-muted:var(--color-muted);--surface:var(--color-surface);--surface-raised:var(--color-surface-raised);--surface-dark:var(--color-surface-dark);--border:var(--color-border);--accent:var(--color-accent);--accent-soft:var(--color-accent-soft);--focus:var(--color-focus);
-  --font-xs:10px;--font-sm:12px;--font-md:14px;
-  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;
-  --radius-sm:5px;--radius-md:8px;--radius-lg:10px;
-  --shadow-sm:0 2px 8px #0003;--shadow-md:0 8px 24px #0004;--shadow-lg:0 20px 60px #0007;
-  --z-toolbar:10;--z-overlay:30;--z-dialog:260;
-}
-
+  /* Tokens visuales compartidos. Los componentes consumen estas variables cuando necesitan valores comunes. */
+  :root {
+    --color-ink: #26343d;
+    --color-muted: #71808a;
+    --color-surface: #f6f7f8;
+    --color-surface-raised: #fff;
+    --color-surface-dark: #202a32;
+    --color-border: #d5dce0;
+    --color-accent: #d88a19;
+    --color-accent-soft: #fff1d8;
+    --color-focus: #5b8da8;
+    --app-background: #dfe4e7;
+    --text: var(--color-ink);
+    --text-muted: var(--color-muted);
+    --surface: var(--color-surface);
+    --surface-raised: var(--color-surface-raised);
+    --surface-dark: var(--color-surface-dark);
+    --border: var(--color-border);
+    --accent: var(--color-accent);
+    --accent-soft: var(--color-accent-soft);
+    --focus: var(--color-focus);
+    --font-xs: 10px;
+    --font-sm: 12px;
+    --font-md: 14px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --radius-sm: 5px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --shadow-sm: 0 2px 8px #0003;
+    --shadow-md: 0 8px 24px #0004;
+    --shadow-lg: 0 20px 60px #0007;
+    --z-toolbar: 10;
+    --z-overlay: 30;
+    --z-dialog: 260;
+  }
 }
 @layer refresh {
-:root {
-  color-scheme: light;
-  --color-ink: #293241;
-  --color-muted: #596c79;
-  --color-surface: #f2f4f5;
-  --color-surface-raised: #ffffff;
-  --color-surface-dark: #293241;
-  --color-border: #d6dfe4;
-  --color-accent: #d97d54;
-  --color-accent-soft: #fbece4;
-  --color-focus: #3e5c76;
-  --app-background: #e8eef1;
-  --text: var(--color-ink);
-  --text-muted: var(--color-muted);
-  --surface: var(--color-surface);
-  --surface-raised: var(--color-surface-raised);
-  --surface-dark: var(--color-surface-dark);
-  --border: var(--color-border);
-  --accent: var(--color-accent);
-  --accent-soft: var(--color-accent-soft);
-  --focus: var(--color-focus);
-  --radius-sm: 7px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --shadow-sm: 0 3px 12px #172b3920;
-  --shadow-md: 0 12px 34px #172b392a;
-  --shadow-lg: 0 24px 70px #172b3940;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  :root {
+    color-scheme: light;
+    --color-ink: #293241;
+    --color-muted: #596c79;
+    --color-surface: #f2f4f5;
+    --color-surface-raised: #ffffff;
+    --color-surface-dark: #293241;
+    --color-border: #d6dfe4;
+    --color-accent: #d97d54;
+    --color-accent-soft: #fbece4;
+    --color-focus: #3e5c76;
+    --app-background: #e8eef1;
+    --text: var(--color-ink);
+    --text-muted: var(--color-muted);
+    --surface: var(--color-surface);
+    --surface-raised: var(--color-surface-raised);
+    --surface-dark: var(--color-surface-dark);
+    --border: var(--color-border);
+    --accent: var(--color-accent);
+    --accent-soft: var(--color-accent-soft);
+    --focus: var(--color-focus);
+    --radius-sm: 7px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-sm: 0 3px 12px #172b3920;
+    --shadow-md: 0 12px 34px #172b392a;
+    --shadow-lg: 0 24px 70px #172b3940;
+    font-family:
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
+  }
 }
-}
-
 
 /* === Mockup-aligned theme overrides (Figma-inspired) === */
 @layer refresh {
-:root {
-  --color-ink: #3b3b3b;
-  --color-muted: #7a7a7a;
-  --color-surface: #efefef;
-  --color-surface-raised: #ffffff;
-  --color-surface-dark: #3a2f2a;
-  --color-border: #d9d5d1;
-  --color-accent: #f39a16;
-  --color-accent-soft: #fff2df;
-  --color-focus: #c07a15;
-  --color-danger: #bd3d3d;
-  --color-gold: #caa86c;
-  --app-background: #e7e5e2;
-  --text: var(--color-ink);
-  --text-muted: var(--color-muted);
-  --surface: var(--color-surface);
-  --surface-raised: var(--color-surface-raised);
-  --surface-dark: var(--color-surface-dark);
-  --border: var(--color-border);
-  --accent: var(--color-accent);
-  --accent-soft: var(--color-accent-soft);
-  --focus: var(--color-focus);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --shadow-sm: 0 3px 10px rgba(34, 28, 23, 0.10);
-  --shadow-md: 0 14px 32px rgba(34, 28, 23, 0.16);
-  --shadow-lg: 0 28px 64px rgba(34, 28, 23, 0.24);
-  font-family: Inter, Montserrat, "Segoe UI", Arial, sans-serif;
-}
+  :root {
+    --color-ink: #3b3b3b;
+    --color-muted: #7a7a7a;
+    --color-surface: #efefef;
+    --color-surface-raised: #ffffff;
+    --color-surface-dark: #3a2f2a;
+    --color-border: #d9d5d1;
+    --color-accent: #f39a16;
+    --color-accent-soft: #fff2df;
+    --color-focus: #c07a15;
+    --color-danger: #bd3d3d;
+    --color-gold: #caa86c;
+    --app-background: #e7e5e2;
+    --text: var(--color-ink);
+    --text-muted: var(--color-muted);
+    --surface: var(--color-surface);
+    --surface-raised: var(--color-surface-raised);
+    --surface-dark: var(--color-surface-dark);
+    --border: var(--color-border);
+    --accent: var(--color-accent);
+    --accent-soft: var(--color-accent-soft);
+    --focus: var(--color-focus);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 3px 10px rgba(34, 28, 23, 0.1);
+    --shadow-md: 0 14px 32px rgba(34, 28, 23, 0.16);
+    --shadow-lg: 0 28px 64px rgba(34, 28, 23, 0.24);
+    font-family: Inter, Montserrat, 'Segoe UI', Arial, sans-serif;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-:root {
-  --ui-coffee: #3b2f28;
-  --ui-coffee-dark: #2d241f;
-  --ui-espresso: #221c18;
-  --ui-orange: #ea910e;
-  --ui-orange-hover: #ce7600;
-  --ui-orange-soft: #fff2de;
-  --ui-orange-border: #f0c782;
-  --ui-paper: #fffdfa;
-  --ui-milk: #f8f5f0;
-  --ui-canvas: #eeebe6;
-  --ui-border: #e5ddd3;
-  --ui-ink: #302922;
-  --ui-subtle: #6b6156;
-  --ui-faint: #92867a;
-  --ui-danger: #b7433f;
-  --ui-success: #29694a;
-  --ui-radius: 12px;
-  --ui-shadow: 0 8px 28px rgba(51,37,26,.11);
-  --color-ink: var(--ui-ink);
-  --color-muted: var(--ui-subtle);
-  --color-surface: var(--ui-milk);
-  --color-surface-raised: var(--ui-paper);
-  --color-surface-dark: var(--ui-coffee);
-  --color-border: var(--ui-border);
-  --color-accent: var(--ui-orange);
-  --color-accent-soft: var(--ui-orange-soft);
-  --color-focus: var(--ui-orange-hover);
-  --app-background: var(--ui-canvas);
-  --text: var(--ui-ink);
-  --text-muted: var(--ui-subtle);
-  --surface: var(--ui-milk);
-  --surface-raised: var(--ui-paper);
-  --surface-dark: var(--ui-coffee);
-  --border: var(--ui-border);
-  --accent: var(--ui-orange);
-  --accent-soft: var(--ui-orange-soft);
-  --focus: var(--ui-orange-hover);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 2px 8px rgba(44,31,19,.08);
-  --shadow-md: var(--ui-shadow);
-  --shadow-lg: 0 18px 45px rgba(44,31,19,.2);
-  font-family: Inter,"Segoe UI",Roboto,Arial,sans-serif;
-  font-synthesis: none;
-}
-
+  :root {
+    --ui-coffee: #3b2f28;
+    --ui-coffee-dark: #2d241f;
+    --ui-espresso: #221c18;
+    --ui-orange: #ea910e;
+    --ui-orange-hover: #ce7600;
+    --ui-orange-soft: #fff2de;
+    --ui-orange-border: #f0c782;
+    --ui-paper: #fffdfa;
+    --ui-milk: #f8f5f0;
+    --ui-canvas: #eeebe6;
+    --ui-border: #e5ddd3;
+    --ui-ink: #302922;
+    --ui-subtle: #6b6156;
+    --ui-faint: #92867a;
+    --ui-danger: #b7433f;
+    --ui-success: #29694a;
+    --ui-radius: 12px;
+    --ui-shadow: 0 8px 28px rgba(51, 37, 26, 0.11);
+    --color-ink: var(--ui-ink);
+    --color-muted: var(--ui-subtle);
+    --color-surface: var(--ui-milk);
+    --color-surface-raised: var(--ui-paper);
+    --color-surface-dark: var(--ui-coffee);
+    --color-border: var(--ui-border);
+    --color-accent: var(--ui-orange);
+    --color-accent-soft: var(--ui-orange-soft);
+    --color-focus: var(--ui-orange-hover);
+    --app-background: var(--ui-canvas);
+    --text: var(--ui-ink);
+    --text-muted: var(--ui-subtle);
+    --surface: var(--ui-milk);
+    --surface-raised: var(--ui-paper);
+    --surface-dark: var(--ui-coffee);
+    --border: var(--ui-border);
+    --accent: var(--ui-orange);
+    --accent-soft: var(--ui-orange-soft);
+    --focus: var(--ui-orange-hover);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 2px 8px rgba(44, 31, 19, 0.08);
+    --shadow-md: var(--ui-shadow);
+    --shadow-lg: 0 18px 45px rgba(44, 31, 19, 0.2);
+    font-family: Inter, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-synthesis: none;
+  }
 }

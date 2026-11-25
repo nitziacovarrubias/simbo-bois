@@ -5,118 +5,307 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.tree-section-label {padding:10px 8px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;opacity:.65}
-.tree-row {transition:background-color 150ms ease,border-color 150ms ease,color 150ms ease,opacity 150ms ease,transform 150ms ease}
+  .tree-section-label {
+    padding: 10px 8px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    opacity: 0.65;
+  }
+  .tree-row {
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease,
+      transform 150ms ease;
+  }
 }
 
 @layer layout {
-.tree {padding-top:7px}
-.tree-row {min-height:31px;display:flex;align-items:center;gap:3px;border-radius:4px;padding-right:4px}
-.tree-row:hover {background:#eef1f3}
-.tree-row.selected {background:#fff1d8;outline:1px solid #e9b04d}
-.tree-row>input {min-width:0;flex:1;border:0;background:transparent;font-size:11px;padding:3px}
-.tree-row>input:focus {background:#fff;outline:1px solid #aab7c0}
-.role-dot {width:7px;height:7px;border-radius:50%;background:#d59024}
+  .tree {
+    padding-top: 7px;
+  }
+  .tree-row {
+    min-height: 31px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    border-radius: 4px;
+    padding-right: 4px;
+  }
+  .tree-row:hover {
+    background: #eef1f3;
+  }
+  .tree-row.selected {
+    background: #fff1d8;
+    outline: 1px solid #e9b04d;
+  }
+  .tree-row > input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    background: transparent;
+    font-size: 11px;
+    padding: 3px;
+  }
+  .tree-row > input:focus {
+    background: #fff;
+    outline: 1px solid #aab7c0;
+  }
+  .role-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d59024;
+  }
 }
 
 @layer workspace {
-.entity-count {min-width:22px;height:20px;display:grid;place-items:center;border-radius:999px;background:#e7ebed;color:#66747e;font-size:9px}
-.tree {padding-top:6px}
-.tree-row {min-height:29px;gap:4px;border-radius:5px;padding-right:5px}
-.tree-row:hover {background:#edf1f3}
-.tree-row.selected {background:#fff3dd;outline:1px solid #e2b15e}
-.tree-type-icon {width:13px;height:13px;color:#6a7b85;flex:0 0 auto}
-.tree-type-icon.part {width:12px;height:12px}
-.tree-name {font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:40px;flex:1}
-.tree-kind {font-size:7px;text-transform:capitalize;color:#95a0a7;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
-.tree-row-actions {display:flex;opacity:0;margin-left:auto}
-.tree-row:hover .tree-row-actions, .tree-row.selected .tree-row-actions {opacity:1}
-.tree-row-actions .icon {padding:2px}
-.tree-rename {height:22px;padding:2px 4px;flex:1;font-size:10px}
-.disclosure {margin-left:-3px}
-@media (max-width:1180px) {
-.tree-kind {display:none}
-}
+  .entity-count {
+    min-width: 22px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #e7ebed;
+    color: #66747e;
+    font-size: 9px;
+  }
+  .tree {
+    padding-top: 6px;
+  }
+  .tree-row {
+    min-height: 29px;
+    gap: 4px;
+    border-radius: 5px;
+    padding-right: 5px;
+  }
+  .tree-row:hover {
+    background: #edf1f3;
+  }
+  .tree-row.selected {
+    background: #fff3dd;
+    outline: 1px solid #e2b15e;
+  }
+  .tree-type-icon {
+    width: 13px;
+    height: 13px;
+    color: #6a7b85;
+    flex: 0 0 auto;
+  }
+  .tree-type-icon.part {
+    width: 12px;
+    height: 12px;
+  }
+  .tree-name {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 40px;
+    flex: 1;
+  }
+  .tree-kind {
+    font-size: 7px;
+    text-transform: capitalize;
+    color: #95a0a7;
+    white-space: nowrap;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tree-row-actions {
+    display: flex;
+    opacity: 0;
+    margin-left: auto;
+  }
+  .tree-row:hover .tree-row-actions,
+  .tree-row.selected .tree-row-actions {
+    opacity: 1;
+  }
+  .tree-row-actions .icon {
+    padding: 2px;
+  }
+  .tree-rename {
+    height: 22px;
+    padding: 2px 4px;
+    flex: 1;
+    font-size: 10px;
+  }
+  .disclosure {
+    margin-left: -3px;
+  }
+  @media (max-width: 1180px) {
+    .tree-kind {
+      display: none;
+    }
+  }
 }
 
 @layer refresh {
-.tree-row {min-height: 34px; border-radius: 7px;}
-.tree-row:hover {background: #e8f0f5;}
-.tree-row.selected {background: #fbece4; outline: 1px solid #deaa93;}
-.tree-name, .tree-row > input {font-size: 11px;}
-.tree-kind {color: #536b7e; font-size: 9px;}
-.tree-row-actions {opacity: 1;}
+  .tree-row {
+    min-height: 34px;
+    border-radius: 7px;
+  }
+  .tree-row:hover {
+    background: #e8f0f5;
+  }
+  .tree-row.selected {
+    background: #fbece4;
+    outline: 1px solid #deaa93;
+  }
+  .tree-name,
+  .tree-row > input {
+    font-size: 11px;
+  }
+  .tree-kind {
+    color: #536b7e;
+    font-size: 9px;
+  }
+  .tree-row-actions {
+    opacity: 1;
+  }
 }
-
 
 @layer refresh {
-.outliner {
-  background: transparent;
-}
-.tree-section-label {
-  padding: 14px 8px 8px;
-  color: #8c7f73;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .12em;
-}
-.tree {
-  padding-top: 10px;
-}
-.tree-row {
-  min-height: 38px;
-  margin-bottom: 4px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-}
-.tree-row:hover {
-  background: #faf5ee;
-  border-color: #eadcc9;
-}
-.tree-row.selected {
-  background: #fff1df;
-  border-color: #efc587;
-  outline: 0;
-  box-shadow: inset 4px 0 0 #f39a16;
-}
-.tree-type-icon,
-.tree-row-actions .icon {
-  color: #b7822f;
-}
-.tree-name,
-.tree-row > input {
-  color: #4a443d;
-  font-size: 11px;
-  font-weight: 700;
-}
-.tree-kind {
-  color: #998d82;
-  font-size: 9px;
-}
-.entity-count {
-  background: #f7ad34;
-  color: #fff;
-}
+  .outliner {
+    background: transparent;
+  }
+  .tree-section-label {
+    padding: 14px 8px 8px;
+    color: #8c7f73;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+  .tree {
+    padding-top: 10px;
+  }
+  .tree-row {
+    min-height: 38px;
+    margin-bottom: 4px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+  }
+  .tree-row:hover {
+    background: #faf5ee;
+    border-color: #eadcc9;
+  }
+  .tree-row.selected {
+    background: #fff1df;
+    border-color: #efc587;
+    outline: 0;
+    box-shadow: inset 4px 0 0 #f39a16;
+  }
+  .tree-type-icon,
+  .tree-row-actions .icon {
+    color: #b7822f;
+  }
+  .tree-name,
+  .tree-row > input {
+    color: #4a443d;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .tree-kind {
+    color: #998d82;
+    font-size: 9px;
+  }
+  .entity-count {
+    background: #f7ad34;
+    color: #fff;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-.outliner {background:#fffdfa;border-bottom:1px solid var(--ui-border)}
-.outliner .panel-heading {margin-bottom:12px}
-.entity-count {background:#fff0d7;color:#965608;border:1px solid #f3d4a8;font-size:11px;min-width:28px;height:28px}
-.tree {padding-top:12px}
-.tree-row {min-height:40px;gap:5px;border:1px solid transparent;border-radius:10px;padding-right:5px;margin:2px 0;color:var(--ui-ink);transition:background .12s ease}
-.tree-row:hover {background:#fff4e7;border-color:#f0dcc3}
-.tree-row.selected {background:#fff1da;border-color:#edc37c;outline:0;box-shadow:inset 3px 0 0 var(--ui-orange)}
-.tree-type-icon {width:15px;height:15px;color:#b57817}
-.tree-name {font-size:11px;line-height:1.35;color:#443b32;font-weight:650}
-.tree-kind {max-width:75px;font-size:9px;color:#8a7d6c}
-.tree-row-actions {display:flex;opacity:1;gap:0;flex:0 0 auto}
-.tree-row-actions .icon {min-width:24px;min-height:24px;padding:3px;border:0;color:#92785a;background:transparent}
-.tree-row-actions .icon:hover {background:#ffe3bb;color:#814900}
-.tree-section-label {padding:21px 7px 8px;color:#9b7b59;letter-spacing:.11em;font-size:10px;font-weight:850}
-.tree-rename {min-width:0;font-size:11px}
-@media(max-width:1360px){.tree-kind{display:none}}
-
+  .outliner {
+    background: #fffdfa;
+    border-bottom: 1px solid var(--ui-border);
+  }
+  .outliner .panel-heading {
+    margin-bottom: 12px;
+  }
+  .entity-count {
+    background: #fff0d7;
+    color: #965608;
+    border: 1px solid #f3d4a8;
+    font-size: 11px;
+    min-width: 28px;
+    height: 28px;
+  }
+  .tree {
+    padding-top: 12px;
+  }
+  .tree-row {
+    min-height: 40px;
+    gap: 5px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding-right: 5px;
+    margin: 2px 0;
+    color: var(--ui-ink);
+    transition: background 0.12s ease;
+  }
+  .tree-row:hover {
+    background: #fff4e7;
+    border-color: #f0dcc3;
+  }
+  .tree-row.selected {
+    background: #fff1da;
+    border-color: #edc37c;
+    outline: 0;
+    box-shadow: inset 3px 0 0 var(--ui-orange);
+  }
+  .tree-type-icon {
+    width: 15px;
+    height: 15px;
+    color: #b57817;
+  }
+  .tree-name {
+    font-size: 11px;
+    line-height: 1.35;
+    color: #443b32;
+    font-weight: 650;
+  }
+  .tree-kind {
+    max-width: 75px;
+    font-size: 9px;
+    color: #8a7d6c;
+  }
+  .tree-row-actions {
+    display: flex;
+    opacity: 1;
+    gap: 0;
+    flex: 0 0 auto;
+  }
+  .tree-row-actions .icon {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 3px;
+    border: 0;
+    color: #92785a;
+    background: transparent;
+  }
+  .tree-row-actions .icon:hover {
+    background: #ffe3bb;
+    color: #814900;
+  }
+  .tree-section-label {
+    padding: 21px 7px 8px;
+    color: #9b7b59;
+    letter-spacing: 0.11em;
+    font-size: 10px;
+    font-weight: 850;
+  }
+  .tree-rename {
+    min-width: 0;
+    font-size: 11px;
+  }
+  @media (max-width: 1360px) {
+    .tree-kind {
+      display: none;
+    }
+  }
 }

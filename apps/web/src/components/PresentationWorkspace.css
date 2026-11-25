@@ -5,59 +5,142 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.presentation-shell {position:fixed;inset:0;background:#111820;z-index:100;overflow:hidden}
-.presentation-viewport {position:absolute;inset:0}
-.presentation-viewport .viewport-canvas-wrap {position:absolute;inset:0}
-.presentation-controls {position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:120;display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;background:rgba(27,35,42,.88);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 26px #0006;color:#e9eef1}
-.presentation-controls button {background:#303d46;border-color:#55636c;color:#edf2f4}
-.presentation-controls .presentation-exit {background:#8e5e1b;border-color:#b47a28}
-.presentation-controls .toggle {color:#cdd6db;font-size:9px;flex-direction:row}
-.presentation-scene-name {min-width:130px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;font-size:11px;padding:0 8px}
-.presentation-shell .viewport-empty-state {display:none}
+  .presentation-shell {
+    position: fixed;
+    inset: 0;
+    background: #111820;
+    z-index: 100;
+    overflow: hidden;
+  }
+  .presentation-viewport {
+    position: absolute;
+    inset: 0;
+  }
+  .presentation-viewport .viewport-canvas-wrap {
+    position: absolute;
+    inset: 0;
+  }
+  .presentation-controls {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 9px;
+    border-radius: 9px;
+    background: rgba(27, 35, 42, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 26px #0006;
+    color: #e9eef1;
+  }
+  .presentation-controls button {
+    background: #303d46;
+    border-color: #55636c;
+    color: #edf2f4;
+  }
+  .presentation-controls .presentation-exit {
+    background: #8e5e1b;
+    border-color: #b47a28;
+  }
+  .presentation-controls .toggle {
+    color: #cdd6db;
+    font-size: 9px;
+    flex-direction: row;
+  }
+  .presentation-scene-name {
+    min-width: 130px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 0 8px;
+  }
+  .presentation-shell .viewport-empty-state {
+    display: none;
+  }
 }
-
 
 @layer refresh {
-.presentation-shell {
-  background: linear-gradient(180deg, #2e2723 0%, #1f1b18 100%);
-}
-.presentation-controls {
-  bottom: 22px;
-  border-radius: 16px;
-  background:
-    radial-gradient(circle at top right, rgba(255,255,255,.05), transparent 35%),
-    linear-gradient(180deg, rgba(70,58,50,.94) 0%, rgba(53,44,38,.94) 100%);
-  border-color: rgba(214, 185, 148, .28);
-  color: #fff4e8;
-}
-.presentation-controls button {
-  background: rgba(255,255,255,.08);
-  border-color: rgba(255,255,255,.14);
-  color: #fff;
-}
-.presentation-controls button:hover {
-  background: rgba(255,255,255,.14);
-}
-.presentation-controls .presentation-exit {
-  background: #c74343;
-  border-color: #b23636;
-}
-.presentation-scene-name {
-  color: #fff4e8;
-  font-size: 12px;
-  letter-spacing: .04em;
-}
+  .presentation-shell {
+    background: linear-gradient(180deg, #2e2723 0%, #1f1b18 100%);
+  }
+  .presentation-controls {
+    bottom: 22px;
+    border-radius: 16px;
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.05), transparent 35%),
+      linear-gradient(180deg, rgba(70, 58, 50, 0.94) 0%, rgba(53, 44, 38, 0.94) 100%);
+    border-color: rgba(214, 185, 148, 0.28);
+    color: #fff4e8;
+  }
+  .presentation-controls button {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+  .presentation-controls button:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .presentation-controls .presentation-exit {
+    background: #c74343;
+    border-color: #b23636;
+  }
+  .presentation-scene-name {
+    color: #fff4e8;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-.presentation-shell {background:#241c16}
-.presentation-controls {bottom:20px;max-width:calc(100% - 24px);display:flex;flex-wrap:wrap;justify-content:center;gap:7px;padding:9px;background:#3b2f28ec;color:#fff9eb;border:1px solid #97724e;border-radius:14px;box-shadow:var(--shadow-lg)}
-.presentation-controls button {min-height:35px;padding:7px 10px;background:#6b513c;color:#fff5ea;border:1px solid #896a50;border-radius:8px;font-size:11px}
-.presentation-controls button:hover {background:#856245;color:#fff}
-.presentation-controls .presentation-exit {background:#b7453b;border-color:#a23a32;color:#fff}
-.presentation-scene-name {color:#fff3da;font-size:12px}
-.presentation-controls .toggle {color:#fff0df;font-size:11px}
-
+  .presentation-shell {
+    background: #241c16;
+  }
+  .presentation-controls {
+    bottom: 20px;
+    max-width: calc(100% - 24px);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px;
+    background: #3b2f28ec;
+    color: #fff9eb;
+    border: 1px solid #97724e;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+  }
+  .presentation-controls button {
+    min-height: 35px;
+    padding: 7px 10px;
+    background: #6b513c;
+    color: #fff5ea;
+    border: 1px solid #896a50;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+  .presentation-controls button:hover {
+    background: #856245;
+    color: #fff;
+  }
+  .presentation-controls .presentation-exit {
+    background: #b7453b;
+    border-color: #a23a32;
+    color: #fff;
+  }
+  .presentation-scene-name {
+    color: #fff3da;
+    font-size: 12px;
+  }
+  .presentation-controls .toggle {
+    color: #fff0df;
+    font-size: 11px;
+  }
 }

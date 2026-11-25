@@ -1,5 +1,3 @@
-
-
 import { readFile } from 'node:fs/promises';
 import { Prisma, PrismaClient } from '@prisma/client';
 
@@ -12,48 +10,31 @@ const RESET = process.argv.includes('--reset');
 
 async function main(): Promise<void> {
   const existing = await prisma.project.findUnique({
-    where: { id: PROJECT_ID }
+    where: { id: PROJECT_ID },
   });
 
   // Evitar duplicados por defecto.
   if (existing && !RESET) {
-    console.log(
-      `El proyecto "${existing.name}" ya existe.`
-    );
-    console.log(
-      'Utiliza --reset para eliminarlo y crearlo de nuevo.'
-    );
+    console.log(`El proyecto "${existing.name}" ya existe.`);
+    console.log('Utiliza --reset para eliminarlo y crearlo de nuevo.');
     return;
   }
 
   // Cargar el diseño de ejemplo.
-  const file = new URL(
-    '../examples/demo-kitchen.design.json',
-    import.meta.url
-  );
+  const file = new URL('../examples/demo-kitchen.design.json', import.meta.url);
 
-  const design = JSON.parse(
-    await readFile(file, 'utf8')
-  ) as Record<string, unknown>;
+  const design = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
 
   // Validar versión del documento.
   if (design.schemaVersion !== 2) {
-    throw new Error(
-      'El diseño debe utilizar schemaVersion=2'
-    );
+    throw new Error('El diseño debe utilizar schemaVersion=2');
   }
 
   // Actualizar metadatos.
   const metadata = design.metadata;
 
-  if (
-    !metadata ||
-    typeof metadata !== 'object' ||
-    Array.isArray(metadata)
-  ) {
-    throw new Error(
-      'El diseño no contiene metadatos válidos.'
-    );
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    throw new Error('El diseño no contiene metadatos válidos.');
   }
 
   const designMetadata = metadata as Record<string, unknown>;
@@ -66,23 +47,22 @@ async function main(): Promise<void> {
 
   // Transacción: eliminar y recrear de forma atómica.
   await prisma.$transaction(async (tx) => {
-
     if (existing && RESET) {
       console.log('Eliminando demo anterior...');
 
       // Primero eliminar las versiones asociadas.
       await tx.designVersion.deleteMany({
-        where: { projectId: PROJECT_ID }
+        where: { projectId: PROJECT_ID },
       });
 
       // Después eliminar el borrador.
       await tx.designDraft.deleteMany({
-        where: { projectId: PROJECT_ID }
+        where: { projectId: PROJECT_ID },
       });
 
       // Finalmente eliminar el proyecto.
       await tx.project.delete({
-        where: { id: PROJECT_ID }
+        where: { id: PROJECT_ID },
       });
     }
 
@@ -90,8 +70,8 @@ async function main(): Promise<void> {
     await tx.project.create({
       data: {
         id: PROJECT_ID,
-        name: PROJECT_NAME
-      }
+        name: PROJECT_NAME,
+      },
     });
 
     // Crear borrador.
@@ -100,8 +80,8 @@ async function main(): Promise<void> {
         projectId: PROJECT_ID,
         schemaVersion: 2,
         revision,
-        designJson: design as Prisma.InputJsonValue
-      }
+        designJson: design as Prisma.InputJsonValue,
+      },
     });
 
     // Crear versión para aprobación.
@@ -111,8 +91,8 @@ async function main(): Promise<void> {
         schemaVersion: 2,
         revision,
         approvalStatus: 'DRAFT',
-        designJson: design as Prisma.InputJsonValue
-      }
+        designJson: design as Prisma.InputJsonValue,
+      },
     });
   });
 
@@ -123,20 +103,13 @@ async function main(): Promise<void> {
   console.log(`Revisión: ${revision}`);
   console.log('Estado: DRAFT');
   console.log('');
-  console.log(
-    'Abre Proyectos > Revisar versiones.'
-  );
-  console.log(
-    'Inicia sesión como Supervisor para aprobar la revisión 1.'
-  );
+  console.log('Abre Proyectos > Revisar versiones.');
+  console.log('Inicia sesión como Supervisor para aprobar la revisión 1.');
 }
 
 main()
   .catch((error) => {
-    console.error(
-      'No fue posible crear la demo:',
-      error
-    );
+    console.error('No fue posible crear la demo:', error);
     process.exitCode = 1;
   })
   .finally(async () => {

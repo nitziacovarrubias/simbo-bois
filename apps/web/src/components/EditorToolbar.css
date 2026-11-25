@@ -5,237 +5,648 @@
    Nota: CSS normal (no CSS Modules); selectores y nombres JSX originales intactos. */
 
 @layer existing {
-.toolbar-menu {max-height: 70vh;
-    overflow: auto}
-.toolbar-menu button {white-space: nowrap}
-.tool-strip {transition:background-color 150ms ease,border-color 150ms ease,color 150ms ease,opacity 150ms ease,transform 150ms ease}
+  .toolbar-menu {
+    max-height: 70vh;
+    overflow: auto;
+  }
+  .toolbar-menu button {
+    white-space: nowrap;
+  }
+  .tool-strip {
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      opacity 150ms ease,
+      transform 150ms ease;
+  }
 }
 
 @layer layout {
-.tool-strip {position:absolute;z-index:10;left:14px;top:12px;background:rgba(30,39,47,.94);border:1px solid #46545d;border-radius:7px;padding:4px;display:flex;gap:2px;box-shadow:0 5px 20px #0003}
-.tool-button {border:0;background:transparent;color:#ced5db;border-radius:4px;padding:5px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;min-width:42px}
-.tool-button:hover, .tool-button.active {background:#3b4851;color:#f6af38}
-.tool-button svg {width:17px;height:17px}
-.separator {width:1px;background:#56636c;margin:2px 3px}
+  .tool-strip {
+    position: absolute;
+    z-index: 10;
+    left: 14px;
+    top: 12px;
+    background: rgba(30, 39, 47, 0.94);
+    border: 1px solid #46545d;
+    border-radius: 7px;
+    padding: 4px;
+    display: flex;
+    gap: 2px;
+    box-shadow: 0 5px 20px #0003;
+  }
+  .tool-button {
+    border: 0;
+    background: transparent;
+    color: #ced5db;
+    border-radius: 4px;
+    padding: 5px 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 9px;
+    min-width: 42px;
+  }
+  .tool-button:hover,
+  .tool-button.active {
+    background: #3b4851;
+    color: #f6af38;
+  }
+  .tool-button svg {
+    width: 17px;
+    height: 17px;
+  }
+  .separator {
+    width: 1px;
+    background: #56636c;
+    margin: 2px 3px;
+  }
 }
 
 @layer workspace {
-.tool-strip {left:50%;transform:translateX(-50%);top:10px;max-width:calc(100% - 340px);padding:4px 6px;gap:0;background:rgba(29,38,46,.95);border-color:#53616a;border-radius:8px;box-shadow:0 7px 22px #0000002e;align-items:stretch}
-.tool-group {display:flex;align-items:stretch;border-right:1px solid #4c5961;padding:0 4px}
-.tool-group:last-of-type {border-right:0}
-.tool-group-label {display:none}
-.tool-group-actions {display:flex;gap:1px}
-.tool-button {position:relative;min-width:44px;height:42px;padding:4px 7px;justify-content:center;gap:1px;color:#d0d7dc;border-radius:5px}
-.tool-button span {font-size:8px}
-.tool-button kbd {position:absolute;right:3px;top:2px;color:#84939c;font:7px ui-monospace,SFMono-Regular,Menlo,monospace;background:transparent}
-.tool-button svg {width:16px;height:16px}
-.tool-button:hover {background:#394650;color:#fff}
-.tool-button.active {background:#3d4850;color:#f2b14d;box-shadow:inset 0 -2px 0 var(--accent)}
-.toolbar-overflow {position:relative;display:flex}
-.toolbar-overflow>summary {list-style:none;width:34px;display:grid;place-items:center;color:#c7d0d5;cursor:pointer;border-radius:5px}
-.toolbar-overflow>summary::-webkit-details-marker {display:none}
-.toolbar-overflow>summary svg {width:15px}
-.toolbar-overflow[open]>summary {background:#3a4750;color:#f0b454}
-.toolbar-menu {position:absolute;right:0;top:46px;width:150px;padding:5px;background:#25313a;border:1px solid #53616b;border-radius:7px;box-shadow:0 8px 22px #0005;display:grid;gap:2px}
-.toolbar-menu button {display:flex;align-items:center;gap:7px;background:transparent;border:0;color:#d7dee2;text-align:left;justify-content:flex-start}
-.toolbar-menu button:hover {background:#36434c}
-.toolbar-menu svg {width:14px}
-@media (max-width:1450px) {
-.tool-strip {max-width:calc(100% - 290px)}
-}
-@media (max-width:1450px) {
-.tool-button {min-width:40px;padding-left:5px;padding-right:5px}
-}
-@media (max-width:1450px) {
-.tool-button span {display:none}
-}
-@media (max-width:1450px) {
-.tool-button kbd {display:none}
-}
-@media (max-width:1180px) {
-.tool-strip {left:14px;transform:none;max-width:60%}
-}
+  .tool-strip {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10px;
+    max-width: calc(100% - 340px);
+    padding: 4px 6px;
+    gap: 0;
+    background: rgba(29, 38, 46, 0.95);
+    border-color: #53616a;
+    border-radius: 8px;
+    box-shadow: 0 7px 22px #0000002e;
+    align-items: stretch;
+  }
+  .tool-group {
+    display: flex;
+    align-items: stretch;
+    border-right: 1px solid #4c5961;
+    padding: 0 4px;
+  }
+  .tool-group:last-of-type {
+    border-right: 0;
+  }
+  .tool-group-label {
+    display: none;
+  }
+  .tool-group-actions {
+    display: flex;
+    gap: 1px;
+  }
+  .tool-button {
+    position: relative;
+    min-width: 44px;
+    height: 42px;
+    padding: 4px 7px;
+    justify-content: center;
+    gap: 1px;
+    color: #d0d7dc;
+    border-radius: 5px;
+  }
+  .tool-button span {
+    font-size: 8px;
+  }
+  .tool-button kbd {
+    position: absolute;
+    right: 3px;
+    top: 2px;
+    color: #84939c;
+    font:
+      7px ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      monospace;
+    background: transparent;
+  }
+  .tool-button svg {
+    width: 16px;
+    height: 16px;
+  }
+  .tool-button:hover {
+    background: #394650;
+    color: #fff;
+  }
+  .tool-button.active {
+    background: #3d4850;
+    color: #f2b14d;
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .toolbar-overflow {
+    position: relative;
+    display: flex;
+  }
+  .toolbar-overflow > summary {
+    list-style: none;
+    width: 34px;
+    display: grid;
+    place-items: center;
+    color: #c7d0d5;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .toolbar-overflow > summary::-webkit-details-marker {
+    display: none;
+  }
+  .toolbar-overflow > summary svg {
+    width: 15px;
+  }
+  .toolbar-overflow[open] > summary {
+    background: #3a4750;
+    color: #f0b454;
+  }
+  .toolbar-menu {
+    position: absolute;
+    right: 0;
+    top: 46px;
+    width: 150px;
+    padding: 5px;
+    background: #25313a;
+    border: 1px solid #53616b;
+    border-radius: 7px;
+    box-shadow: 0 8px 22px #0005;
+    display: grid;
+    gap: 2px;
+  }
+  .toolbar-menu button {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: transparent;
+    border: 0;
+    color: #d7dee2;
+    text-align: left;
+    justify-content: flex-start;
+  }
+  .toolbar-menu button:hover {
+    background: #36434c;
+  }
+  .toolbar-menu svg {
+    width: 14px;
+  }
+  @media (max-width: 1450px) {
+    .tool-strip {
+      max-width: calc(100% - 290px);
+    }
+  }
+  @media (max-width: 1450px) {
+    .tool-button {
+      min-width: 40px;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+  }
+  @media (max-width: 1450px) {
+    .tool-button span {
+      display: none;
+    }
+  }
+  @media (max-width: 1450px) {
+    .tool-button kbd {
+      display: none;
+    }
+  }
+  @media (max-width: 1180px) {
+    .tool-strip {
+      left: 14px;
+      transform: none;
+      max-width: 60%;
+    }
+  }
 }
 
 @layer refresh {
-.tool-group {min-width: 0; padding: 0 5px; border-right: 1px solid #546678;}
-.tool-group-actions {gap: 3px;}
-.tool-button {min-width: 48px; height: 45px; padding: 4px 7px;
-  color: #e0e7ec; border-radius: 7px;}
-.tool-button svg {width: 18px; height: 18px;}
-.tool-button span {color: inherit; font-size: 10px; font-weight: 600;}
-.tool-button kbd {color: #c3d0da; font-size: 8px;}
-.tool-button:hover {background: #465c70; color: #fff;}
-.tool-button.active {background: #455e74; color: #ffcfb7; box-shadow: inset 0 -2px 0 #d97d54;}
-.toolbar-overflow {flex: 0 0 40px;}
-.toolbar-overflow > summary {width: 40px; height: 45px; color: #e0e7ec;}
-.toolbar-overflow[open] > summary {background: #455e74; color: #ffcfb7;}
-.toolbar-menu {z-index: 60; top: calc(100% + 10px); right: 0;
-  width: 225px; max-height: min(66vh, 450px); overflow-y: auto;
-  padding: 7px; gap: 3px; border: 1px solid #60798e;
-  border-radius: 10px; background: #293241; box-shadow: var(--shadow-lg);}
-.toolbar-menu button {min-height: 31px; font-size: 11px; border-radius: 6px; color: #f3f6f8;}
-.toolbar-menu button:hover {background: #455e74;}
-.toolbar-menu svg {width: 16px; height: 16px;}
-@media (max-width: 1370px) {
-.tool-button {min-width: 43px; padding: 3px 5px;}
+  .tool-group {
+    min-width: 0;
+    padding: 0 5px;
+    border-right: 1px solid #546678;
+  }
+  .tool-group-actions {
+    gap: 3px;
+  }
+  .tool-button {
+    min-width: 48px;
+    height: 45px;
+    padding: 4px 7px;
+    color: #e0e7ec;
+    border-radius: 7px;
+  }
+  .tool-button svg {
+    width: 18px;
+    height: 18px;
+  }
+  .tool-button span {
+    color: inherit;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .tool-button kbd {
+    color: #c3d0da;
+    font-size: 8px;
+  }
+  .tool-button:hover {
+    background: #465c70;
+    color: #fff;
+  }
+  .tool-button.active {
+    background: #455e74;
+    color: #ffcfb7;
+    box-shadow: inset 0 -2px 0 #d97d54;
+  }
+  .toolbar-overflow {
+    flex: 0 0 40px;
+  }
+  .toolbar-overflow > summary {
+    width: 40px;
+    height: 45px;
+    color: #e0e7ec;
+  }
+  .toolbar-overflow[open] > summary {
+    background: #455e74;
+    color: #ffcfb7;
+  }
+  .toolbar-menu {
+    z-index: 60;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 225px;
+    max-height: min(66vh, 450px);
+    overflow-y: auto;
+    padding: 7px;
+    gap: 3px;
+    border: 1px solid #60798e;
+    border-radius: 10px;
+    background: #293241;
+    box-shadow: var(--shadow-lg);
+  }
+  .toolbar-menu button {
+    min-height: 31px;
+    font-size: 11px;
+    border-radius: 6px;
+    color: #f3f6f8;
+  }
+  .toolbar-menu button:hover {
+    background: #455e74;
+  }
+  .toolbar-menu svg {
+    width: 16px;
+    height: 16px;
+  }
+  @media (max-width: 1370px) {
+    .tool-button {
+      min-width: 43px;
+      padding: 3px 5px;
+    }
+  }
+  @media (max-width: 1370px) {
+    .tool-button span,
+    .tool-button kbd {
+      display: none;
+    }
+  }
+  @media (max-width: 780px) {
+    .tool-group {
+      padding: 0 2px;
+    }
+  }
+  @media (max-width: 780px) {
+    .tool-button {
+      min-width: 31px;
+      height: 38px;
+      padding: 4px;
+    }
+  }
+  @media (max-width: 780px) {
+    .tool-button svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  @media (max-width: 780px) {
+    .toolbar-overflow {
+      flex-basis: 30px;
+    }
+  }
+  @media (max-width: 780px) {
+    .toolbar-overflow > summary {
+      width: 30px;
+      height: 38px;
+    }
+  }
 }
-@media (max-width: 1370px) {
-.tool-button span, .tool-button kbd {display: none;}
-}
-@media (max-width: 780px) {
-.tool-group {padding: 0 2px;}
-}
-@media (max-width: 780px) {
-.tool-button {min-width: 31px; height: 38px; padding: 4px;}
-}
-@media (max-width: 780px) {
-.tool-button svg {width: 16px; height: 16px;}
-}
-@media (max-width: 780px) {
-.toolbar-overflow {flex-basis: 30px;}
-}
-@media (max-width: 780px) {
-.toolbar-overflow > summary {width: 30px; height: 38px;}
-}
-}
-
 
 @layer refresh {
-.tool-strip {
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(68,56,48,.98) 0%, rgba(55,45,39,.98) 100%);
-  box-shadow: 0 16px 34px rgba(38, 24, 14, .20);
-}
-.tool-group {
-  border-right-color: rgba(255,255,255,.10);
-}
-.tool-button {
-  color: #f0ebe7;
-  border-radius: 11px;
-}
-.tool-button kbd {
-  color: #cdb8a2;
-}
-.tool-button:hover {
-  background: rgba(255,255,255,.10);
-  color: #fff;
-}
-.tool-button.active {
-  background: rgba(243,154,22,.18);
-  color: #ffcb77;
-  box-shadow: inset 0 -2px 0 #f39a16;
-}
-.toolbar-overflow > summary {
-  color: #f0ebe7;
-}
-.toolbar-menu {
-  background: #433730;
-  border-color: #68584c;
-}
-.toolbar-menu button {
-  color: #f4f0eb;
-}
-.toolbar-menu button:hover {
-  background: rgba(255,255,255,.08);
-}
+  .tool-strip {
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(68, 56, 48, 0.98) 0%, rgba(55, 45, 39, 0.98) 100%);
+    box-shadow: 0 16px 34px rgba(38, 24, 14, 0.2);
+  }
+  .tool-group {
+    border-right-color: rgba(255, 255, 255, 0.1);
+  }
+  .tool-button {
+    color: #f0ebe7;
+    border-radius: 11px;
+  }
+  .tool-button kbd {
+    color: #cdb8a2;
+  }
+  .tool-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .tool-button.active {
+    background: rgba(243, 154, 22, 0.18);
+    color: #ffcb77;
+    box-shadow: inset 0 -2px 0 #f39a16;
+  }
+  .toolbar-overflow > summary {
+    color: #f0ebe7;
+  }
+  .toolbar-menu {
+    background: #433730;
+    border-color: #68584c;
+  }
+  .toolbar-menu button {
+    color: #f4f0eb;
+  }
+  .toolbar-menu button:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* SIMBO UX PRO · estilos locales (mantener lógica intacta). */
 @layer pro {
-
-/* Herramientas CAD compactas: rail vertical izquierdo, sin competir por la cabecera. */
-.editor-command-dock .tool-strip {max-width:none;overflow:visible}
-.tool-strip .tool-group {display:flex;flex-direction:column;align-items:center;border-right:0;border-bottom:1px solid #675345;padding:4px 0;width:100%;min-width:0}
-.tool-strip .tool-group:last-of-type {border-bottom:0}
-.tool-strip .tool-group-actions {display:flex;flex-direction:column;gap:3px;align-items:center;width:100%}
-.tool-strip .tool-button {width:40px;min-width:40px;height:39px;min-height:39px;display:grid;place-items:center;position:relative;padding:0;border-radius:9px;border:1px solid transparent;background:transparent;color:#f0e9df}
-.tool-strip .tool-button svg {width:19px;height:19px;stroke-width:1.8}
-.tool-strip .tool-button span,.tool-strip .tool-button kbd {display:none}
-.tool-strip .tool-button:hover {background:#624b3b;border-color:#806247;color:#fff;transform:none}
-.tool-strip .tool-button.active {background:#f0a52d;border-color:#f5b84f;color:#302014;box-shadow:inset 3px 0 0 #fff0bc}
-.tool-strip .toolbar-overflow {display:flex;align-items:center;justify-content:center;position:relative;width:100%;min-width:0;flex:0 0 38px;padding-top:3px}
-.tool-strip .toolbar-overflow>summary {display:grid;place-items:center;width:40px;height:34px;min-height:34px;list-style:none;color:#eee2d3;border-radius:8px}
-.tool-strip .toolbar-overflow>summary:hover,.tool-strip .toolbar-overflow[open]>summary {background:#624b3b;color:#fff}
-.tool-strip .toolbar-overflow>summary svg {width:18px;height:18px}
-.tool-strip .toolbar-menu {position:absolute;top:auto;bottom:0;left:calc(100% + 10px);right:auto;z-index:90;width:215px;max-height:min(72vh,540px);padding:7px;background:#fffdfa;border:1px solid #dbc8ae;border-radius:12px;box-shadow:var(--shadow-lg);overflow:auto;display:grid;gap:2px}
-.tool-strip .toolbar-menu button,.tool-strip .toolbar-menu button.active {display:flex;align-items:center;gap:11px;justify-content:flex-start;width:100%;min-height:34px;padding:8px 11px;background:transparent;border:0;border-radius:7px;color:#4f3f32;font-size:11px;font-weight:650;text-align:left;white-space:normal}
-.tool-strip .toolbar-menu button:hover {background:#ffedd3;color:#754400}
-.tool-strip .toolbar-menu button svg {color:#d48712;flex:0 0 16px}
-
+  /* Herramientas CAD compactas: rail vertical izquierdo, sin competir por la cabecera. */
+  .editor-command-dock .tool-strip {
+    max-width: none;
+    overflow: visible;
+  }
+  .tool-strip .tool-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 0;
+    border-bottom: 1px solid #675345;
+    padding: 4px 0;
+    width: 100%;
+    min-width: 0;
+  }
+  .tool-strip .tool-group:last-of-type {
+    border-bottom: 0;
+  }
+  .tool-strip .tool-group-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: center;
+    width: 100%;
+  }
+  .tool-strip .tool-button {
+    width: 40px;
+    min-width: 40px;
+    height: 39px;
+    min-height: 39px;
+    display: grid;
+    place-items: center;
+    position: relative;
+    padding: 0;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #f0e9df;
+  }
+  .tool-strip .tool-button svg {
+    width: 19px;
+    height: 19px;
+    stroke-width: 1.8;
+  }
+  .tool-strip .tool-button span,
+  .tool-strip .tool-button kbd {
+    display: none;
+  }
+  .tool-strip .tool-button:hover {
+    background: #624b3b;
+    border-color: #806247;
+    color: #fff;
+    transform: none;
+  }
+  .tool-strip .tool-button.active {
+    background: #f0a52d;
+    border-color: #f5b84f;
+    color: #302014;
+    box-shadow: inset 3px 0 0 #fff0bc;
+  }
+  .tool-strip .toolbar-overflow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 38px;
+    padding-top: 3px;
+  }
+  .tool-strip .toolbar-overflow > summary {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 34px;
+    min-height: 34px;
+    list-style: none;
+    color: #eee2d3;
+    border-radius: 8px;
+  }
+  .tool-strip .toolbar-overflow > summary:hover,
+  .tool-strip .toolbar-overflow[open] > summary {
+    background: #624b3b;
+    color: #fff;
+  }
+  .tool-strip .toolbar-overflow > summary svg {
+    width: 18px;
+    height: 18px;
+  }
+  .tool-strip .toolbar-menu {
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    left: calc(100% + 10px);
+    right: auto;
+    z-index: 90;
+    width: 215px;
+    max-height: min(72vh, 540px);
+    padding: 7px;
+    background: #fffdfa;
+    border: 1px solid #dbc8ae;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    overflow: auto;
+    display: grid;
+    gap: 2px;
+  }
+  .tool-strip .toolbar-menu button,
+  .tool-strip .toolbar-menu button.active {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 11px;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    color: #4f3f32;
+    font-size: 11px;
+    font-weight: 650;
+    text-align: left;
+    white-space: normal;
+  }
+  .tool-strip .toolbar-menu button:hover {
+    background: #ffedd3;
+    color: #754400;
+  }
+  .tool-strip .toolbar-menu button svg {
+    color: #d48712;
+    flex: 0 0 16px;
+  }
 }
-
 
 /* Contraste específico de herramientas: cada comando se distingue del canvas claro. */
 @layer pro {
- .editor-command-dock .tool-strip .tool-group {
-   width:100%;
-   padding:5px 0;
-   border-bottom:1px solid #69513d;
- }
- .editor-command-dock .tool-strip .tool-group:last-of-type {border-bottom:0}
- .editor-command-dock .tool-strip .tool-button {
-   display:grid;
-   place-items:center;
-   flex:0 0 40px;
-   width:40px;
-   min-width:40px;
-   height:40px;
-   min-height:40px;
-   background:#513d30;
-   border:1px solid #6c5140;
-   color:#fff4de;
-   border-radius:9px;
-   opacity:1;
-   visibility:visible;
-   filter:none;
- }
- .editor-command-dock .tool-strip .tool-button svg {
-   width:21px;
-   height:21px;
-   color:inherit;
-   stroke-width:2.2;
-   opacity:1;
- }
- .editor-command-dock .tool-strip .tool-button:hover {
-   background:#745038;
-   border-color:#c48b48;
-   color:#fff;
- }
- .editor-command-dock .tool-strip .tool-button.active {
-   background:#e7a544;
-   border-color:#ffd082;
-   color:#35220f;
-   box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);
- }
- .editor-command-dock .tool-strip .toolbar-overflow > summary {
-   background:#584235;
-   border:1px solid #735845;
-   color:#ffdfac;
-   border-radius:9px;
-   width:40px;
-   height:36px;
- }
- .editor-command-dock .tool-strip .toolbar-overflow > summary:hover {
-   background:#745038;
-   color:#fff;
- }
- @media (max-width:760px) {
-   .editor-command-dock .tool-strip .tool-button {width:38px;min-width:38px;height:37px;min-height:37px}
-   .editor-command-dock .tool-strip .toolbar-overflow > summary {width:38px}
- }
+  .editor-command-dock .tool-strip .tool-group {
+    width: 100%;
+    padding: 5px 0;
+    border-bottom: 1px solid #69513d;
+  }
+  .editor-command-dock .tool-strip .tool-group:last-of-type {
+    border-bottom: 0;
+  }
+  .editor-command-dock .tool-strip .tool-button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    background: #513d30;
+    border: 1px solid #6c5140;
+    color: #fff4de;
+    border-radius: 9px;
+    opacity: 1;
+    visibility: visible;
+    filter: none;
+  }
+  .editor-command-dock .tool-strip .tool-button svg {
+    width: 21px;
+    height: 21px;
+    color: inherit;
+    stroke-width: 2.2;
+    opacity: 1;
+  }
+  .editor-command-dock .tool-strip .tool-button:hover {
+    background: #745038;
+    border-color: #c48b48;
+    color: #fff;
+  }
+  .editor-command-dock .tool-strip .tool-button.active {
+    background: #e7a544;
+    border-color: #ffd082;
+    color: #35220f;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.34);
+  }
+  .editor-command-dock .tool-strip .toolbar-overflow > summary {
+    background: #584235;
+    border: 1px solid #735845;
+    color: #ffdfac;
+    border-radius: 9px;
+    width: 40px;
+    height: 36px;
+  }
+  .editor-command-dock .tool-strip .toolbar-overflow > summary:hover {
+    background: #745038;
+    color: #fff;
+  }
+  @media (max-width: 760px) {
+    .editor-command-dock .tool-strip .tool-button {
+      width: 38px;
+      min-width: 38px;
+      height: 37px;
+      min-height: 37px;
+    }
+    .editor-command-dock .tool-strip .toolbar-overflow > summary {
+      width: 38px;
+    }
+  }
 }
 
 /* Sección CAD UX: estados, menú y agrupación legibles. */
-.tool-strip .tool-button:disabled {opacity:.38;cursor:not-allowed;background:transparent;box-shadow:none;}
-.tool-strip .tool-button[aria-pressed="true"] {background:#624530;color:#f9d494;box-shadow:inset 0 -2px #e7b36a;}
-.tool-strip .tool-button:focus-visible,.tool-strip .toolbar-overflow>summary:focus-visible {outline:2px solid #f3c275;outline-offset:2px;}
-.tool-strip .toolbar-menu {min-width:240px;max-height:min(70vh,520px);overflow-y:auto;}
-.tool-strip .toolbar-menu button {width:100%;gap:10px;min-height:37px;padding:8px 10px;font-size:12px;}
-.tool-strip .toolbar-menu button svg {flex:0 0 17px;width:17px;height:17px;}
-.tool-strip .toolbar-menu button:disabled {opacity:.38;cursor:not-allowed;}
-.tool-strip .toolbar-menu button:disabled:hover {background:transparent;}
-.tool-strip .toolbar-menu-section-title {color:#805630;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:9px 10px 4px;}
-.tool-strip .toolbar-menu-section-title:not(:first-child) {margin-top:5px;border-top:1px solid #ffffff20;}
-.tool-strip .toolbar-menu-footer {padding:8px 10px;color:#82684f;font-size:10px;border-top:1px solid #ffffff20;}
-@media (max-width:1100px){.app-shell .editor-command-dock .tool-strip .tool-button {width:39px;min-width:39px;}.app-shell .editor-command-dock .tool-strip .toolbar-overflow>summary {width:38px;}}
+.tool-strip .tool-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  background: transparent;
+  box-shadow: none;
+}
+.tool-strip .tool-button[aria-pressed='true'] {
+  background: #624530;
+  color: #f9d494;
+  box-shadow: inset 0 -2px #e7b36a;
+}
+.tool-strip .tool-button:focus-visible,
+.tool-strip .toolbar-overflow > summary:focus-visible {
+  outline: 2px solid #f3c275;
+  outline-offset: 2px;
+}
+.tool-strip .toolbar-menu {
+  min-width: 240px;
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+}
+.tool-strip .toolbar-menu button {
+  width: 100%;
+  gap: 10px;
+  min-height: 37px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.tool-strip .toolbar-menu button svg {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+}
+.tool-strip .toolbar-menu button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.tool-strip .toolbar-menu button:disabled:hover {
+  background: transparent;
+}
+.tool-strip .toolbar-menu-section-title {
+  color: #805630;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 9px 10px 4px;
+}
+.tool-strip .toolbar-menu-section-title:not(:first-child) {
+  margin-top: 5px;
+  border-top: 1px solid #ffffff20;
+}
+.tool-strip .toolbar-menu-footer {
+  padding: 8px 10px;
+  color: #82684f;
+  font-size: 10px;
+  border-top: 1px solid #ffffff20;
+}
+@media (max-width: 1100px) {
+  .app-shell .editor-command-dock .tool-strip .tool-button {
+    width: 39px;
+    min-width: 39px;
+  }
+  .app-shell .editor-command-dock .tool-strip .toolbar-overflow > summary {
+    width: 38px;
+  }
+}

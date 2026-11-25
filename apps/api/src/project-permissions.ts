@@ -13,6 +13,15 @@ export function canEditDesign(role: ProjectRole): boolean {
 export function canManageCollaborators(role: ProjectRole): boolean {
   return role === 'SUPERVISOR';
 }
-export function canReadProject(role: ProjectRole, ownerId: string | null, responsibleId: string | null, actorId: string, assigned: boolean): boolean {
-  return role === 'SUPERVISOR' || (role === 'COLLABORATOR' ? assigned : ownerId === actorId || responsibleId === actorId);
+export function canReadProject(
+  role: ProjectRole,
+  ownerId: string | null,
+  responsibleId: string | null,
+  actorId: string,
+  assigned: boolean,
+): boolean {
+  return (
+    role === 'SUPERVISOR' ||
+    (role === 'COLLABORATOR' ? assigned : ownerId === actorId || responsibleId === actorId)
+  );
 }

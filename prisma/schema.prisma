@@ -10,6 +10,9 @@ datasource db {
 model Project {
   id        String          @id @default(cuid())
   name      String
+  stage     ProjectStage @default(DESIGN)
+  clientId String?
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
   projectType String? @db.VarChar(24)
   clientName String? @db.VarChar(160)
   location String? @db.VarChar(240)
@@ -28,6 +31,8 @@ model Project {
 
   @@index([ownerId])
   @@index([responsibleId])
+  @@index([clientId])
+  @@index([stage])
 }
 
 model DesignDraft {
@@ -85,6 +90,30 @@ model ModuleCatalogEntry {
   updatedAt      DateTime @default(now()) @updatedAt
 }
 
+enum ProjectStage {
+  DESIGN
+  CUTTING
+  QUOTING
+  MANUFACTURING
+  INSTALLATION
+  COMPLETED
+}
+
+model Client {
+  id String @id @default(cuid())
+  name String @db.VarChar(160)
+  phone String? @db.VarChar(32)
+  email String? @db.VarChar(160)
+  address String? @db.VarChar(240)
+  placeId String? @db.VarChar(240)
+  taxId String? @db.VarChar(32)
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  projects Project[]
+  @@index([name])
+}
+
 enum UserRole {
   ARCHITECT
   SUPERVISOR
@@ -99,6 +128,7 @@ enum DesignApprovalStatus {
 model User {
   id           String @id @default(cuid())
   email        String @unique
+  username     String? @unique @db.VarChar(40)
   name         String
   passwordHash String
   role         UserRole

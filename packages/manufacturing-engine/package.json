@@ -1,1 +1,11 @@
-{"name":"@simbo/manufacturing-engine","version":"0.3.0","type":"module","main":"src/index.ts","dependencies":{"@simbo/design-domain":"workspace:*","@simbo/hardware-engine":"workspace:*","@simbo/shared-contracts":"workspace:*"}}
+{
+  "name": "@simbo/manufacturing-engine",
+  "version": "0.3.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@simbo/design-domain": "workspace:*",
+    "@simbo/hardware-engine": "workspace:*",
+    "@simbo/shared-contracts": "workspace:*"
+  }
+}

@@ -7,7 +7,11 @@ const DATA_IMAGE = /^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i;
 
 export function materialTextureSrc(material?: MaterialDefinition): string | undefined {
   const value = material?.metadata?.textureDataUrl;
-  return typeof value === 'string' && value.length <= MAX_TEXTURE_DATA_CHARS && DATA_IMAGE.test(value) ? value : undefined;
+  return typeof value === 'string' &&
+    value.length <= MAX_TEXTURE_DATA_CHARS &&
+    DATA_IMAGE.test(value)
+    ? value
+    : undefined;
 }
 
 export async function prepareTexture(file: File): Promise<string> {
@@ -36,7 +40,7 @@ export async function prepareTexture(file: File): Promise<string> {
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     // Some browsers cannot encode WebP; use JPEG as a compatible fallback.
     for (const mime of ['image/webp', 'image/jpeg'] as const) {
-      for (const quality of [.85, .7, .55, .4]) {
+      for (const quality of [0.85, 0.7, 0.55, 0.4]) {
         const data = canvas.toDataURL(mime, quality);
         if (data.startsWith(`data:${mime};`) && data.length <= MAX_TEXTURE_DATA_CHARS) return data;
       }

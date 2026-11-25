@@ -7,7 +7,7 @@ import type {
   ModuleInstance,
   Part,
   Transform,
-  Vec3
+  Vec3,
 } from './index.ts';
 
 type Mat3 = [number, number, number, number, number, number, number, number, number];
@@ -28,7 +28,7 @@ function rotationMatrix(rotation: Euler3): Mat3 {
     sz * sy * cx - cz * sx,
     -sy,
     cy * sx,
-    cy * cx
+    cy * cx,
   ];
 }
 
@@ -54,7 +54,7 @@ function eulerFromMatrix(matrix: Mat3): Euler3 {
     return {
       x: Math.atan2(matrix[7], matrix[8]),
       y,
-      z: Math.atan2(matrix[3], matrix[0])
+      z: Math.atan2(matrix[3], matrix[0]),
     };
   }
   return { x: Math.atan2(-matrix[5], matrix[4]), y, z: 0 };
@@ -69,7 +69,7 @@ export function rotateVectorByEuler(vector: Vec3, rotation: Euler3): Vec3 {
   return {
     x: m[0] * vector.x + m[1] * vector.y + m[2] * vector.z,
     y: m[3] * vector.x + m[4] * vector.y + m[5] * vector.z,
-    z: m[6] * vector.x + m[7] * vector.y + m[8] * vector.z
+    z: m[6] * vector.x + m[7] * vector.y + m[8] * vector.z,
   };
 }
 
@@ -79,9 +79,11 @@ export function composeTransforms(parent: Transform, local: Transform): Transfor
     position: {
       x: parent.position.x + offset.x,
       y: parent.position.y + offset.y,
-      z: parent.position.z + offset.z
+      z: parent.position.z + offset.z,
     },
-    rotation: eulerFromMatrix(multiplyMatrix(rotationMatrix(parent.rotation), rotationMatrix(local.rotation)))
+    rotation: eulerFromMatrix(
+      multiplyMatrix(rotationMatrix(parent.rotation), rotationMatrix(local.rotation)),
+    ),
   };
 }
 
@@ -94,7 +96,11 @@ export function invertTransform(transform: Transform): Transform {
 
 export function localToWorld(transform: Transform, point: Vec3): Vec3 {
   const rotated = rotateVectorByEuler(point, transform.rotation);
-  return { x: transform.position.x + rotated.x, y: transform.position.y + rotated.y, z: transform.position.z + rotated.z };
+  return {
+    x: transform.position.x + rotated.x,
+    y: transform.position.y + rotated.y,
+    z: transform.position.z + rotated.z,
+  };
 }
 
 export function worldToLocal(transform: Transform, point: Vec3): Vec3 {
@@ -103,23 +109,28 @@ export function worldToLocal(transform: Transform, point: Vec3): Vec3 {
 
 export function getParentAssemblyId(design: DesignDocument, entityId: Id): Id | undefined {
   for (const assembly of design.assemblies) {
-    if (assembly.children.some(child => child.id === entityId)) return assembly.id;
+    if (assembly.children.some((child) => child.id === entityId)) return assembly.id;
   }
   return undefined;
 }
 
-export function getModuleInstanceForRootAssembly(design: DesignDocument, rootAssemblyId: Id): ModuleInstance | undefined {
-  return design.moduleInstances.find(instance => instance.rootAssemblyId === rootAssemblyId && !instance.detached);
+export function getModuleInstanceForRootAssembly(
+  design: DesignDocument,
+  rootAssemblyId: Id,
+): ModuleInstance | undefined {
+  return design.moduleInstances.find(
+    (instance) => instance.rootAssemblyId === rootAssemblyId && !instance.detached,
+  );
 }
 
 function findAssembly(design: DesignDocument, id: Id): Assembly {
-  const assembly = design.assemblies.find(candidate => candidate.id === id);
+  const assembly = design.assemblies.find((candidate) => candidate.id === id);
   if (!assembly) throw new Error(`Assembly no encontrado: ${id}`);
   return assembly;
 }
 
 function findPart(design: DesignDocument, id: Id): Part {
-  const part = design.parts.find(candidate => candidate.id === id);
+  const part = design.parts.find((candidate) => candidate.id === id);
   if (!part) throw new Error(`Part no encontrada: ${id}`);
   return part;
 }
@@ -129,7 +140,7 @@ function identity(): Transform {
 }
 
 export function getModuleInstanceWorldTransform(design: DesignDocument, instanceId: Id): Transform {
-  const instance = design.moduleInstances.find(candidate => candidate.id === instanceId);
+  const instance = design.moduleInstances.find((candidate) => candidate.id === instanceId);
   if (!instance) throw new Error(`ModuleInstance no encontrado: ${instanceId}`);
   const parentId = getParentAssemblyId(design, instance.rootAssemblyId);
   const parentWorld = parentId ? getAssemblyWorldTransform(design, parentId) : identity();
@@ -139,7 +150,7 @@ export function getModuleInstanceWorldTransform(design: DesignDocument, instance
 export function getAssemblyWorldTransform(
   design: DesignDocument,
   assemblyId: Id,
-  visiting: Set<Id> = new Set()
+  visiting: Set<Id> = new Set(),
 ): Transform {
   if (visiting.has(assemblyId)) throw new Error(`Ciclo en jerarquía de assemblies: ${assemblyId}`);
   visiting.add(assemblyId);
@@ -160,51 +171,72 @@ export function getPartWorldTransform(design: DesignDocument, partId: Id): Trans
   return composeTransforms(parentWorld, part.transform);
 }
 
-export function getApplianceWorldTransform(design: DesignDocument, applianceInstanceId: Id): Transform {
-  const instance = design.applianceInstances.find(candidate => candidate.id === applianceInstanceId);
+export function getApplianceWorldTransform(
+  design: DesignDocument,
+  applianceInstanceId: Id,
+): Transform {
+  const instance = design.applianceInstances.find(
+    (candidate) => candidate.id === applianceInstanceId,
+  );
   if (!instance) throw new Error(`ApplianceInstance no encontrado: ${applianceInstanceId}`);
   return structuredClone(instance.transform);
 }
 
 export function getCountertopWorldTransform(design: DesignDocument, countertopId: Id): Transform {
-  const countertop = design.countertops.find(candidate => candidate.id === countertopId);
+  const countertop = design.countertops.find((candidate) => candidate.id === countertopId);
   if (!countertop) throw new Error(`Countertop no encontrado: ${countertopId}`);
   return structuredClone(countertop.transform);
 }
 
 export function getServicePointWorldPosition(design: DesignDocument, servicePointId: Id): Vec3 {
-  const service = design.servicePoints.find(candidate => candidate.id === servicePointId);
+  const service = design.servicePoints.find((candidate) => candidate.id === servicePointId);
   if (!service) throw new Error(`ServicePoint no encontrado: ${servicePointId}`);
   return structuredClone(service.position);
 }
 
-export function getServicePointWorldTransform(design:DesignDocument,servicePointId:Id):Transform {
-  const service=design.servicePoints.find(candidate=>candidate.id===servicePointId);
-  if(!service)throw new Error(`ServicePoint no encontrado: ${servicePointId}`);
-  return {position:structuredClone(service.position),rotation:structuredClone(service.orientation??{x:0,y:0,z:0})};
+export function getServicePointWorldTransform(
+  design: DesignDocument,
+  servicePointId: Id,
+): Transform {
+  const service = design.servicePoints.find((candidate) => candidate.id === servicePointId);
+  if (!service) throw new Error(`ServicePoint no encontrado: ${servicePointId}`);
+  return {
+    position: structuredClone(service.position),
+    rotation: structuredClone(service.orientation ?? { x: 0, y: 0, z: 0 }),
+  };
 }
 
-export function getClearanceZoneWorldTransform(design: DesignDocument, clearanceZoneId: Id): Transform {
-  const zone = design.clearanceZones.find(candidate => candidate.id === clearanceZoneId);
+export function getClearanceZoneWorldTransform(
+  design: DesignDocument,
+  clearanceZoneId: Id,
+): Transform {
+  const zone = design.clearanceZones.find((candidate) => candidate.id === clearanceZoneId);
   if (!zone) throw new Error(`ClearanceZone no encontrada: ${clearanceZoneId}`);
   if (zone.coordinateSpace === 'WORLD') return structuredClone(zone.transform);
-  const owner = design.applianceInstances.find(candidate => candidate.id === zone.ownerId);
+  const owner = design.applianceInstances.find((candidate) => candidate.id === zone.ownerId);
   if (owner) return composeTransforms(owner.transform, zone.transform);
-  const part = design.parts.find(candidate => candidate.id === zone.ownerId);
+  const part = design.parts.find((candidate) => candidate.id === zone.ownerId);
   if (part) return composeTransforms(getPartWorldTransform(design, part.id), zone.transform);
-  const countertop = design.countertops.find(candidate => candidate.id === zone.ownerId);
+  const countertop = design.countertops.find((candidate) => candidate.id === zone.ownerId);
   if (countertop) return composeTransforms(countertop.transform, zone.transform);
   return structuredClone(zone.transform);
 }
 
 export function getWorldTransform(design: DesignDocument, entityId: Id): Transform {
-  if (design.parts.some(candidate => candidate.id === entityId)) return getPartWorldTransform(design, entityId);
-  if (design.assemblies.some(candidate => candidate.id === entityId)) return getAssemblyWorldTransform(design, entityId);
-  if (design.moduleInstances.some(candidate => candidate.id === entityId)) return getModuleInstanceWorldTransform(design, entityId);
-  if (design.applianceInstances.some(candidate => candidate.id === entityId)) return getApplianceWorldTransform(design, entityId);
-  if (design.countertops.some(candidate => candidate.id === entityId)) return getCountertopWorldTransform(design, entityId);
-  if (design.servicePoints.some(candidate => candidate.id === entityId)) return getServicePointWorldTransform(design, entityId);
-  if (design.clearanceZones.some(candidate => candidate.id === entityId)) return getClearanceZoneWorldTransform(design, entityId);
+  if (design.parts.some((candidate) => candidate.id === entityId))
+    return getPartWorldTransform(design, entityId);
+  if (design.assemblies.some((candidate) => candidate.id === entityId))
+    return getAssemblyWorldTransform(design, entityId);
+  if (design.moduleInstances.some((candidate) => candidate.id === entityId))
+    return getModuleInstanceWorldTransform(design, entityId);
+  if (design.applianceInstances.some((candidate) => candidate.id === entityId))
+    return getApplianceWorldTransform(design, entityId);
+  if (design.countertops.some((candidate) => candidate.id === entityId))
+    return getCountertopWorldTransform(design, entityId);
+  if (design.servicePoints.some((candidate) => candidate.id === entityId))
+    return getServicePointWorldTransform(design, entityId);
+  if (design.clearanceZones.some((candidate) => candidate.id === entityId))
+    return getClearanceZoneWorldTransform(design, entityId);
   throw new Error(`Entidad transformable no encontrada: ${entityId}`);
 }
 
@@ -215,7 +247,11 @@ export function setPartWorldTransform(design: DesignDocument, partId: Id, world:
   part.transform = composeTransforms(invertTransform(parentWorld), world);
 }
 
-export function setAssemblyWorldTransform(design: DesignDocument, assemblyId: Id, world: Transform): void {
+export function setAssemblyWorldTransform(
+  design: DesignDocument,
+  assemblyId: Id,
+  world: Transform,
+): void {
   const assembly = findAssembly(design, assemblyId);
   const parentId = getParentAssemblyId(design, assemblyId);
   const parentWorld = parentId ? getAssemblyWorldTransform(design, parentId) : identity();
@@ -226,30 +262,47 @@ export function setAssemblyWorldTransform(design: DesignDocument, assemblyId: Id
     : localWithInstance;
 }
 
-export function setModuleInstanceWorldTransform(design: DesignDocument, instanceId: Id, world: Transform): void {
-  const instance = design.moduleInstances.find(candidate => candidate.id === instanceId);
+export function setModuleInstanceWorldTransform(
+  design: DesignDocument,
+  instanceId: Id,
+  world: Transform,
+): void {
+  const instance = design.moduleInstances.find((candidate) => candidate.id === instanceId);
   if (!instance) throw new Error(`ModuleInstance no encontrado: ${instanceId}`);
   const parentId = getParentAssemblyId(design, instance.rootAssemblyId);
   const parentWorld = parentId ? getAssemblyWorldTransform(design, parentId) : identity();
   instance.transform = composeTransforms(invertTransform(parentWorld), world);
 }
 
-export function setApplianceWorldTransform(design: DesignDocument, instanceId: Id, world: Transform): void {
-  const instance = design.applianceInstances.find(candidate => candidate.id === instanceId);
+export function setApplianceWorldTransform(
+  design: DesignDocument,
+  instanceId: Id,
+  world: Transform,
+): void {
+  const instance = design.applianceInstances.find((candidate) => candidate.id === instanceId);
   if (!instance) throw new Error(`ApplianceInstance no encontrado: ${instanceId}`);
   instance.transform = structuredClone(world);
 }
 
-export function setCountertopWorldTransform(design: DesignDocument, countertopId: Id, world: Transform): void {
-  const countertop = design.countertops.find(candidate => candidate.id === countertopId);
+export function setCountertopWorldTransform(
+  design: DesignDocument,
+  countertopId: Id,
+  world: Transform,
+): void {
+  const countertop = design.countertops.find((candidate) => candidate.id === countertopId);
   if (!countertop) throw new Error(`Countertop no encontrado: ${countertopId}`);
   countertop.transform = structuredClone(world);
 }
 
-export function setServicePointWorldTransform(design:DesignDocument,servicePointId:Id,world:Transform):void {
-  const service=design.servicePoints.find(candidate=>candidate.id===servicePointId);
-  if(!service)throw new Error(`ServicePoint no encontrado: ${servicePointId}`);
-  service.position=structuredClone(world.position);service.orientation=structuredClone(world.rotation);
+export function setServicePointWorldTransform(
+  design: DesignDocument,
+  servicePointId: Id,
+  world: Transform,
+): void {
+  const service = design.servicePoints.find((candidate) => candidate.id === servicePointId);
+  if (!service) throw new Error(`ServicePoint no encontrado: ${servicePointId}`);
+  service.position = structuredClone(world.position);
+  service.orientation = structuredClone(world.rotation);
 }
 
 function metadataId(metadata: Record<string, unknown>, key: string): Id | undefined {
@@ -257,30 +310,48 @@ function metadataId(metadata: Record<string, unknown>, key: string): Id | undefi
   return typeof value === 'string' ? value : undefined;
 }
 
-export function getHardwareWorldTransform(design: DesignDocument, hardwareInstanceId: Id): Transform {
-  const instance = design.hardwareInstances.find(candidate => candidate.id === hardwareInstanceId);
+export function getHardwareWorldTransform(
+  design: DesignDocument,
+  hardwareInstanceId: Id,
+): Transform {
+  const instance = design.hardwareInstances.find(
+    (candidate) => candidate.id === hardwareInstanceId,
+  );
   if (!instance) throw new Error(`HardwareInstance no encontrado: ${hardwareInstanceId}`);
-  const stored: Transform = { position: structuredClone(instance.position), rotation: structuredClone(instance.orientation) };
+  const stored: Transform = {
+    position: structuredClone(instance.position),
+    rotation: structuredClone(instance.orientation),
+  };
   if (instance.metadata.coordinateSpace !== 'PART_LOCAL') return stored;
   const referencePartId = metadataId(instance.metadata, 'referencePartId');
   if (!referencePartId) return stored;
   return composeTransforms(getPartWorldTransform(design, referencePartId), stored);
 }
 
-export function getMachiningFeatureWorldTransform(design: DesignDocument, machiningFeatureId: Id): Transform {
-  const feature = design.machiningFeatures.find(candidate => candidate.id === machiningFeatureId);
+export function getMachiningFeatureWorldTransform(
+  design: DesignDocument,
+  machiningFeatureId: Id,
+): Transform {
+  const feature = design.machiningFeatures.find((candidate) => candidate.id === machiningFeatureId);
   if (!feature) throw new Error(`MachiningFeature no encontrada: ${machiningFeatureId}`);
-  const stored: Transform = { position: structuredClone(feature.position), rotation: structuredClone(feature.orientation) };
+  const stored: Transform = {
+    position: structuredClone(feature.position),
+    rotation: structuredClone(feature.orientation),
+  };
   if (feature.metadata.coordinateSpace !== 'PART_LOCAL') return stored;
   return composeTransforms(getPartWorldTransform(design, feature.partId), stored);
 }
 
-export function worldTransformToPartLocal(design: DesignDocument, partId: Id, worldTransform: Transform): Transform {
+export function worldTransformToPartLocal(
+  design: DesignDocument,
+  partId: Id,
+  worldTransform: Transform,
+): Transform {
   return composeTransforms(invertTransform(getPartWorldTransform(design, partId)), worldTransform);
 }
 
 export function getJointAnchorWorld(design: DesignDocument, jointId: Id, side: 'A' | 'B'): Anchor {
-  const joint = design.joints.find(candidate => candidate.id === jointId);
+  const joint = design.joints.find((candidate) => candidate.id === jointId);
   if (!joint) throw new Error(`Joint no encontrado: ${jointId}`);
   const anchor = side === 'A' ? joint.anchorA : joint.anchorB;
   if (joint.metadata.anchorSpace !== 'PART_LOCAL') return structuredClone(anchor);
@@ -290,6 +361,6 @@ export function getJointAnchorWorld(design: DesignDocument, jointId: Id, side: '
     ...structuredClone(anchor),
     position: localToWorld(partWorld, anchor.position),
     normal: anchor.normal ? rotateVectorByEuler(anchor.normal, partWorld.rotation) : undefined,
-    axis: anchor.axis ? rotateVectorByEuler(anchor.axis, partWorld.rotation) : undefined
+    axis: anchor.axis ? rotateVectorByEuler(anchor.axis, partWorld.rotation) : undefined,
   };
 }

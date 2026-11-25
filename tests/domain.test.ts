@@ -1,45 +1,412 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CutListResultSchema } from '../packages/shared-contracts/src/index.ts';
-import { addPartToAssembly, createAssembly, createEmptyDesign, createPanel, deserializeDesign, serializeDesign, type Binding } from '../packages/design-domain/src/index.ts';
+import {
+  addPartToAssembly,
+  createAssembly,
+  createEmptyDesign,
+  createPanel,
+  deserializeDesign,
+  serializeDesign,
+  type Binding,
+} from '../packages/design-domain/src/index.ts';
 import { applyBindings, detectBindingCycles } from '../packages/constraint-engine/src/index.ts';
-import { DocumentHistory, ToolManager, activateScene, applySnap, cameraPreset, createScene, createSectionPlane, duplicateArray, movePartExact, snapFaceToFace } from '../packages/editor-engine/src/index.ts';
+import {
+  DocumentHistory,
+  ToolManager,
+  activateScene,
+  applySnap,
+  cameraPreset,
+  createScene,
+  createSectionPlane,
+  duplicateArray,
+  movePartExact,
+  snapFaceToFace,
+} from '../packages/editor-engine/src/index.ts';
 import { collectManufacturingData } from '../packages/manufacturing-engine/src/index.ts';
-import { createDowelJoint, createDrawerSlideJoint, createHingeJoint, createScrewJoint } from '../packages/joinery-engine/src/index.ts';
-import { animatedTransform, sampleMotionCollisions } from '../packages/kinematics-engine/src/index.ts';
-import { createModuleDefinitionFromAssembly, detachModuleInstance, instantiateModule } from '../packages/module-engine/src/index.ts';
+import {
+  createDowelJoint,
+  createDrawerSlideJoint,
+  createHingeJoint,
+  createScrewJoint,
+} from '../packages/joinery-engine/src/index.ts';
+import {
+  animatedTransform,
+  sampleMotionCollisions,
+} from '../packages/kinematics-engine/src/index.ts';
+import {
+  createModuleDefinitionFromAssembly,
+  detachModuleInstance,
+  instantiateModule,
+} from '../packages/module-engine/src/index.ts';
 import { modelHealth } from '../packages/validation-engine/src/index.ts';
 
-function basicTwoParts(){const d=createEmptyDesign('Test');const mat=d.materials[0]!;const a=createPanel({name:'A',materialId:mat.id,dimensions:{widthMm:700,heightMm:500,thicknessMm:18},transform:{position:{x:0,y:250,z:0},rotation:{x:0,y:0,z:0}}});const b=createPanel({name:'B',materialId:mat.id,dimensions:{widthMm:700,heightMm:500,thicknessMm:18},transform:{position:{x:900,y:250,z:0},rotation:{x:0,y:0,z:0}}});addPartToAssembly(d,a);addPartToAssembly(d,b);return{d,a,b}}
+function basicTwoParts() {
+  const d = createEmptyDesign('Test');
+  const mat = d.materials[0]!;
+  const a = createPanel({
+    name: 'A',
+    materialId: mat.id,
+    dimensions: { widthMm: 700, heightMm: 500, thicknessMm: 18 },
+    transform: { position: { x: 0, y: 250, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
+  const b = createPanel({
+    name: 'B',
+    materialId: mat.id,
+    dimensions: { widthMm: 700, heightMm: 500, thicknessMm: 18 },
+    transform: { position: { x: 900, y: 250, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
+  addPartToAssembly(d, a);
+  addPartToAssembly(d, b);
+  return { d, a, b };
+}
 
-test('Shared cut-list contract validates quantity and multiple origins',()=>{const origin={partId:'part-a',partName:'Lateral',assemblyPath:[{id:'assembly-a',name:'Gabinete'}]};const result=CutListResultSchema.parse({items:[{id:'lateral',name:'Lateral',widthMm:700,heightMm:500,thicknessMm:18,materialName:'Melamina',grainDirection:'VERTICAL',quantity:2,origins:[origin,{...origin,partId:'part-b'}]}]});assert.equal(result.items[0]!.quantity,2);assert.equal(result.items[0]!.origins.length,2);assert.equal(CutListResultSchema.safeParse({items:[{...result.items[0]!,quantity:0}]}).success,false)});
+test('Shared cut-list contract validates quantity and multiple origins', () => {
+  const origin = {
+    partId: 'part-a',
+    partName: 'Lateral',
+    assemblyPath: [{ id: 'assembly-a', name: 'Gabinete' }],
+  };
+  const result = CutListResultSchema.parse({
+    items: [
+      {
+        id: 'lateral',
+        name: 'Lateral',
+        widthMm: 700,
+        heightMm: 500,
+        thicknessMm: 18,
+        materialName: 'Melamina',
+        grainDirection: 'VERTICAL',
+        quantity: 2,
+        origins: [origin, { ...origin, partId: 'part-b' }],
+      },
+    ],
+  });
+  assert.equal(result.items[0]!.quantity, 2);
+  assert.equal(result.items[0]!.origins.length, 2);
+  assert.equal(
+    CutListResultSchema.safeParse({ items: [{ ...result.items[0]!, quantity: 0 }] }).success,
+    false,
+  );
+});
 
-test('DesignDocument serializa y recarga sin perder material/section/scenes',()=>{const d=createEmptyDesign();const p=createPanel({materialId:d.materials[0]!.id});addPartToAssembly(d,p);d.materials[0]!.colorHex='#FFFFFF';d.materials[0]!.roughness=.44;const section=createSectionPlane();d.sectionPlanes.push(section);const camera=cameraPreset('FRONT');d.scenes.push(createScene('Frontal',camera,'TECHNICAL',d));const r=deserializeDesign(serializeDesign(d));assert.equal(r.parts[0]!.dimensions.widthMm,700);assert.equal(r.materials[0]!.colorHex,'#FFFFFF');assert.equal(r.materials[0]!.roughness,.44);assert.equal(r.sectionPlanes.length,1);assert.equal(r.scenes[0]!.name,'Frontal')});
+test('DesignDocument serializa y recarga sin perder material/section/scenes', () => {
+  const d = createEmptyDesign();
+  const p = createPanel({ materialId: d.materials[0]!.id });
+  addPartToAssembly(d, p);
+  d.materials[0]!.colorHex = '#FFFFFF';
+  d.materials[0]!.roughness = 0.44;
+  const section = createSectionPlane();
+  d.sectionPlanes.push(section);
+  const camera = cameraPreset('FRONT');
+  d.scenes.push(createScene('Frontal', camera, 'TECHNICAL', d));
+  const r = deserializeDesign(serializeDesign(d));
+  assert.equal(r.parts[0]!.dimensions.widthMm, 700);
+  assert.equal(r.materials[0]!.colorHex, '#FFFFFF');
+  assert.equal(r.materials[0]!.roughness, 0.44);
+  assert.equal(r.sectionPlanes.length, 1);
+  assert.equal(r.scenes[0]!.name, 'Frontal');
+});
 
-test('Binding AST evalúa sin código dinámico y detecta ciclos',()=>{const target={params:{w:800,t:18},entities:{p:{dimensions:{widthMm:0}}}};const b:Binding={id:'b',targetPath:'entities.p.dimensions.widthMm',enabled:true,expression:{type:'Subtract',left:{type:'Reference',path:'params.w'},right:{type:'Multiply',left:{type:'Reference',path:'params.t'},right:{type:'Literal',value:2}}}};applyBindings(target,[b],target);assert.equal(target.entities.p.dimensions.widthMm,764);const c1:Binding={id:'1',targetPath:'a',enabled:true,expression:{type:'Reference',path:'b'}},c2:Binding={id:'2',targetPath:'b',enabled:true,expression:{type:'Reference',path:'a'}};assert.equal(detectBindingCycles([c1,c2]).length,1)});
+test('Binding AST evalúa sin código dinámico y detecta ciclos', () => {
+  const target = { params: { w: 800, t: 18 }, entities: { p: { dimensions: { widthMm: 0 } } } };
+  const b: Binding = {
+    id: 'b',
+    targetPath: 'entities.p.dimensions.widthMm',
+    enabled: true,
+    expression: {
+      type: 'Subtract',
+      left: { type: 'Reference', path: 'params.w' },
+      right: {
+        type: 'Multiply',
+        left: { type: 'Reference', path: 'params.t' },
+        right: { type: 'Literal', value: 2 },
+      },
+    },
+  };
+  applyBindings(target, [b], target);
+  assert.equal(target.entities.p.dimensions.widthMm, 764);
+  const c1: Binding = {
+      id: '1',
+      targetPath: 'a',
+      enabled: true,
+      expression: { type: 'Reference', path: 'b' },
+    },
+    c2: Binding = {
+      id: '2',
+      targetPath: 'b',
+      enabled: true,
+      expression: { type: 'Reference', path: 'a' },
+    };
+  assert.equal(detectBindingCycles([c1, c2]).length, 1);
+});
 
-test('Snap face-to-face persiste posición y orientación',()=>{const{d,a,b}=basicTwoParts();const s=snapFaceToFace(d,b,a,'LEFT','RIGHT');applySnap(d,b.id,s);const reloaded=deserializeDesign(serializeDesign(d));const rb=reloaded.parts.find(p=>p.id===b.id)!;assert.equal(rb.transform.position.x,700);assert.ok(Math.abs(rb.transform.rotation.x-(s.rotation?.x??0))<1e-9);assert.ok(Math.abs(rb.transform.rotation.y-(s.rotation?.y??0))<1e-9);assert.ok(Math.abs(rb.transform.rotation.z-(s.rotation?.z??0))<1e-9)});
+test('Snap face-to-face persiste posición y orientación', () => {
+  const { d, a, b } = basicTwoParts();
+  const s = snapFaceToFace(d, b, a, 'LEFT', 'RIGHT');
+  applySnap(d, b.id, s);
+  const reloaded = deserializeDesign(serializeDesign(d));
+  const rb = reloaded.parts.find((p) => p.id === b.id)!;
+  assert.equal(rb.transform.position.x, 700);
+  assert.ok(Math.abs(rb.transform.rotation.x - (s.rotation?.x ?? 0)) < 1e-9);
+  assert.ok(Math.abs(rb.transform.rotation.y - (s.rotation?.y ?? 0)) < 1e-9);
+  assert.ok(Math.abs(rb.transform.rotation.z - (s.rotation?.z ?? 0)) < 1e-9);
+});
 
-test('Move exacto, axis lock y undo',()=>{const{d,a}=basicTwoParts();const hist=new DocumentHistory(d);hist.commit(doc=>movePartExact(doc,a.id,500,'x'));assert.equal(hist.document.parts.find(p=>p.id===a.id)!.transform.position.x,500);hist.undo();assert.equal(hist.document.parts.find(p=>p.id===a.id)!.transform.position.x,0)});
+test('Move exacto, axis lock y undo', () => {
+  const { d, a } = basicTwoParts();
+  const hist = new DocumentHistory(d);
+  hist.commit((doc) => movePartExact(doc, a.id, 500, 'x'));
+  assert.equal(hist.document.parts.find((p) => p.id === a.id)!.transform.position.x, 500);
+  hist.undo();
+  assert.equal(hist.document.parts.find((p) => p.id === a.id)!.transform.position.x, 0);
+});
 
-test('Tool cancellation no muta DesignDocument y tool switch elimina preview',()=>{const{d,a}=basicTwoParts();const before=serializeDesign(d);const tm=new ToolManager();tm.beginMove(a,{x:0,y:0,z:0},'x');tm.updateMove({x:400,y:0,z:0});tm.cancel();assert.equal(serializeDesign(d),before);tm.beginMove(a);tm.switchTool('SELECT');assert.equal(tm.session?.tool,'SELECT');assert.equal(tm.session?.preview,undefined)});
+test('Tool cancellation no muta DesignDocument y tool switch elimina preview', () => {
+  const { d, a } = basicTwoParts();
+  const before = serializeDesign(d);
+  const tm = new ToolManager();
+  tm.beginMove(a, { x: 0, y: 0, z: 0 }, 'x');
+  tm.updateMove({ x: 400, y: 0, z: 0 });
+  tm.cancel();
+  assert.equal(serializeDesign(d), before);
+  tm.beginMove(a);
+  tm.switchTool('SELECT');
+  assert.equal(tm.session?.tool, 'SELECT');
+  assert.equal(tm.session?.preview, undefined);
+});
 
-test('Duplicate array crea repisas reales',()=>{const{d,a}=basicTwoParts();const ids=duplicateArray(d,a.id,4,300,'y');assert.equal(ids.length,4);assert.equal(d.parts.length,6);assert.equal(d.parts.find(p=>p.id===ids[3])!.transform.position.y,a.transform.position.y+1200)});
+test('Duplicate array crea repisas reales', () => {
+  const { d, a } = basicTwoParts();
+  const ids = duplicateArray(d, a.id, 4, 300, 'y');
+  assert.equal(ids.length, 4);
+  assert.equal(d.parts.length, 6);
+  assert.equal(
+    d.parts.find((p) => p.id === ids[3])!.transform.position.y,
+    a.transform.position.y + 1200,
+  );
+});
 
-test('Module Definition/Version/Instance separa instancias y detach',()=>{const d=createEmptyDesign();const p=createPanel({name:'Lateral',materialId:d.materials[0]!.id});addPartToAssembly(d,p);const group=createAssembly('Módulo',[{kind:'PART',id:p.id}]);d.assemblies.push(group);d.assemblies[0]!.children=d.assemblies[0]!.children.filter(c=>c.id!==p.id);d.assemblies[0]!.children.push({kind:'ASSEMBLY',id:group.id});const {definition}=createModuleDefinitionFromAssembly(d,group.id,{name:'Módulo usuario'});const i1=instantiateModule(d,definition.id,{position:{x:0,y:0,z:0}}),i2=instantiateModule(d,definition.id,{position:{x:1000,y:0,z:0}}),i3=instantiateModule(d,definition.id,{position:{x:2000,y:0,z:0}});const r1=d.assemblies.find(a=>a.id===i1.rootAssemblyId)!,r2=d.assemblies.find(a=>a.id===i2.rootAssemblyId)!;r1.transform.position.x=123;assert.notEqual(r1.transform.position.x,r2.transform.position.x);detachModuleInstance(d,i3.id);assert.equal(d.moduleInstances.find(i=>i.id===i3.id)!.detached,true)});
+test('Module Definition/Version/Instance separa instancias y detach', () => {
+  const d = createEmptyDesign();
+  const p = createPanel({ name: 'Lateral', materialId: d.materials[0]!.id });
+  addPartToAssembly(d, p);
+  const group = createAssembly('Módulo', [{ kind: 'PART', id: p.id }]);
+  d.assemblies.push(group);
+  d.assemblies[0]!.children = d.assemblies[0]!.children.filter((c) => c.id !== p.id);
+  d.assemblies[0]!.children.push({ kind: 'ASSEMBLY', id: group.id });
+  const { definition } = createModuleDefinitionFromAssembly(d, group.id, {
+    name: 'Módulo usuario',
+  });
+  const i1 = instantiateModule(d, definition.id, { position: { x: 0, y: 0, z: 0 } }),
+    i2 = instantiateModule(d, definition.id, { position: { x: 1000, y: 0, z: 0 } }),
+    i3 = instantiateModule(d, definition.id, { position: { x: 2000, y: 0, z: 0 } });
+  const r1 = d.assemblies.find((a) => a.id === i1.rootAssemblyId)!,
+    r2 = d.assemblies.find((a) => a.id === i2.rootAssemblyId)!;
+  r1.transform.position.x = 123;
+  assert.notEqual(r1.transform.position.x, r2.transform.position.x);
+  detachModuleInstance(d, i3.id);
+  assert.equal(d.moduleInstances.find((i) => i.id === i3.id)!.detached, true);
+});
 
-test('ScrewJoint genera hardware y pilot holes, sobrevive reload y manufactura no usa meshes',()=>{const{d,a,b}=basicTwoParts();const j=createScrewJoint(d,a.id,b.id,{diameterMm:4,lengthMm:50,quantity:3,spacingMm:150,startOffsetMm:0,head:'COUNTERSUNK',orientation:'AUTO',generatePilotHole:true});assert.equal(j.hardwareInstanceIds.length,3);assert.equal(j.machiningFeatureIds.length,3);const r=deserializeDesign(serializeDesign(d));const m=collectManufacturingData(r);assert.equal(m.summary.hardwareCount,3);assert.equal(m.summary.machiningCount,3);assert.equal(Object.hasOwn(m,'meshes'),false)});
+test('ScrewJoint genera hardware y pilot holes, sobrevive reload y manufactura no usa meshes', () => {
+  const { d, a, b } = basicTwoParts();
+  const j = createScrewJoint(d, a.id, b.id, {
+    diameterMm: 4,
+    lengthMm: 50,
+    quantity: 3,
+    spacingMm: 150,
+    startOffsetMm: 0,
+    head: 'COUNTERSUNK',
+    orientation: 'AUTO',
+    generatePilotHole: true,
+  });
+  assert.equal(j.hardwareInstanceIds.length, 3);
+  assert.equal(j.machiningFeatureIds.length, 3);
+  const r = deserializeDesign(serializeDesign(d));
+  const m = collectManufacturingData(r);
+  assert.equal(m.summary.hardwareCount, 3);
+  assert.equal(m.summary.machiningCount, 3);
+  assert.equal(Object.hasOwn(m, 'meshes'), false);
+});
 
-test('Dowel y drawer slide generan entidades data-driven',()=>{const{d,a,b}=basicTwoParts();const dw=createDowelJoint(d,a.id,b.id,{diameterMm:8,lengthMm:30,depthAMm:15,depthBMm:15,quantity:2,spacingMm:100,startOffsetMm:0});assert.equal(dw.machiningFeatureIds.length,4);const slide=createDrawerSlideJoint(d,a.id,b.id,{lengthMm:450,offsetMm:0,clearanceMm:12.5,extensionDistanceMm:430});assert.equal(slide.hardwareInstanceIds.length,1);assert.ok(d.kinematics.some(k=>k.jointId===slide.id))});
+test('Dowel y drawer slide generan entidades data-driven', () => {
+  const { d, a, b } = basicTwoParts();
+  const dw = createDowelJoint(d, a.id, b.id, {
+    diameterMm: 8,
+    lengthMm: 30,
+    depthAMm: 15,
+    depthBMm: 15,
+    quantity: 2,
+    spacingMm: 100,
+    startOffsetMm: 0,
+  });
+  assert.equal(dw.machiningFeatureIds.length, 4);
+  const slide = createDrawerSlideJoint(d, a.id, b.id, {
+    lengthMm: 450,
+    offsetMm: 0,
+    clearanceMm: 12.5,
+    extensionDistanceMm: 430,
+  });
+  assert.equal(slide.hardwareInstanceIds.length, 1);
+  assert.ok(d.kinematics.some((k) => k.jointId === slide.id));
+});
 
-test('Hinge genera hardware/machining/kinematics y transform animado',()=>{const d=createEmptyDesign();const side=createPanel({name:'Lateral',semanticRole:'LEFT_SIDE',materialId:d.materials[0]!.id,dimensions:{widthMm:600,heightMm:720,thicknessMm:18},transform:{position:{x:0,y:360,z:0},rotation:{x:0,y:0,z:0}}});const door=createPanel({name:'Puerta',semanticRole:'DOOR',materialId:d.materials[0]!.id,dimensions:{widthMm:400,heightMm:700,thicknessMm:18},transform:{position:{x:220,y:360,z:0},rotation:{x:0,y:0,z:0}}});addPartToAssembly(d,side);addPartToAssembly(d,door);const h=createHingeJoint(d,door.id,side.id,{quantity:2,verticalOffsetMm:100,spacingMm:500,openingAngleDeg:110,cupDiameterMm:35,cupDepthMm:12,mountingHoleDiameterMm:5});assert.equal(h.hardwareInstanceIds.length,2);assert.equal(h.machiningFeatureIds.length,4);const rel=d.kinematics.find(k=>k.jointId===h.id)!;const open=animatedTransform(d,rel,90);assert.notDeepEqual(open.position,door.transform.position);const rr=deserializeDesign(serializeDesign(d));assert.equal(rr.kinematics[0]!.maxValue,110);assert.doesNotThrow(()=>sampleMotionCollisions(d,rel.id,4))});
+test('Hinge genera hardware/machining/kinematics y transform animado', () => {
+  const d = createEmptyDesign();
+  const side = createPanel({
+    name: 'Lateral',
+    semanticRole: 'LEFT_SIDE',
+    materialId: d.materials[0]!.id,
+    dimensions: { widthMm: 600, heightMm: 720, thicknessMm: 18 },
+    transform: { position: { x: 0, y: 360, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
+  const door = createPanel({
+    name: 'Puerta',
+    semanticRole: 'DOOR',
+    materialId: d.materials[0]!.id,
+    dimensions: { widthMm: 400, heightMm: 700, thicknessMm: 18 },
+    transform: { position: { x: 220, y: 360, z: 0 }, rotation: { x: 0, y: 0, z: 0 } },
+  });
+  addPartToAssembly(d, side);
+  addPartToAssembly(d, door);
+  const h = createHingeJoint(d, door.id, side.id, {
+    quantity: 2,
+    verticalOffsetMm: 100,
+    spacingMm: 500,
+    openingAngleDeg: 110,
+    cupDiameterMm: 35,
+    cupDepthMm: 12,
+    mountingHoleDiameterMm: 5,
+  });
+  assert.equal(h.hardwareInstanceIds.length, 2);
+  assert.equal(h.machiningFeatureIds.length, 4);
+  const rel = d.kinematics.find((k) => k.jointId === h.id)!;
+  const open = animatedTransform(d, rel, 90);
+  assert.notDeepEqual(open.position, door.transform.position);
+  const rr = deserializeDesign(serializeDesign(d));
+  assert.equal(rr.kinematics[0]!.maxValue, 110);
+  assert.doesNotThrow(() => sampleMotionCollisions(d, rel.id, 4));
+});
 
-test('Scene restaura cámara/visibilidad/display/section sin modificar geometría',()=>{const{d,a}=basicTwoParts();const section=createSectionPlane('Corte',{x:1,y:0,z:0},100);d.sectionPlanes.push(section);a.hidden=true;const cam=cameraPreset('TOP');const scene=createScene('Técnica',cam,'XRAY',d);d.scenes.push(scene);const before=d.parts.map(p=>structuredClone(p.dimensions));a.hidden=false;section.enabled=false;const restored=activateScene(d,scene.id);assert.equal(restored.displayMode,'XRAY');assert.equal(a.hidden,true);assert.equal(section.enabled,true);assert.deepEqual(d.parts.map(p=>p.dimensions),before)});
+test('Scene restaura cámara/visibilidad/display/section sin modificar geometría', () => {
+  const { d, a } = basicTwoParts();
+  const section = createSectionPlane('Corte', { x: 1, y: 0, z: 0 }, 100);
+  d.sectionPlanes.push(section);
+  a.hidden = true;
+  const cam = cameraPreset('TOP');
+  const scene = createScene('Técnica', cam, 'XRAY', d);
+  d.scenes.push(scene);
+  const before = d.parts.map((p) => structuredClone(p.dimensions));
+  a.hidden = false;
+  section.enabled = false;
+  const restored = activateScene(d, scene.id);
+  assert.equal(restored.displayMode, 'XRAY');
+  assert.equal(a.hidden, true);
+  assert.equal(section.enabled, true);
+  assert.deepEqual(
+    d.parts.map((p) => p.dimensions),
+    before,
+  );
+});
 
-test('Model Health detecta referencia inválida sin lanzar',()=>{const{d,a,b}=basicTwoParts();createScrewJoint(d,a.id,b.id,{diameterMm:4,lengthMm:50,quantity:1,spacingMm:0,startOffsetMm:0,head:'PAN',orientation:'AUTO'});d.joints[0]!.partBId='missing';const issues=modelHealth(d);assert.ok(issues.some(i=>i.code==='JOINT_PART_B'||i.code==='JOINT_PART_MISSING'))});
+test('Model Health detecta referencia inválida sin lanzar', () => {
+  const { d, a, b } = basicTwoParts();
+  createScrewJoint(d, a.id, b.id, {
+    diameterMm: 4,
+    lengthMm: 50,
+    quantity: 1,
+    spacingMm: 0,
+    startOffsetMm: 0,
+    head: 'PAN',
+    orientation: 'AUTO',
+  });
+  d.joints[0]!.partBId = 'missing';
+  const issues = modelHealth(d);
+  assert.ok(issues.some((i) => i.code === 'JOINT_PART_B' || i.code === 'JOINT_PART_MISSING'));
+});
 
-test('Module parameter definition genera override data-driven por binding',async()=>{const d=createEmptyDesign();const p=createPanel({name:'Panel paramétrico',materialId:d.materials[0]!.id,dimensions:{widthMm:800,heightMm:500,thicknessMm:18}});addPartToAssembly(d,p);const group=createAssembly('Parametric',[{kind:'PART',id:p.id}]);d.assemblies.push(group);d.assemblies[0]!.children=d.assemblies[0]!.children.filter(c=>c.id!==p.id);d.assemblies[0]!.children.push({kind:'ASSEMBLY',id:group.id});const param={id:'param-width',key:'width',label:'Ancho',type:'NUMBER' as const,defaultValue:800,unit:'mm' as const,ui:'INPUT' as const};const binding:Binding={id:'bind-width',targetPath:`entities.${p.id}.dimensions.widthMm`,enabled:true,expression:{type:'Reference',path:'params.width'}};const {definition}=createModuleDefinitionFromAssembly(d,group.id,{name:'Parametric',parameters:[param],parameterBindings:[binding]});const inst=instantiateModule(d,definition.id,{position:{x:1500,y:0,z:0}});const instancePart=d.parts.find(v=>v.metadata.sourceModuleEntityId===p.id)!;assert.equal(instancePart.dimensions.widthMm,800);const {updateModuleInstanceParameters}=await import('../packages/module-engine/src/index.ts');updateModuleInstanceParameters(d,inst.id,{width:950});assert.equal(instancePart.dimensions.widthMm,950);assert.equal(d.parts.find(v=>v.id===p.id)!.dimensions.widthMm,800)});
+test('Module parameter definition genera override data-driven por binding', async () => {
+  const d = createEmptyDesign();
+  const p = createPanel({
+    name: 'Panel paramétrico',
+    materialId: d.materials[0]!.id,
+    dimensions: { widthMm: 800, heightMm: 500, thicknessMm: 18 },
+  });
+  addPartToAssembly(d, p);
+  const group = createAssembly('Parametric', [{ kind: 'PART', id: p.id }]);
+  d.assemblies.push(group);
+  d.assemblies[0]!.children = d.assemblies[0]!.children.filter((c) => c.id !== p.id);
+  d.assemblies[0]!.children.push({ kind: 'ASSEMBLY', id: group.id });
+  const param = {
+    id: 'param-width',
+    key: 'width',
+    label: 'Ancho',
+    type: 'NUMBER' as const,
+    defaultValue: 800,
+    unit: 'mm' as const,
+    ui: 'INPUT' as const,
+  };
+  const binding: Binding = {
+    id: 'bind-width',
+    targetPath: `entities.${p.id}.dimensions.widthMm`,
+    enabled: true,
+    expression: { type: 'Reference', path: 'params.width' },
+  };
+  const { definition } = createModuleDefinitionFromAssembly(d, group.id, {
+    name: 'Parametric',
+    parameters: [param],
+    parameterBindings: [binding],
+  });
+  const inst = instantiateModule(d, definition.id, { position: { x: 1500, y: 0, z: 0 } });
+  const instancePart = d.parts.find((v) => v.metadata.sourceModuleEntityId === p.id)!;
+  assert.equal(instancePart.dimensions.widthMm, 800);
+  const { updateModuleInstanceParameters } = await import('../packages/module-engine/src/index.ts');
+  updateModuleInstanceParameters(d, inst.id, { width: 950 });
+  assert.equal(instancePart.dimensions.widthMm, 950);
+  assert.equal(d.parts.find((v) => v.id === p.id)!.dimensions.widthMm, 800);
+});
 
-test('Inference detecta endpoint/midpoint/center/face/edge/axis/parallel/perpendicular y puede bloquearse',async()=>{const{d,a}=basicTwoParts();const {infer,defaultInferenceSettings}=await import('../packages/editor-engine/src/index.ts');const c=a.transform.position;const settings=defaultInferenceSettings();settings.toleranceMm=1000;const candidates=infer(d,c,settings,[]);const kinds=new Set(candidates.map(v=>v.kind));for(const kind of ['ENDPOINT','MIDPOINT','CENTER','FACE','EDGE','AXIS','PARALLEL','PERPENDICULAR'])assert.ok(kinds.has(kind as any));settings.lockedCandidateId=candidates[0]!.id;const locked=infer(d,c,settings,[]);assert.equal(locked.length,1);assert.equal(locked[0]!.id,settings.lockedCandidateId);settings.enabled=false;assert.equal(infer(d,c,settings,[]).length,0)});
+test('Inference detecta endpoint/midpoint/center/face/edge/axis/parallel/perpendicular y puede bloquearse', async () => {
+  const { d, a } = basicTwoParts();
+  const { infer, defaultInferenceSettings } =
+    await import('../packages/editor-engine/src/index.ts');
+  const c = a.transform.position;
+  const settings = defaultInferenceSettings();
+  settings.toleranceMm = 1000;
+  const candidates = infer(d, c, settings, []);
+  const kinds = new Set(candidates.map((v) => v.kind));
+  for (const kind of [
+    'ENDPOINT',
+    'MIDPOINT',
+    'CENTER',
+    'FACE',
+    'EDGE',
+    'AXIS',
+    'PARALLEL',
+    'PERPENDICULAR',
+  ])
+    assert.ok(kinds.has(kind as any));
+  settings.lockedCandidateId = candidates[0]!.id;
+  const locked = infer(d, c, settings, []);
+  assert.equal(locked.length, 1);
+  assert.equal(locked[0]!.id, settings.lockedCandidateId);
+  settings.enabled = false;
+  assert.equal(infer(d, c, settings, []).length, 0);
+});
 
-test('Custom module anchor snap conserva position+orientation',async()=>{const{d,a}=basicTwoParts();const {snapAnchorToAnchor}=await import('../packages/editor-engine/src/index.ts');const snap=snapAnchorToAnchor(d,a,{x:350,y:250,z:9},{x:1200,y:600,z:300},'target',{x:0,y:0,z:1});assert.equal(snap.type,'CUSTOM_MODULE');assert.deepEqual(snap.targetPoint,{x:1200,y:600,z:300});assert.ok(snap.rotation)});
+test('Custom module anchor snap conserva position+orientation', async () => {
+  const { d, a } = basicTwoParts();
+  const { snapAnchorToAnchor } = await import('../packages/editor-engine/src/index.ts');
+  const snap = snapAnchorToAnchor(
+    d,
+    a,
+    { x: 350, y: 250, z: 9 },
+    { x: 1200, y: 600, z: 300 },
+    'target',
+    { x: 0, y: 0, z: 1 },
+  );
+  assert.equal(snap.type, 'CUSTOM_MODULE');
+  assert.deepEqual(snap.targetPoint, { x: 1200, y: 600, z: 300 });
+  assert.ok(snap.rotation);
+});
