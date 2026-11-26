@@ -15,6 +15,8 @@ import { editorFacade } from './editorFacade';
 
 import { autosaveNow, useEditor } from './store';
 
+import QuotationPanel from './components/QuotationPanel';
+
 import './ProjectWorkspace.css';
 
 
@@ -138,6 +140,8 @@ export default function ProjectWorkspace() {
 
 const [cuttingError, setCuttingError] = useState('');
   const [authVersion, setAuthVersion] = useState<VersionSummary | null>(null);
+  const [quotationVersion, setQuotationVersion] = useState<VersionSummary | null>(null);
+  const [showQuotations, setShowQuotations] = useState(false);
   const cuttingRequest = useRef(0);
   const cuttingPending = useRef(false);
 
@@ -148,6 +152,8 @@ const [cuttingError, setCuttingError] = useState('');
     setCuttingError('');
     setCuttingLoading(false);
     setAuthVersion(null);
+    setQuotationVersion(null);
+    setShowQuotations(false);
   };
 
 useEffect(() => () => { cuttingRequest.current += 1; }, []);
@@ -554,6 +560,17 @@ const generate = async (version: VersionSummary) => {
         {review && (
           <section className="project-versions">
             <h2>Versiones de {review.name}</h2>
+<button
+  type="button"
+  disabled={busy || cuttingLoading}
+  className="project-btn project-btn--review"
+  onClick={() => {
+    setQuotationVersion(null);
+    setShowQuotations(true);
+  }}
+>
+  <ActionIcon name="excel" /> Ver cotizaciones
+</button>
             <p>Revisa las versiones, sus propuestas y la autorización del despiece.</p>
 
             {versions.map(version => (
@@ -633,6 +650,24 @@ const generate = async (version: VersionSummary) => {
                       <ActionIcon name="search" /> Ver autorización
                     </button>
                   )}
+
+		{user.role === 'SUPERVISOR' &&
+  version.current &&
+  version.approvalStatus === 'APPROVED' && (
+    <button
+      type="button"
+      disabled={busy || cuttingLoading}
+      className="project-btn project-btn--review"
+      onClick={() => {
+        setQuotationVersion(version);
+        setShowQuotations(true);
+      }}
+    >
+      <ActionIcon name="excel" /> Generar cotización
+    </button>
+  )}
+
+
 
                 {expandedProposalVersionId === version.id && (
                   <section
@@ -717,6 +752,26 @@ const generate = async (version: VersionSummary) => {
                 }
               />
             )}
+
+{showQuotations && (
+  <QuotationPanel
+    key={`${review.id}-${quotationVersion?.id ?? 'history'}`}
+    projectId={review.id}
+    projectName={review.name}
+    version={quotationVersion}
+    cuttingResult={cuttingResult}
+    canGenerate={Boolean(
+      user.role === 'SUPERVISOR' &&
+      quotationVersion?.current &&
+      quotationVersion?.approvalStatus === 'APPROVED'
+    )}
+    onRefreshVersions={() => void run(() => showVersions(review))}
+    onClose={() => {
+      setShowQuotations(false);
+      setQuotationVersion(null);
+    }}
+  />
+)}
           </section>
         )}
       </section>
