@@ -9,6 +9,7 @@ import {
   QuotationCalculationSchema,
   QuotationResponseSchema,
   QuotationListResponseSchema,
+  type QuotationDecisionAction,
   type QuotationGenerationRequest,
   type QuotationResponse,
   type QuotationListResponse,
@@ -449,7 +450,11 @@ async createQuotation(
         totalCents: saved.totalCents,
         createdAt: saved.createdAt.toISOString(),
         createdById: saved.createdById,
-        calculation: validatedCalculation
+        calculation: validatedCalculation,
+	decisionStatus: saved.decisionStatus,
+        decidedAt: saved.decidedAt ? saved.decidedAt.toISOString() : null,
+        decidedById: saved.decidedById ?? null,
+        decidedByName: null
       });
     });
   }
@@ -462,7 +467,10 @@ async createQuotation(
 
     const quotations = await this.prisma.quotation.findMany({
       where: { projectId: id },
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      include: {
+        decidedBy: { select: { id: true, name: true } }
+      }
     });
 
     return QuotationListResponseSchema.parse(
@@ -475,7 +483,11 @@ async createQuotation(
         laborCostCents: q.laborCostCents,
         totalCents: q.totalCents,
         createdAt: q.createdAt.toISOString(),
-        createdById: q.createdById
+        createdById: q.createdById,
+	decisionStatus: q.decisionStatus,
+        decidedAt: q.decidedAt ? q.decidedAt.toISOString() : null,
+        decidedById: q.decidedById ?? null,
+        decidedByName: q.decidedBy?.name ?? null
       }))
     );
   }
@@ -491,6 +503,9 @@ async createQuotation(
       where: {
         id: quotationId,
         projectId: id
+      },
+      include: {
+        decidedBy: { select: { id: true, name: true } }
       }
     });
 
@@ -508,7 +523,96 @@ async createQuotation(
       totalCents: quotation.totalCents,
       createdAt: quotation.createdAt.toISOString(),
       createdById: quotation.createdById,
-      calculation: QuotationCalculationSchema.parse(quotation.calculationJson)
+      calculation: QuotationCalculationSchema.parse(quotation.calculationJson),
+      decisionStatus: quotation.decisionStatus,
+      decidedAt: quotation.decidedAt ? quotation.decidedAt.toISOString() : null,
+      decidedById: quotation.decidedById ?? null,
+      decidedByName: quotation.decidedBy?.name ?? null
+    });
+  }
+
+async decideQuotation(
+    actor: Actor,
+    projectId: string,
+    quotationId: string,
+    decision: QuotationDecisionAction
+  ): Promise<QuotationResponse> {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException(
+        'Sólo el Supervisor puede aprobar o rechazar cotizaciones'
+      );
+    }
+
+    return this.locked(actor, projectId, async tx => {
+      const quotation = await tx.quotation.findFirst({
+        where: {
+          id: quotationId,
+          projectId
+        },
+        include: {
+          decidedBy: { select: { id: true, name: true } }
+        }
+      });
+
+      if (!quotation) {
+        throw new NotFoundException('Cotización no encontrada');
+      }
+
+      if (quotation.decisionStatus === decision) {
+        return QuotationResponseSchema.parse({
+          id: quotation.id,
+          projectId: quotation.projectId,
+          versionId: quotation.versionId,
+          revision: quotation.revision,
+          materialSubtotalCents: quotation.materialSubtotalCents,
+          laborCostCents: quotation.laborCostCents,
+          totalCents: quotation.totalCents,
+          createdAt: quotation.createdAt.toISOString(),
+          createdById: quotation.createdById,
+          calculation: QuotationCalculationSchema.parse(quotation.calculationJson),
+          decisionStatus: quotation.decisionStatus,
+          decidedAt: quotation.decidedAt ? quotation.decidedAt.toISOString() : null,
+          decidedById: quotation.decidedById ?? null,
+          decidedByName: quotation.decidedBy?.name ?? null
+        });
+      }
+
+      if (quotation.decisionStatus !== 'PENDING') {
+        throw new ConflictException(
+          'La cotización ya tiene una decisión final y no puede modificarse'
+        );
+      }
+
+      await this.validateCurrentApprovedVersion(tx, projectId, quotation.versionId);
+
+      const updated = await tx.quotation.update({
+        where: { id: quotation.id },
+        data: {
+          decisionStatus: decision,
+          decidedAt: new Date(),
+          decidedById: actor.id
+        },
+        include: {
+          decidedBy: { select: { id: true, name: true } }
+        }
+      });
+
+      return QuotationResponseSchema.parse({
+        id: updated.id,
+        projectId: updated.projectId,
+        versionId: updated.versionId,
+        revision: updated.revision,
+        materialSubtotalCents: updated.materialSubtotalCents,
+        laborCostCents: updated.laborCostCents,
+        totalCents: updated.totalCents,
+        createdAt: updated.createdAt.toISOString(),
+        createdById: updated.createdById,
+        calculation: QuotationCalculationSchema.parse(updated.calculationJson),
+        decisionStatus: updated.decisionStatus,
+        decidedAt: updated.decidedAt ? updated.decidedAt.toISOString() : null,
+        decidedById: updated.decidedById ?? null,
+        decidedByName: updated.decidedBy?.name ?? null
+      });
     });
   }
 }
