@@ -17,9 +17,11 @@ import {
   QuotationGenerationRequestSchema,
   QuotationResponseSchema,
   QuotationListResponseSchema,
+  QuotationDecisionRequestSchema,
   type QuotationGenerationRequest,
   type QuotationResponse,
   type QuotationListResponse,
+  type QuotationDecisionAction,
 } from '@simbo/shared-contracts';
 
 export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'; }
@@ -141,6 +143,19 @@ async generateQuotation(
   ): Promise<QuotationResponse> {
     const data = await request<unknown>(
       `/projects/${encodeURIComponent(projectId)}/quotations/${encodeURIComponent(quotationId)}`
+    );
+    return QuotationResponseSchema.parse(data);
+  },
+
+  async decideQuotation(
+    projectId: string,
+    quotationId: string,
+    decision: QuotationDecisionAction
+  ): Promise<QuotationResponse> {
+    const body = QuotationDecisionRequestSchema.parse({ decision });
+    const data = await request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/quotations/${encodeURIComponent(quotationId)}/decision`,
+      body
     );
     return QuotationResponseSchema.parse(data);
   }

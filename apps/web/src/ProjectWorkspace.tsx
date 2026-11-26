@@ -765,6 +765,10 @@ const generate = async (version: VersionSummary) => {
       quotationVersion?.current &&
       quotationVersion?.approvalStatus === 'APPROVED'
     )}
+    currentUserRole={user.role}
+    currentApprovedVersionId={
+      versions.find((v) => v.current && v.approvalStatus === 'APPROVED')?.id ?? null
+    }
     onRefreshVersions={() => void run(() => showVersions(review))}
     onClose={() => {
       setShowQuotations(false);

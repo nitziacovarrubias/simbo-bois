@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import type {
   CuttingListResponse,
+  QuotationDecisionAction,
+  QuotationDecisionStatus,
   QuotationListResponse,
   QuotationResponse,
 } from '@simbo/shared-contracts';
-import { apiClient, type VersionSummary } from '../apiClient';
+import { apiClient, ApiError, type SessionUser, type VersionSummary } from '../apiClient';
 import './QuotationPanel.css';
 
 interface QuotationPanelProps {
@@ -13,6 +15,8 @@ interface QuotationPanelProps {
   version: VersionSummary | null;
   cuttingResult?: CuttingListResponse | null;
   canGenerate: boolean;
+  currentUserRole: SessionUser['role'];
+  currentApprovedVersionId: string | null;
   onRefreshVersions: () => void;
   onClose: () => void;
 }
@@ -24,6 +28,24 @@ interface MaterialGroup {
   thicknessMm: number;
   pieceCount: number;
 }
+
+const DECISION_STATUS_META: Record<
+  QuotationDecisionStatus,
+  { label: string; badgeClass: string }
+> = {
+  PENDING: {
+    label: 'Pendiente de decisión',
+    badgeClass: 'status-badge status-badge--pending',
+  },
+  APPROVED: {
+    label: 'Aprobada',
+    badgeClass: 'status-badge status-badge--approved',
+  },
+  REJECTED: {
+    label: 'Rechazada',
+    badgeClass: 'status-badge status-badge--rejected',
+  },
+};
 
 const moneyFormatter = new Intl.NumberFormat('es-MX', {
   style: 'currency',
@@ -47,12 +69,25 @@ function pesosToCents(value: string): number | null {
   return amount;
 }
 
+function formatDecisionDate(isoDate: string | null): string | null {
+  if (!isoDate) return null;
+  const parsed = new Date(isoDate);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return new Intl.DateTimeFormat('es-MX', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(parsed);
+}
+
 export default function QuotationPanel({
   projectId,
   projectName,
   version,
   cuttingResult,
   canGenerate,
+  currentUserRole,
+  currentApprovedVersionId,
   onRefreshVersions,
   onClose,
 }: QuotationPanelProps) {
@@ -85,6 +120,122 @@ export default function QuotationPanel({
   const historyReqId = useRef(0);
   const detailReqId = useRef(0);
   const generatePending = useRef(false);
+
+  const [pendingConfirmation, setPendingConfirmation] = useState<QuotationDecisionAction | null>(null);
+  const [decisionSubmitting, setDecisionSubmitting] = useState(false);
+  const [decisionError, setDecisionError] = useState<string | null>(null);
+  const [decisionSuccess, setDecisionSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingConfirmation(null);
+    setDecisionError(null);
+    setDecisionSuccess(null);
+  }, [projectId, selectedQuotation?.id]);
+
+  const isSelectedQuotationCurrent = Boolean(
+  selectedQuotation &&
+    currentApprovedVersionId &&
+    selectedQuotation.versionId === currentApprovedVersionId
+);
+
+  const canDecide = Boolean(
+    selectedQuotation &&
+      currentUserRole === 'SUPERVISOR' &&
+      selectedQuotation.decisionStatus === 'PENDING' &&
+      isSelectedQuotationCurrent
+  );
+
+  const syncQuotationInState = (updated: QuotationResponse) => {
+    setSelectedQuotation(updated);
+    setQuotations((prev) =>
+      prev.map((item) =>
+        item.id === updated.id
+          ? {
+              ...item,
+              decisionStatus: updated.decisionStatus,
+              decidedAt: updated.decidedAt,
+              decidedById: updated.decidedById,
+              decidedByName: updated.decidedByName ?? null,
+            }
+          : item
+      )
+    );
+  };
+
+  const refreshSelectedQuotation = async (quotationId: string) => {
+    const reqId = ++detailReqId.current;
+    try {
+      const fresh = await apiClient.getQuotation(projectId, quotationId);
+      if (reqId !== detailReqId.current) return;
+      syncQuotationInState(fresh);
+    } catch {
+      // Keep existing UI state untouched if refresh fails
+    }
+  };
+
+  const handleConfirmDecision = async () => {
+    if (!selectedQuotation || !pendingConfirmation || decisionSubmitting) {
+      return;
+    }
+
+    const targetQuotationId = selectedQuotation.id;
+    const targetDecision = pendingConfirmation;
+
+    setDecisionSubmitting(true);
+    setDecisionError(null);
+    setDecisionSuccess(null);
+
+    try {
+      const updated = await apiClient.decideQuotation(
+        projectId,
+        targetQuotationId,
+        targetDecision
+      );
+
+      syncQuotationInState(updated);
+      setPendingConfirmation(null);
+      setDecisionSuccess(
+        targetDecision === 'APPROVED'
+          ? 'La cotización se aprobó correctamente.'
+          : 'La cotización se rechazó correctamente.'
+      );
+    } catch (err) {
+      setPendingConfirmation(null);
+
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          // apiClient already cleared session and dispatched 'simbo.session.expired'
+          return;
+        }
+        if (err.status === 403) {
+          setDecisionError(
+            'No cuentas con permisos de Supervisor para registrar decisiones sobre cotizaciones.'
+          );
+        } else if (err.status === 409) {
+          setDecisionError(
+            err.message ||
+              'No se pudo registrar la decisión porque la cotización ya fue decidida o corresponde a una versión desactualizada.'
+          );
+          onRefreshVersions();
+          await refreshSelectedQuotation(targetQuotationId);
+        } else if (err.status === 404) {
+          setDecisionError(
+            'No se encontró la cotización solicitada dentro del proyecto.'
+          );
+        } else {
+          setDecisionError(
+            err.message || 'Ocurrió un error al registrar la decisión.'
+          );
+        }
+      } else {
+        setDecisionError(
+          'Error de conexión al comunicarse con el servidor. Verifica tu red e inténtalo de nuevo.'
+        );
+      }
+    } finally {
+      setDecisionSubmitting(false);
+    }
+  };
 
   const canGenerateForVersion = Boolean(
     canGenerate && version && version.current && version.approvalStatus === 'APPROVED'
@@ -465,6 +616,135 @@ export default function QuotationPanel({
           </div>
 
           <dl className="quotation-totals">
+           <section
+  className="quotation-section quotation-decision"
+  aria-labelledby="quotation-decision-title"
+>
+  <h4 id="quotation-decision-title">Decisión de cotización</h4>
+
+  <p className="quotation-meta">
+    <strong>Estado:</strong>{' '}
+    <span
+      className={
+        DECISION_STATUS_META[selectedQuotation.decisionStatus].badgeClass
+      }
+    >
+      {DECISION_STATUS_META[selectedQuotation.decisionStatus].label}
+    </span>
+    {selectedQuotation.decisionStatus !== 'PENDING' &&
+      (selectedQuotation.decidedByName || selectedQuotation.decidedById) && (
+        <>
+          {' · '}
+          <strong>Responsable:</strong>{' '}
+          {selectedQuotation.decidedByName || selectedQuotation.decidedById}
+        </>
+      )}
+    {selectedQuotation.decisionStatus !== 'PENDING' &&
+      selectedQuotation.decidedAt && (
+        <>
+          {' · '}
+          <strong>Fecha:</strong>{' '}
+          {formatDecisionDate(selectedQuotation.decidedAt)}
+        </>
+      )}
+  </p>
+
+  {selectedQuotation.decisionStatus === 'PENDING' &&
+    currentUserRole === 'SUPERVISOR' &&
+    !isSelectedQuotationCurrent && (
+      <p className="quotation-meta">
+        Esta cotización corresponde a una versión histórica del diseño y ya no
+        admite decisiones.
+      </p>
+    )}
+
+  {decisionSuccess && (
+    <p role="status" className="quotation-decision-feedback">
+      {decisionSuccess}
+    </p>
+  )}
+
+  {decisionError && (
+    <p className="project-error" role="alert">
+      {decisionError}
+    </p>
+  )}
+
+  {canDecide && !pendingConfirmation && (
+    <div className="quotation-decision-actions">
+      <button
+        type="button"
+        className="project-btn project-btn--approve"
+        disabled={decisionSubmitting}
+        onClick={() => {
+          setDecisionError('');
+          setDecisionSuccess('');
+          setPendingConfirmation('APPROVED');
+        }}
+      >
+        Aprobar cotización
+      </button>
+
+      <button
+        type="button"
+        className="project-btn"
+        disabled={decisionSubmitting}
+        onClick={() => {
+          setDecisionError('');
+          setDecisionSuccess('');
+          setPendingConfirmation('REJECTED');
+        }}
+      >
+        Rechazar cotización
+      </button>
+    </div>
+  )}
+
+  {canDecide && pendingConfirmation && (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="decision-confirm-heading"
+      aria-describedby="decision-confirm-body"
+      className="quotation-decision-confirm"
+    >
+      <p id="decision-confirm-heading">
+        <strong>
+          {pendingConfirmation === 'APPROVED'
+            ? '¿Aprobar esta cotización?'
+            : '¿Rechazar esta cotización?'}
+        </strong>
+      </p>
+      <p id="decision-confirm-body">
+        {pendingConfirmation === 'APPROVED'
+          ? 'Se registrará la aprobación y no podrá modificarse desde esta función.'
+          : 'Se registrará el rechazo y no podrá modificarse desde esta función.'}
+      </p>
+      <div className="quotation-decision-actions">
+        <button
+          type="button"
+          className="project-btn"
+          disabled={decisionSubmitting}
+          onClick={() => setPendingConfirmation(null)}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="project-btn project-btn--approve"
+          disabled={decisionSubmitting}
+          onClick={() => void handleConfirmDecision()}
+        >
+          {decisionSubmitting
+            ? 'Registrando...'
+            : pendingConfirmation === 'APPROVED'
+              ? 'Confirmar aprobación'
+              : 'Confirmar rechazo'}
+        </button>
+      </div>
+    </div>
+  )}
+</section>
             <div>
               <dt>Subtotal materiales:</dt>
               <dd>{formatCents(selectedQuotation.materialSubtotalCents)}</dd>
@@ -520,6 +800,7 @@ export default function QuotationPanel({
                   <th scope="col">Versión</th>
                   <th scope="col">Total</th>
                   <th scope="col">Acción</th>
+                  <th scope="col">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -539,6 +820,11 @@ export default function QuotationPanel({
                         Ver detalle
                       </button>
                     </td>
+                    <td>
+  <span className={DECISION_STATUS_META[q.decisionStatus].badgeClass}>
+    {DECISION_STATUS_META[q.decisionStatus].label}
+  </span>
+</td>
                   </tr>
                 ))}
               </tbody>
