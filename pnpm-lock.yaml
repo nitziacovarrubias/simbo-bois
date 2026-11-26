@@ -60,6 +60,9 @@ importers:
       '@simbo/manufacturing-engine':
         specifier: workspace:*
         version: link:../../packages/manufacturing-engine
+      '@simbo/quotation-engine':
+        specifier: workspace:*
+        version: link:../../packages/quotation-engine
       '@simbo/shared-contracts':
         specifier: workspace:*
         version: link:../../packages/shared-contracts

@@ -8,20 +8,23 @@ import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
   RevisionRequestSchema,
+  ListDesignChangeProposalsResponseSchema,
+  QuotationGenerationRequestSchema,
+  QuotationResponseSchema,
+  QuotationListResponseSchema,
+  QuotationDecisionRequestSchema,
   type CuttingListResponse,
   type CuttingListAuthorizationResponse,
   type CuttingListAuthorizationStatusResponse,
-  ListDesignChangeProposalsResponseSchema,
-  type CreateDesignChangeProposalResponse as ProposalCreateResponse,
-  type ListDesignChangeProposalsResponse as ProposalListResponse
-} from '@simbo/shared-contracts';
-
-export type {
-  CreateDesignChangeProposalRequest,
-  DesignChangeProposalParams,
-  DesignChangeProposal,
-  CreateDesignChangeProposalResponse,
-  ListDesignChangeProposalsResponse
+  type CreateDesignChangeProposalRequest,
+  type DesignChangeProposalParams,
+  type DesignChangeProposal,
+  type CreateDesignChangeProposalResponse,
+  type ListDesignChangeProposalsResponse,
+  type QuotationGenerationRequest,
+  type QuotationResponse,
+  type QuotationListResponse,
+  type QuotationDecisionAction,
 } from '@simbo/shared-contracts';
 
 export interface SessionUser { id:string;name:string;email:string;role:'ARCHITECT'|'SUPERVISOR'; }
@@ -115,5 +118,48 @@ export const apiClient={
       + `/versions/${encodeURIComponent(params.designVersionId)}/cutting-list/authorization`;
     const response = await request<unknown>(path);
     return CuttingListAuthorizationStatusResponseSchema.parse(response);
+  },
+
+async generateQuotation(
+    projectId: string,
+    versionId: string,
+    payload: QuotationGenerationRequest
+  ): Promise<QuotationResponse> {
+    const body = QuotationGenerationRequestSchema.parse(payload);
+    const data = await request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/versions/${encodeURIComponent(versionId)}/quotations`,
+      body
+    );
+    return QuotationResponseSchema.parse(data);
+  },
+
+  async listQuotations(projectId: string): Promise<QuotationListResponse> {
+    const data = await request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/quotations`
+    );
+    return QuotationListResponseSchema.parse(data);
+  },
+
+  async getQuotation(
+    projectId: string,
+    quotationId: string
+  ): Promise<QuotationResponse> {
+    const data = await request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/quotations/${encodeURIComponent(quotationId)}`
+    );
+    return QuotationResponseSchema.parse(data);
+  },
+
+  async decideQuotation(
+    projectId: string,
+    quotationId: string,
+    decision: QuotationDecisionAction
+  ): Promise<QuotationResponse> {
+    const body = QuotationDecisionRequestSchema.parse({ decision });
+    const data = await request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/quotations/${encodeURIComponent(quotationId)}/decision`,
+      body
+    );
+    return QuotationResponseSchema.parse(data);
   }
 };

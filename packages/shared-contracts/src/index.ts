@@ -225,3 +225,94 @@ export const CuttingListAuthorizationStatusResponseSchema = z.discriminatedUnion
 export type CuttingListAuthorizationStatusResponse = z.infer<
   typeof CuttingListAuthorizationStatusResponseSchema
 >;
+
+export const QuotationDecisionStatusSchema = z.enum([
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+]);
+
+export type QuotationDecisionStatus = z.infer<typeof QuotationDecisionStatusSchema>;
+
+export const QuotationDecisionActionSchema = z.enum(['APPROVED', 'REJECTED']);
+
+export type QuotationDecisionAction = z.infer<typeof QuotationDecisionActionSchema>;
+
+export const QuotationDecisionRequestSchema = z
+  .object({
+    decision: QuotationDecisionActionSchema,
+  })
+  .strict();
+
+export type QuotationDecisionRequest = z.infer<typeof QuotationDecisionRequestSchema>;
+
+export const QuotationDecisionFieldsSchema = z.object({
+  decisionStatus: QuotationDecisionStatusSchema,
+  decidedAt: z.string().datetime().nullable(),
+  decidedById: z.string().nullable(),
+  decidedByName: z.string().nullable().optional(),
+});
+
+export const MaterialRateSchema = z.object({
+  materialId: z.string().trim().min(1),
+  thicknessMm: z.number().finite().positive(),
+  pricePerSquareMeterCents: z.number().int().positive().safe()
+}).strict();
+
+export const QuotationGenerationRequestSchema = z.object({
+  rates: z.array(MaterialRateSchema).min(1),
+  laborCostCents: z.number().int().nonnegative().safe()
+}).strict();
+
+export const QuotationCalculationSourceSchema = z.object({
+  projectId: z.string().trim().min(1),
+  designVersionId: z.string().trim().min(1),
+  revision: z.number().int().positive()
+}).strict();
+
+export const QuotationCalculationLineSchema = z.object({
+  cuttingListRowId: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+  materialId: z.string().trim().min(1),
+  thicknessMm: z.number().finite().positive(),
+  quantity: z.number().int().positive(),
+  areaM2: z.number().finite().nonnegative(),
+  pricePerSquareMeterCents: z.number().int().positive().safe(),
+  amountCents: z.number().int().nonnegative().safe()
+}).strict();
+
+export const QuotationCalculationSchema = z.object({
+  source: QuotationCalculationSourceSchema,
+  lines: z.array(QuotationCalculationLineSchema).min(1),
+  materialSubtotalCents: z.number().int().nonnegative().safe(),
+  laborCostCents: z.number().int().nonnegative().safe(),
+  totalCents: z.number().int().nonnegative().safe()
+}).strict();
+
+export const QuotationSummarySchema = z.object({
+  id: z.string().trim().min(1),
+  projectId: z.string().trim().min(1),
+  versionId: z.string().trim().min(1),
+  revision: z.number().int().positive(),
+  materialSubtotalCents: z.number().int().nonnegative().safe(),
+  laborCostCents: z.number().int().nonnegative().safe(),
+  totalCents: z.number().int().nonnegative().safe(),
+  createdAt: z.string().datetime(),
+  createdById: z.string().trim().min(1)
+}).extend(QuotationDecisionFieldsSchema.shape).strict();
+
+export const QuotationResponseSchema = QuotationSummarySchema.extend({
+  calculation: QuotationCalculationSchema
+}).strict();
+
+export const QuotationListResponseSchema = z.array(QuotationSummarySchema);
+
+export type QuotationCalculationSource = z.infer<typeof QuotationCalculationSourceSchema>;
+export type QuotationCalculationLine = z.infer<typeof QuotationCalculationLineSchema>;
+export type QuotationCalculationResponse = z.infer<typeof QuotationCalculationSchema>;
+export type QuotationSummary = z.infer<typeof QuotationSummarySchema>;
+export type QuotationResponse = z.infer<typeof QuotationResponseSchema>;
+export type QuotationListResponse = z.infer<typeof QuotationListResponseSchema>;
+export type QuotationGenerationRequest = z.infer<typeof QuotationGenerationRequestSchema>
+
+
