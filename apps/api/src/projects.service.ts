@@ -8,7 +8,7 @@ import {
   CreateDesignChangeProposalResponseSchema,
   DesignDocumentSchema,
   ListDesignChangeProposalsResponseSchema,
-  type CreateDesignChangeProposalRequest
+  type CreateDesignChangeProposalRequest,
   QuotationCalculationSchema,
   QuotationResponseSchema,
   QuotationListResponseSchema,

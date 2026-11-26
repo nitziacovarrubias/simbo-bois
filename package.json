@@ -20,6 +20,7 @@
     "test:integration": "pnpm --filter @simbo/api build && node --experimental-strip-types --test tests/integration/*.test.ts"
   },
   "devDependencies": {
+    "@nestjs/common": "^10.4.15",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.18.1",
