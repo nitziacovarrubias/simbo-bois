@@ -1,3 +1,4 @@
+import { ConflictException, BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 import {
   ConflictException,
   Inject,
@@ -25,6 +26,13 @@ import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
   CuttingListResponseSchema,
+  QuotationCalculationSchema,
+  QuotationResponseSchema,
+  QuotationListResponseSchema,
+  type QuotationDecisionAction,
+  type QuotationGenerationRequest,
+  type QuotationResponse,
+  type QuotationListResponse,
   DesignDocumentSchema,
 } from '@simbo/shared-contracts';
 import { generateCuttingList, validateCuttingListInput } from '@simbo/manufacturing-engine';
@@ -698,6 +706,245 @@ export class ProjectsService {
     }
     return CuttingListAuthorizationStatusResponseSchema.parse({
       authorized: true,
+      authorization: this.formatAuthorization(existing)
+    });
+  }
+
+  /**
+ * Genera y almacena una cotización desde una versión aprobada vigente.
+ *
+ * @pre El actor tiene permisos y acceso al proyecto.
+ * @pre La versión está aprobada y coincide con el borrador vigente.
+ * @pre El despiece y las tarifas cumplen sus contratos.
+ * @post Se almacena una cotización recuperable con su desglose y total.
+ * @inv No se modifica el DesignDocument ni una versión histórica.
+ * @inv Los importes se mantienen en centavos enteros no negativos.
+ */
+async createQuotation(
+    actor: Actor,
+    id: string,
+    versionId: string,
+    input: QuotationGenerationRequest
+  ): Promise<QuotationResponse> {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException('Sólo el Supervisor puede generar cotizaciones');
+    }
+
+    return this.locked(actor, id, async tx => {
+      const { version, design } = await this.validateCurrentApprovedVersion(
+        tx,
+        id,
+        versionId
+      );
+
+      const cuttingList = this.buildCuttingList(
+        design,
+        id,
+        version.id,
+        version.revision
+      );
+
+      let calculated;
+      try {
+        calculated = calculateQuotation({
+          cuttingList,
+          rates: input.rates,
+          laborCostCents: input.laborCostCents
+        });
+      } catch (error) {
+        throw new BadRequestException(
+          error instanceof Error ? error.message : 'Error al calcular la cotización'
+        );
+      }
+
+      const validatedCalculation = QuotationCalculationSchema.parse(calculated);
+
+      const saved = await tx.quotation.create({
+        data: {
+          projectId: id,
+          versionId: version.id,
+          revision: version.revision,
+          createdById: actor.id,
+          materialSubtotalCents: validatedCalculation.materialSubtotalCents,
+          laborCostCents: validatedCalculation.laborCostCents,
+          totalCents: validatedCalculation.totalCents,
+          calculationJson: validatedCalculation
+        }
+      });
+
+      return QuotationResponseSchema.parse({
+        id: saved.id,
+        projectId: saved.projectId,
+        versionId: saved.versionId,
+        revision: saved.revision,
+        materialSubtotalCents: saved.materialSubtotalCents,
+        laborCostCents: saved.laborCostCents,
+        totalCents: saved.totalCents,
+        createdAt: saved.createdAt.toISOString(),
+        createdById: saved.createdById,
+        calculation: validatedCalculation,
+	decisionStatus: saved.decisionStatus,
+        decidedAt: saved.decidedAt ? saved.decidedAt.toISOString() : null,
+        decidedById: saved.decidedById ?? null,
+        decidedByName: null
+      });
+    });
+  }
+
+  async listQuotations(
+    actor: Actor,
+    id: string
+  ): Promise<QuotationListResponse> {
+    await this.access(this.prisma, actor, id);
+
+    const quotations = await this.prisma.quotation.findMany({
+      where: { projectId: id },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      include: {
+        decidedBy: { select: { id: true, name: true } }
+      }
+    });
+
+    return QuotationListResponseSchema.parse(
+      quotations.map(q => ({
+        id: q.id,
+        projectId: q.projectId,
+        versionId: q.versionId,
+        revision: q.revision,
+        materialSubtotalCents: q.materialSubtotalCents,
+        laborCostCents: q.laborCostCents,
+        totalCents: q.totalCents,
+        createdAt: q.createdAt.toISOString(),
+        createdById: q.createdById,
+	decisionStatus: q.decisionStatus,
+        decidedAt: q.decidedAt ? q.decidedAt.toISOString() : null,
+        decidedById: q.decidedById ?? null,
+        decidedByName: q.decidedBy?.name ?? null
+      }))
+    );
+  }
+
+  async getQuotation(
+    actor: Actor,
+    id: string,
+    quotationId: string
+  ): Promise<QuotationResponse> {
+    await this.access(this.prisma, actor, id);
+
+    const quotation = await this.prisma.quotation.findFirst({
+      where: {
+        id: quotationId,
+        projectId: id
+      },
+      include: {
+        decidedBy: { select: { id: true, name: true } }
+      }
+    });
+
+    if (!quotation) {
+      throw new NotFoundException('Cotización no encontrada');
+    }
+
+    return QuotationResponseSchema.parse({
+      id: quotation.id,
+      projectId: quotation.projectId,
+      versionId: quotation.versionId,
+      revision: quotation.revision,
+      materialSubtotalCents: quotation.materialSubtotalCents,
+      laborCostCents: quotation.laborCostCents,
+      totalCents: quotation.totalCents,
+      createdAt: quotation.createdAt.toISOString(),
+      createdById: quotation.createdById,
+      calculation: QuotationCalculationSchema.parse(quotation.calculationJson),
+      decisionStatus: quotation.decisionStatus,
+      decidedAt: quotation.decidedAt ? quotation.decidedAt.toISOString() : null,
+      decidedById: quotation.decidedById ?? null,
+      decidedByName: quotation.decidedBy?.name ?? null
+    });
+  }
+
+async decideQuotation(
+    actor: Actor,
+    projectId: string,
+    quotationId: string,
+    decision: QuotationDecisionAction
+  ): Promise<QuotationResponse> {
+    if (actor.role !== 'SUPERVISOR') {
+      throw new ForbiddenException(
+        'Sólo el Supervisor puede aprobar o rechazar cotizaciones'
+      );
+    }
+
+    return this.locked(actor, projectId, async tx => {
+      const quotation = await tx.quotation.findFirst({
+        where: {
+          id: quotationId,
+          projectId
+        },
+        include: {
+          decidedBy: { select: { id: true, name: true } }
+        }
+      });
+
+      if (!quotation) {
+        throw new NotFoundException('Cotización no encontrada');
+      }
+
+      if (quotation.decisionStatus === decision) {
+        return QuotationResponseSchema.parse({
+          id: quotation.id,
+          projectId: quotation.projectId,
+          versionId: quotation.versionId,
+          revision: quotation.revision,
+          materialSubtotalCents: quotation.materialSubtotalCents,
+          laborCostCents: quotation.laborCostCents,
+          totalCents: quotation.totalCents,
+          createdAt: quotation.createdAt.toISOString(),
+          createdById: quotation.createdById,
+          calculation: QuotationCalculationSchema.parse(quotation.calculationJson),
+          decisionStatus: quotation.decisionStatus,
+          decidedAt: quotation.decidedAt ? quotation.decidedAt.toISOString() : null,
+          decidedById: quotation.decidedById ?? null,
+          decidedByName: quotation.decidedBy?.name ?? null
+        });
+      }
+
+      if (quotation.decisionStatus !== 'PENDING') {
+        throw new ConflictException(
+          'La cotización ya tiene una decisión final y no puede modificarse'
+        );
+      }
+
+      await this.validateCurrentApprovedVersion(tx, projectId, quotation.versionId);
+
+      const updated = await tx.quotation.update({
+        where: { id: quotation.id },
+        data: {
+          decisionStatus: decision,
+          decidedAt: new Date(),
+          decidedById: actor.id
+        },
+        include: {
+          decidedBy: { select: { id: true, name: true } }
+        }
+      });
+
+      return QuotationResponseSchema.parse({
+        id: updated.id,
+        projectId: updated.projectId,
+        versionId: updated.versionId,
+        revision: updated.revision,
+        materialSubtotalCents: updated.materialSubtotalCents,
+        laborCostCents: updated.laborCostCents,
+        totalCents: updated.totalCents,
+        createdAt: updated.createdAt.toISOString(),
+        createdById: updated.createdById,
+        calculation: QuotationCalculationSchema.parse(updated.calculationJson),
+        decisionStatus: updated.decisionStatus,
+        decidedAt: updated.decidedAt ? updated.decidedAt.toISOString() : null,
+        decidedById: updated.decidedById ?? null,
+        decidedByName: updated.decidedBy?.name ?? null
+      });
       authorization: this.formatAuthorization(existing),
     });
   }

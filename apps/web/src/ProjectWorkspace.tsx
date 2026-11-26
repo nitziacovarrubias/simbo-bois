@@ -30,14 +30,12 @@ import DesignThumbnail from './components/DesignThumbnail';
 import {
   ArrowLeft,
   FolderOpen,
-  Home,
   Info,
   MapPin,
   Pencil,
   Settings,
   UserRound,
   UsersRound,
-  ShieldCheck,
 } from 'lucide-react';
 import type { CreateProjectRequest } from '@simbo/shared-contracts';
 
@@ -60,6 +58,8 @@ import {
 import { editorFacade } from './editorFacade';
 
 import { autosaveNow, useEditor } from './store';
+
+import QuotationPanel from './components/QuotationPanel';
 
 import './ProjectWorkspace.css';
 import './management-workspace.css';
@@ -300,6 +300,8 @@ export default function ProjectWorkspace() {
 
   const [cuttingError, setCuttingError] = useState('');
   const [authVersion, setAuthVersion] = useState<VersionSummary | null>(null);
+  const [quotationVersion, setQuotationVersion] = useState<VersionSummary | null>(null);
+  const [showQuotations, setShowQuotations] = useState(false);
   const cuttingRequest = useRef(0);
   const cuttingPending = useRef(false);
 
@@ -310,6 +312,8 @@ export default function ProjectWorkspace() {
     setCuttingError('');
     setCuttingLoading(false);
     setAuthVersion(null);
+    setQuotationVersion(null);
+    setShowQuotations(false);
   };
 
   useEffect(
@@ -1129,6 +1133,19 @@ export default function ProjectWorkspace() {
                     {review && detailTab === 'VERSIONS' && (
                       <section className="project-versions">
                         <h2>Versiones de {review.name}</h2>
+
+                        <button
+                          type="button"
+                          disabled={busy || cuttingLoading}
+                          className="project-btn project-btn--review"
+                          onClick={() => {
+                            setQuotationVersion(null);
+                            setShowQuotations(true);
+                          }}
+                        >
+                          <ActionIcon name="excel" /> Ver cotizaciones
+                        </button>
+
                         <p>Revisa las versiones, sus propuestas y la autorización del despiece.</p>
 
                         {versions.map((version) => (
@@ -1169,6 +1186,7 @@ export default function ProjectWorkspace() {
                               version.current &&
                               version.approvalStatus !== 'APPROVED' && (
                                 <button
+                                  type="button"
                                   disabled={busy || cuttingLoading}
                                   className="project-btn project-btn--approve"
                                   onClick={() => void run(() => approve(version))}
@@ -1202,6 +1220,22 @@ export default function ProjectWorkspace() {
                                   onClick={() => setAuthVersion(version)}
                                 >
                                   <ActionIcon name="search" /> Ver autorización
+                                </button>
+                              )}
+
+                            {user.role === 'SUPERVISOR' &&
+                              version.current &&
+                              version.approvalStatus === 'APPROVED' && (
+                                <button
+                                  type="button"
+                                  disabled={busy || cuttingLoading}
+                                  className="project-btn project-btn--review"
+                                  onClick={() => {
+                                    setQuotationVersion(version);
+                                    setShowQuotations(true);
+                                  }}
+                                >
+                                  <ActionIcon name="excel" /> Generar cotización
                                 </button>
                               )}
 
@@ -1344,6 +1378,35 @@ export default function ProjectWorkspace() {
                 </div>
               </>
             )}
+
+{review && showQuotations && (
+  <QuotationPanel
+    key={`${review.id}-${quotationVersion?.id ?? 'history'}`}
+    projectId={review.id}
+    projectName={review.name}
+    version={quotationVersion}
+    cuttingResult={cuttingResult}
+    canGenerate={Boolean(
+      user.role === 'SUPERVISOR' &&
+      quotationVersion?.current &&
+      quotationVersion?.approvalStatus === 'APPROVED'
+    )}
+    currentUserRole={user.role}
+    currentApprovedVersionId={
+      versions.find((v) => v.current && v.approvalStatus === 'APPROVED')?.id ?? null
+    }
+    onRefreshVersions={() =>
+      void run(async () => {
+        await showVersions(review);
+        setDetailTab('VERSIONS');
+      })
+    }
+    onClose={() => {
+      setShowQuotations(false);
+      setQuotationVersion(null);
+    }}
+  />
+)}
           </section>
         )}
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   BadRequestException,
   Body,
@@ -30,6 +31,10 @@ import {
   SetProjectStageRequestSchema,
   QuotationGenerationRequestSchema,
 } from '@simbo/shared-contracts';
+=======
+import { BadRequestException, Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
+import { CreateDesignChangeProposalRequestSchema, CreateProjectRequestSchema, DesignChangeProposalParamsSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema, QuotationGenerationRequestSchema, QuotationDecisionRequestSchema } from '@simbo/shared-contracts';
+>>>>>>> origin/main
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';
@@ -247,6 +252,30 @@ class ProjectsController {
     @Param('quotationId') quotationId: string
   ) {
     return this.projects.getQuotation(user, id, quotationId);
+  }
+
+@Post(':id/quotations/:quotationId/decision')
+  @HttpCode(200)
+  async decideQuotation(
+    @CurrentUser() actor: Actor,
+    @Param('id') projectId: string,
+    @Param('quotationId') quotationId: string,
+    @Body() body: unknown,
+  ) {
+    const parsed = QuotationDecisionRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException({
+        message: 'Solicitud de decisión inválida.',
+        issues: parsed.error.issues,
+      });
+    }
+
+    return this.projects.decideQuotation(
+      actor,
+      projectId,
+      quotationId,
+      parsed.data.decision,
+    );
   }
 
 

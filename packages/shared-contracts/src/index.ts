@@ -683,6 +683,33 @@ export type CuttingListAuthorizationStatusResponse = z.infer<
   typeof CuttingListAuthorizationStatusResponseSchema
 >;
 
+export const QuotationDecisionStatusSchema = z.enum([
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+]);
+
+export type QuotationDecisionStatus = z.infer<typeof QuotationDecisionStatusSchema>;
+
+export const QuotationDecisionActionSchema = z.enum(['APPROVED', 'REJECTED']);
+
+export type QuotationDecisionAction = z.infer<typeof QuotationDecisionActionSchema>;
+
+export const QuotationDecisionRequestSchema = z
+  .object({
+    decision: QuotationDecisionActionSchema,
+  })
+  .strict();
+
+export type QuotationDecisionRequest = z.infer<typeof QuotationDecisionRequestSchema>;
+
+export const QuotationDecisionFieldsSchema = z.object({
+  decisionStatus: QuotationDecisionStatusSchema,
+  decidedAt: z.string().datetime().nullable(),
+  decidedById: z.string().nullable(),
+  decidedByName: z.string().nullable().optional(),
+});
+
 export const MaterialRateSchema = z.object({
   materialId: z.string().trim().min(1),
   thicknessMm: z.number().finite().positive(),
@@ -729,7 +756,7 @@ export const QuotationSummarySchema = z.object({
   totalCents: z.number().int().nonnegative().safe(),
   createdAt: z.string().datetime(),
   createdById: z.string().trim().min(1)
-}).strict();
+}).extend(QuotationDecisionFieldsSchema.shape).strict();
 
 export const QuotationResponseSchema = QuotationSummarySchema.extend({
   calculation: QuotationCalculationSchema
