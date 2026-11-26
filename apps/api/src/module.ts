@@ -1,5 +1,14 @@
 import { Body, Controller, ForbiddenException, Get, HttpCode, Inject, Module, Param, Post, UnprocessableEntityException, UseGuards } from '@nestjs/common';import { Prisma } from '@prisma/client';
-import { CreateProjectRequestSchema, GenerateCuttingListParamsSchema, ModuleDefinitionSchema, ModuleVersionSchema, RevisionRequestSchema, SaveDesignRequestSchema } from '@simbo/shared-contracts';
+import {
+  CreateDesignChangeProposalRequestSchema,
+  CreateProjectRequestSchema,
+  DesignChangeProposalParamsSchema,
+  GenerateCuttingListParamsSchema,
+  ModuleDefinitionSchema,
+  ModuleVersionSchema,
+  RevisionRequestSchema,
+  SaveDesignRequestSchema
+} from '@simbo/shared-contracts';
 import type { DesignDocument } from '@simbo/design-domain';
 import { z } from 'zod';
 import { AuthController, AuthService, AuthGuard, CurrentUser, type Actor } from './auth.js';

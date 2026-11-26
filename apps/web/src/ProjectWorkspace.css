@@ -482,6 +482,43 @@
 }
 .project-versions .project-proposal-entry > p { margin: 0; overflow-wrap: anywhere; }
 .project-versions .project-proposal-entry > small { color: #6d6d6d; }
+.project-versions .project-proposal-form {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #e8ded4;
+}
+.project-versions .project-proposal-form label { font-size: 13px; font-weight: 700; }
+.project-versions .project-proposal-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 76px;
+  padding: 10px 12px;
+  border: 1px solid #d8cbbd;
+  border-radius: 6px;
+  color: #332d29;
+  font: inherit;
+  resize: vertical;
+}
+.project-versions .project-proposal-form textarea:focus-visible {
+  outline: 3px solid rgba(255,133,0,.25);
+  border-color: #c97921;
+}
+.project-versions .project-proposal-form > small,
+.project-versions .project-proposal-availability { color: #6d6d6d; font-size: 12px; }
+.project-versions .project-proposal-form > .project-error,
+.project-versions .project-proposal-success,
+.project-versions .project-proposal-availability { margin: 0; }
+.project-versions .project-proposal-success { color: #23643e; font-size: 13px; }
+.project-versions .project-proposal-form .project-btn--submit-proposal {
+  justify-self: start;
+  margin-left: 0;
+  background: #ff8500;
+  color: #fff;
+}
+.project-versions .project-proposal-form .project-btn--submit-proposal:hover:not(:disabled) {
+  background: #e97700;
+}
 .project-versions table {
   border-collapse: collapse;
   width: 100%;

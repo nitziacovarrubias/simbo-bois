@@ -10,9 +10,8 @@ import {
   RevisionRequestSchema,
   type CuttingListResponse,
   type CuttingListAuthorizationResponse,
-  type CuttingListAuthorizationStatusResponse
+  type CuttingListAuthorizationStatusResponse,
   ListDesignChangeProposalsResponseSchema,
-  type CuttingListResponse,
   type CreateDesignChangeProposalResponse as ProposalCreateResponse,
   type ListDesignChangeProposalsResponse as ProposalListResponse
 } from '@simbo/shared-contracts';
