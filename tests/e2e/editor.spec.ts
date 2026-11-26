@@ -25,10 +25,12 @@ async function duplicate(page:Page) {
 }
 async function save(page:Page) {
   await page.getByRole('button',{name:'Guardar diseño',exact:true}).click();
-  await expect(page.locator('.save-state .status')).toHaveText('GUARDADO');
+  await expect(
+    page.getByRole('banner').getByRole('status').filter({hasText:'Estado de guardado:'})
+  ).toHaveText('Estado de guardado: GUARDADO');
 }
 async function signIn(page:Page) {
-  await page.goto('/');await page.getByLabel('Correo',{exact:true}).fill(email);await page.getByLabel('Contraseña',{exact:true}).fill(password);await page.getByRole('button',{name:'Entrar',exact:true}).click();await expect(page.getByText('Supervisor E2E · Supervisor')).toBeVisible();
+  await page.goto('/');await page.getByLabel('Correo electrónico',{exact:true}).fill(email);await page.getByLabel('Contraseña',{exact:true}).fill(password);await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();await expect(page.getByText('Supervisor E2E · Supervisor')).toBeVisible();
 }
 async function remoteProject(page:Page,name:string) {
   await signIn(page);await page.getByRole('button',{name:'Nuevo proyecto',exact:true}).click();
@@ -41,8 +43,8 @@ test('demo principal: proyecto -> room -> panel exacto -> módulo -> guardar -> 
  await localProject(page,'Proyecto E2E local');
  await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing-parts [role="status"]')).toHaveText('No hay piezas manufacturables en este diseño.');
  const room=page.locator('.room-mini');await room.getByRole('spinbutton',{name:'Ancho mm',exact:true}).fill('3600');await room.getByRole('spinbutton',{name:'Prof. mm',exact:true}).fill('3000');await room.getByRole('spinbutton',{name:'Alto mm',exact:true}).fill('2500');
- await page.getByRole('button',{name:'Panel',exact:true}).click();const inspector=page.locator('.inspector');
- for(const [name,value] of [['Ancho mm','700'],['Alto mm','500'],['Grosor mm','18']]){const field=inspector.getByRole('textbox',{name,exact:true});await field.fill(value!);await field.press('Enter');}
+ await page.getByRole('button',{name:'Panel',exact:true}).click();await page.getByRole('button',{name:'Propiedades',exact:true}).click();const inspector=page.locator('.inspector');
+ for(const [name,value] of [['Ancho','700'],['Alto','500'],['Grosor','18']]){const field=inspector.locator(`[data-cad-field="${name}"]`);await field.fill(value!);await field.press('Enter');}
  await duplicate(page);await page.getByRole('button',{name:'Constructor de módulos',exact:true}).click();
  await page.getByRole('button',{name:'Guardar módulo',exact:true}).click();await expect(page.locator('.catalog-item')).toHaveCount(1);await page.locator('.catalog-item').click();await save(page);
  await page.reload();await page.getByRole('button',{name:'Abrir editor local'}).click();await expect(page.locator('.project-name')).toContainText('Proyecto E2E local');
@@ -59,14 +61,14 @@ test('persistencia de unión: screw hardware + machining',async({page})=>{
 });
 test('Supervisor: proyecto remoto, piezas, versión aprobada, reapertura e historia',async({page})=>{
  const name='Aprobación E2E '+randomUUID();await remoteProject(page,name);await page.getByRole('button',{name:'Panel',exact:true}).click();await page.getByRole('button',{name:'Constructor de módulos',exact:true}).click();await page.getByRole('button',{name:'Guardar módulo',exact:true}).click();await page.locator('.catalog-item').click();await save(page);
- await page.getByRole('button',{name:'Versión',exact:true}).click();await expect(page.getByText('Versión creada',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Proyectos',exact:true}).click();
+ await page.getByRole('button',{name:'Guardar nueva versión',exact:true}).click();await expect(page.getByText('Versión creada',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Volver a proyectos',exact:true}).click();
  await projectRow(page,name).getByRole('button',{name:'Revisar versiones'}).click();await page.getByRole('button',{name:'Aprobar diseño',exact:true}).click();await expect(page.getByText('Aprobada · Vigente',{exact:true})).toBeVisible();
  await page.reload();await projectRow(page,name).getByRole('button',{name:'Abrir diseño'}).click();await expect(page.getByText('Aprobación vigente',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing-parts-table tbody tr')).toHaveCount(2);
- await page.getByRole('button',{name:'Panel',exact:true}).click();await save(page);await expect(page.getByText('Sin aprobación vigente',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Proyectos',exact:true}).click();await projectRow(page,name).getByRole('button',{name:'Revisar versiones'}).click();await expect(page.getByText('Aprobada · Histórica',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('heading',{name:'Iniciar sesión',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Panel',exact:true}).click();await save(page);await expect(page.getByText('Sin aprobación vigente',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Volver a proyectos',exact:true}).click();await projectRow(page,name).getByRole('button',{name:'Revisar versiones'}).click();await expect(page.getByText('Aprobada · Histórica',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click();await expect(page.getByRole('heading',{name:'Login',exact:true})).toBeVisible();
 });
 test('fallo remoto visible y reintento: no se confirma una copia local como guardado servidor',async({page})=>{
  const name='Reintento E2E '+randomUUID();await remoteProject(page,name);
  await page.route('**/api/projects/*/design',async route=>{if(route.request().method()==='POST')await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({message:'Fallo temporal de prueba'})});else await route.continue();});
- await page.getByRole('button',{name:'Panel',exact:true}).click();await page.getByRole('button',{name:'Guardar diseño',exact:true}).click();await expect(page.locator('.save-state .status')).toHaveText('ERROR');await expect(page.getByText('Fallo temporal de prueba',{exact:true})).toBeVisible();await expect(page.locator('.project-name')).toContainText('servidor r0');
- await page.unroute('**/api/projects/*/design');await save(page);await expect(page.locator('.project-name')).toContainText('servidor r1');await page.getByRole('button',{name:'Proyectos',exact:true}).click();await page.reload();await projectRow(page,name).getByRole('button',{name:'Abrir diseño'}).click();await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing-parts-table tbody tr')).toHaveCount(1);
+ await page.getByRole('button',{name:'Panel',exact:true}).click();await page.getByRole('button',{name:'Guardar diseño',exact:true}).click();await expect(page.getByRole('banner').getByRole('status').filter({hasText:'Estado de guardado:'})).toHaveText('Estado de guardado: ERROR');await expect(page.getByText('Fallo temporal de prueba',{exact:true})).toBeVisible();await expect(page.locator('.project-name')).toContainText('servidor r0');
+ await page.unroute('**/api/projects/*/design');await save(page);await expect(page.locator('.project-name')).toContainText('servidor r1');await page.getByRole('button',{name:'Volver a proyectos',exact:true}).click();await page.reload();await projectRow(page,name).getByRole('button',{name:'Abrir diseño'}).click();await page.getByRole('button',{name:'Manufactura',exact:true}).click();await expect(page.locator('.manufacturing-parts-table tbody tr')).toHaveCount(1);
 });

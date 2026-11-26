@@ -8,6 +8,7 @@ import App from './App';
 import NewProjectDialog from './components/NewProjectDialog';
 
 import CuttingListAuthorizationPanel from './components/CuttingListAuthorizationPanel';
+import DesignChangeProposalForm from './components/DesignChangeProposalForm';
 
 import { apiClient, type ProjectSummary, type SessionUser, type VersionSummary } from './apiClient';
 
@@ -304,6 +305,17 @@ const toggleProposalHistory = async (version: VersionSummary) => {
     }
 
   };
+
+const proposalCreated = (versionId: string, proposal: DesignChangeProposal) => {
+  setProposalHistoryError('');
+  setProposalHistory(current => ({
+    ...current,
+    [versionId]: [
+      proposal,
+      ...(current[versionId] ?? []).filter(existing => existing.id !== proposal.id)
+    ]
+  }));
+};
 
 
 
@@ -697,10 +709,32 @@ const generate = async (version: VersionSummary) => {
                         <p>{proposal.observation}</p>
                         <small>
                           {proposal.author.name} ·{' '}
-                          {new Date(proposal.createdAt).toLocaleString()}
+                          {new Date(proposal.createdAt).toLocaleString('es-MX', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short'
+                          })}
                         </small>
                       </article>
                     ))}
+
+                    {user.role === 'ARCHITECT' &&
+                    version.current &&
+                    version.approvalStatus === 'DRAFT' ? (
+                      <DesignChangeProposalForm
+                        projectId={review.id}
+                        versionId={version.id}
+                        disabled={proposalLoadingVersionId === version.id}
+                        onCreated={proposal => proposalCreated(version.id, proposal)}
+                      />
+                    ) : (
+                      <p className="project-proposal-availability" role="note">
+                        {user.role !== 'ARCHITECT'
+                          ? 'Tu rol permite consultar propuestas, pero no registrarlas.'
+                          : version.approvalStatus === 'APPROVED'
+                            ? 'No se pueden registrar propuestas sobre una versión aprobada.'
+                            : 'No se pueden registrar propuestas sobre una versión histórica.'}
+                      </p>
+                    )}
                   </section>
                 )}
               </article>

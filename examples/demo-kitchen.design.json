@@ -18,6 +18,15 @@
         "heightMm": 2100,
         "sillHeightMm": 0,
         "openingDirection": "IN"
+      },
+      {
+        "id": "window-cocina-l-norte",
+        "type": "WINDOW",
+        "wall": "NORTH",
+        "offsetMm": 1800,
+        "widthMm": 1200,
+        "heightMm": 1200,
+        "sillHeightMm": 900
       }
     ],
     "obstacles": []
@@ -327,7 +336,7 @@
       "id": "part-b-n1-toe",
       "name": "Base izquierda 1 puerta · Zócalo",
       "shape": "RECTANGULAR_PANEL",
-      "semanticRole": "TOE_KICK",
+      "semanticRole": "SHOE_SHELF",
       "dimensions": {
         "widthMm": 555,
         "heightMm": 100,
@@ -14887,10 +14896,57 @@
   ],
   "constraints": [],
   "bindings": [],
-  "joints": [],
-  "hardwareDefinitions": [],
-  "hardwareInstances": [],
-  "machiningFeatures": [],
+  "joints": [
+    {
+      "id": "joint-demo-cocina-l",
+      "type": "SCREW",
+      "partAId": "part-b-n1-side-l",
+      "partBId": "part-b-n1-side-r",
+      "anchorA": { "kind": "FACE", "position": { "x": -281, "y": 360, "z": 280 }, "normal": { "x": 1, "y": 0, "z": 0 } },
+      "anchorB": { "kind": "FACE", "position": { "x": 281, "y": 360, "z": 280 }, "normal": { "x": -1, "y": 0, "z": 0 } },
+      "hardwareInstanceIds": ["hardware-demo-cocina-l"],
+      "machiningFeatureIds": ["machining-demo-cocina-l"],
+      "parameters": { "diameterMm": 5, "lengthMm": 30 },
+      "metadata": { "demo": true }
+    }
+  ],
+  "hardwareDefinitions": [
+    {
+      "id": "hardware-definition-demo-cocina-l",
+      "name": "Tornillo ensamblaje",
+      "category": "SCREW",
+      "dimensions": { "diameterMm": 5, "lengthMm": 30 },
+      "mountingPattern": [{ "offset": { "x": 0, "y": 0, "z": 0 }, "diameterMm": 5, "depthMm": 20, "type": "BORE" }],
+      "colorHex": "#8A8A8A",
+      "metadata": { "demo": true }
+    }
+  ],
+  "hardwareInstances": [
+    {
+      "id": "hardware-demo-cocina-l",
+      "definitionId": "hardware-definition-demo-cocina-l",
+      "position": { "x": 0, "y": 360, "z": 280 },
+      "orientation": { "x": 0, "y": 0, "z": 0 },
+      "parameters": { "lengthMm": 30 },
+      "connectedPartIds": ["part-b-n1-side-l", "part-b-n1-side-r"],
+      "jointId": "joint-demo-cocina-l",
+      "metadata": { "demo": true }
+    }
+  ],
+  "machiningFeatures": [
+    {
+      "id": "machining-demo-cocina-l",
+      "partId": "part-b-n1-side-l",
+      "type": "BORE",
+      "position": { "x": 0, "y": 360, "z": 280 },
+      "orientation": { "x": 0, "y": 0, "z": 0 },
+      "diameterMm": 5,
+      "depthMm": 20,
+      "parameters": { "coordinateSpace": "PART_LOCAL" },
+      "jointId": "joint-demo-cocina-l",
+      "metadata": { "demo": true }
+    }
+  ],
   "moduleDefinitions": [
     {
       "id": "definition-b-n1",
@@ -33004,10 +33060,41 @@
       }
     }
   ],
-  "servicePoints": [],
+  "servicePoints": [
+    {
+      "id": "service-demo-cocina-l-electrical",
+      "name": "Toma eléctrica cocina",
+      "type": "ELECTRICAL",
+      "position": { "x": 1000, "y": 1100, "z": 50 },
+      "orientation": { "x": 0, "y": 0, "z": 0 },
+      "hidden": false,
+      "metadata": { "demo": true }
+    }
+  ],
   "clearanceZones": [],
-  "applianceDefinitions": [],
-  "applianceInstances": [],
+  "applianceDefinitions": [
+    {
+      "id": "appliance-definition-demo-cocina-l",
+      "name": "Horno demo",
+      "category": "OVEN",
+      "dimensions": { "widthMm": 600, "heightMm": 590, "depthMm": 560 },
+      "clearanceZones": [],
+      "serviceRequirements": [],
+      "installationMetadata": { "demo": true },
+      "colorHex": "#303030",
+      "metadata": { "demo": true }
+    }
+  ],
+  "applianceInstances": [
+    {
+      "id": "appliance-demo-cocina-l",
+      "definitionId": "appliance-definition-demo-cocina-l",
+      "name": "Horno integrado",
+      "transform": { "position": { "x": 1600, "y": 295, "z": -1800 }, "rotation": { "x": 0, "y": 0, "z": 0 } },
+      "hidden": false,
+      "metadata": { "demo": true }
+    }
+  ],
   "countertops": [
     {
       "id": "countertop-north-l",
@@ -33080,8 +33167,30 @@
       }
     }
   ],
-  "cutouts": [],
-  "functionalZones": [],
+  "cutouts": [
+    {
+      "id": "cutout-demo-cocina-l",
+      "countertopId": "countertop-north-l",
+      "type": "CUSTOM",
+      "position2D": { "xMm": 1200, "yMm": 300 },
+      "widthMm": 600,
+      "depthMm": 500,
+      "rotation": 0,
+      "linkedApplianceInstanceId": "appliance-demo-cocina-l",
+      "metadata": { "demo": true }
+    }
+  ],
+  "functionalZones": [
+    {
+      "id": "zone-demo-cocina-l-hanging",
+      "name": "Zona colgante",
+      "type": "HANGING",
+      "dimensions": { "widthMm": 2200, "heightMm": 700, "depthMm": 350 },
+      "transform": { "position": { "x": 0, "y": 1950, "z": -1800 }, "rotation": { "x": 0, "y": 0, "z": 0 } },
+      "hidden": false,
+      "metadata": { "demo": true }
+    }
+  ],
   "sinks": [],
   "drillingPatternDefinitions": [],
   "assemblySteps": [],
@@ -33089,7 +33198,18 @@
   "fabricationRuleProfiles": [],
   "planningRuleProfiles": [],
   "kinematics": [],
-  "sectionPlanes": [],
+  "sectionPlanes": [
+    {
+      "id": "section-demo-cocina-l",
+      "name": "Corte longitudinal",
+      "position": { "x": 0, "y": 1300, "z": 0 },
+      "normal": { "x": 0, "y": 1, "z": 0 },
+      "enabled": true,
+      "inverted": false,
+      "scope": "ALL",
+      "constantMm": 1300
+    }
+  ],
   "scenes": [
     {
       "id": "scene-l-isometrica",

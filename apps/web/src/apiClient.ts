@@ -8,16 +8,19 @@ import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
   RevisionRequestSchema,
-  type CuttingListResponse,
-  type CuttingListAuthorizationResponse,
-  type CuttingListAuthorizationStatusResponse,
   ListDesignChangeProposalsResponseSchema,
-  type CreateDesignChangeProposalResponse,
-  type ListDesignChangeProposalsResponse,
   QuotationGenerationRequestSchema,
   QuotationResponseSchema,
   QuotationListResponseSchema,
   QuotationDecisionRequestSchema,
+  type CuttingListResponse,
+  type CuttingListAuthorizationResponse,
+  type CuttingListAuthorizationStatusResponse,
+  type CreateDesignChangeProposalRequest,
+  type DesignChangeProposalParams,
+  type DesignChangeProposal,
+  type CreateDesignChangeProposalResponse,
+  type ListDesignChangeProposalsResponse,
   type QuotationGenerationRequest,
   type QuotationResponse,
   type QuotationListResponse,
@@ -60,7 +63,7 @@ export const apiClient={
   versions:(id:string)=>request<VersionSummary[]>(`/projects/${encodeURIComponent(id)}/versions`),
   createVersion:(id:string,expectedRevision:number)=>request<{id:string;revision:number}>(`/projects/${encodeURIComponent(id)}/versions`,{expectedRevision}),
   approve:(id:string,versionId:string,expectedRevision:number)=>request(`/projects/${encodeURIComponent(id)}/versions/${encodeURIComponent(versionId)}/approve`,{expectedRevision}),
-  async createProposal(projectId:string,versionId:string,observation:string):Promise<CreateDesignChangeProposalResponse>{
+  async createProposal(projectId:string,versionId:string,observation:string):Promise<ProposalCreateResponse>{
     const params=DesignChangeProposalParamsSchema.parse({projectId,versionId});
     const body=CreateDesignChangeProposalRequestSchema.parse({observation});
     const response=await request<unknown>(
@@ -69,7 +72,7 @@ export const apiClient={
     );
     return CreateDesignChangeProposalResponseSchema.parse(response);
   },
-  async listProposals(projectId:string,versionId:string):Promise<ListDesignChangeProposalsResponse>{
+  async listProposals(projectId:string,versionId:string):Promise<ProposalListResponse>{
     const params=DesignChangeProposalParamsSchema.parse({projectId,versionId});
     const response=await request<unknown>(
       `/projects/${encodeURIComponent(params.projectId)}/versions/${encodeURIComponent(params.versionId)}/proposals`

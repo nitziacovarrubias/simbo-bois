@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { PrismaClient, type UserRole } from '@prisma/client';
 import { addPartToAssembly, createPanel, type DesignDocument } from '../packages/design-domain/src/index.ts';
-import { collectManufacturingData, getPartOrigin } from '../packages/manufacturing-engine/src/index.ts';
+import { collectManufacturingData } from '../packages/manufacturing-engine/src/index.ts';
 import { hashPassword } from '../apps/api/src/security.ts';
 
 const database=process.env.TEST_DATABASE_URL;

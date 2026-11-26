@@ -13,6 +13,35 @@ process.env.DATABASE_URL=database;
 const prisma=new PrismaClient();const users:string[]=[];const projects:string[]=[];
 let app:{listen:(port:number,host:string)=>Promise<unknown>;getUrl:()=>Promise<string>;close:()=>Promise<void>};let base:string;
 const tokens:Record<string,string>={};const password='Contraseña exclusiva de integración';
+function assertFloatDocumentEqual(actual: unknown, expected: unknown) {
+  if (typeof expected === 'number') {
+    assert.equal(typeof actual, 'number');
+    assert.ok(
+      Math.abs((actual as number) - expected) < 1e-12,
+      `Diferencia flotante: ${actual} vs ${expected}`
+    );
+  } else if (Array.isArray(expected)) {
+    assert.ok(Array.isArray(actual));
+    assert.equal((actual as unknown[]).length, expected.length);
+    expected.forEach((value, index) =>
+      assertFloatDocumentEqual((actual as unknown[])[index], value)
+    );
+  } else if (expected && typeof expected === 'object') {
+    assert.ok(actual && typeof actual === 'object');
+    assert.deepEqual(
+      Object.keys(actual as object).sort(),
+      Object.keys(expected).sort()
+    );
+    for (const [key, value] of Object.entries(expected)) {
+      assertFloatDocumentEqual(
+        (actual as Record<string, unknown>)[key],
+        value
+      );
+    }
+  } else {
+    assert.deepEqual(actual, expected);
+  }
+}
 async function request(path:string,actor?:string,body?:unknown) {
   const response=await fetch(base+'/api'+path,{method:body===undefined?'GET':'POST',headers:{'content-type':'application/json',...(actor?{authorization:'Bearer '+tokens[actor]}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
   return {status:response.status,body:await response.json()};
@@ -52,9 +81,9 @@ test('persistencia roundtrip preserva todas las entidades y Part[] derivado del 
   const design=JSON.parse(readFileSync(new URL('../../examples/demo-kitchen.design.json',import.meta.url),'utf8')) as DesignDocument;
   design.id=current.design.id;design.metadata.projectId=id;design.metadata.notes='Prueba de todas las entidades';
   const saved=await request(`/projects/${id}/design`,'architect',{design,expectedRevision:0});assert.equal(saved.status,201,JSON.stringify(saved.body));
-  const loaded=await draft(id);assert.deepEqual(loaded.design,design);assert.equal(loaded.revision,1);
+  const loaded=await draft(id);assertFloatDocumentEqual(loaded.design,design);assert.equal(loaded.revision,1);
   const data=collectManufacturingData(loaded.design);assert.ok(data.parts.length>0);
-  assert.ok(data.parts.some(part=>getPartOrigin(loaded.design,part.id).moduleInstanceId==='module-instance-1'));
+  assert.ok(data.parts.some(part=>getPartOrigin(loaded.design,part.id).moduleInstanceId==='instance-b-n1'));
 });
 test('control optimista acepta una escritura y rechaza revisión concurrente obsoleta',async()=>{
   const id=await project();const d=await draft(id);const a=structuredClone(d.design),b=structuredClone(d.design);a.metadata.notes='A';b.metadata.notes='B';

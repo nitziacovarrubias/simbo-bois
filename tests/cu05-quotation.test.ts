@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateQuotation } from 'packages/quotation-engine/src';
-import type { QuotationCalculationInput } from 'packages/quotation-engine/src';
+import { calculateQuotation } from '../packages/quotation-engine/src/index.ts';
+import type { QuotationCalculationInput } from '../packages/quotation-engine/src/index.ts';
 
 export const validQuotationInput = {
   cuttingList: {

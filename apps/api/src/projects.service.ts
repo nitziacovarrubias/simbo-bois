@@ -1,11 +1,14 @@
 import { ConflictException, BadRequestException, Inject, Injectable, NotFoundException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { createEmptyDesign, migrateDesign, validateDesignStructural, type DesignDocument } from '@simbo/design-domain';
-import { CreateDesignChangeProposalResponseSchema, DesignDocumentSchema, ListDesignChangeProposalsResponseSchema, type CreateDesignChangeProposalRequest } from '@simbo/shared-contracts';
 import {
   CuttingListAuthorizationResponseSchema,
   CuttingListAuthorizationStatusResponseSchema,
   CuttingListResponseSchema,
+  CreateDesignChangeProposalResponseSchema,
+  DesignDocumentSchema,
+  ListDesignChangeProposalsResponseSchema,
+  type CreateDesignChangeProposalRequest
   QuotationCalculationSchema,
   QuotationResponseSchema,
   QuotationListResponseSchema,
@@ -193,6 +196,7 @@ export class ProjectsService {
       createdAt:proposal.createdAt.toISOString()
     })));
   }
+  
   private async validateCurrentApprovedVersion(
     tx: Transaction,
     projectId: string,
