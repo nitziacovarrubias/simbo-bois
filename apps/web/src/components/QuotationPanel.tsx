@@ -268,7 +268,6 @@ export default function QuotationPanel({
       historyReqId.current += 1;
       detailReqId.current += 1;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   // Load cutting list when generating for an approved current version
