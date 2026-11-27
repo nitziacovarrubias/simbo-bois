@@ -10,8 +10,7 @@ import {
   type QuotationListResponse,
   type QuotationResponse
 } from '../../packages/shared-contracts/src/index.ts';
-import { createApp } from '../../apps/api/src/main.js';
-import { createSessionToken, hashSessionToken } from '../../apps/api/src/security.js';
+import { createSessionToken, hashSessionToken } from '../../apps/api/src/security.ts';
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 
@@ -239,7 +238,8 @@ describe(
         datasources: { db: { url: testDatabaseUrl } }
       });
       await prisma.$connect();
-
+      const compiled = new URL('../../apps/api/dist/main.js', import.meta.url).href;
+      const { createApp } = await import(compiled);
       app = await createApp();
       await app.listen(0, '127.0.0.1');
       const address = app.getHttpServer().address();
